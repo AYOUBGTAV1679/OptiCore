@@ -46,6 +46,11 @@ public final class ChunkRenderCache {
         if (dimension != null) CACHE.invalidateDimension(dimensionId(dimension));
     }
 
+    public static void onResourcesReloaded() {
+        CACHE.onResourcesReloaded();
+        CACHE.purgeStale();
+    }
+
     public static void invalidateAll() {
         CACHE.clear();
         CACHE.onResourcesReloaded();
