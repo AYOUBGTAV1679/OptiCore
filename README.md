@@ -38,7 +38,7 @@ Smooth zoom transitions are enabled by default and can be switched off in settin
 
 OptiCore is planned to use **one integrated shader engine**, following the OptiFine-style shader-pack workflow. Shadows, water, reflections, entity/terrain shading, and post-processing will run through the same program compiler, render-pass graph, and GPU resource manager—not separate shader systems. The compatibility target is the OptiFine shader-pack format for Minecraft 1.20.1, implemented incrementally with a vanilla fallback and low-memory safeguards.
 
-**Shader packs are not loadable in the current alpha.** The catalog and read-only metadata preview are implemented, but no shader compiler, render-pass pipeline, editable pack options, or OptiFine pack rendering compatibility has been implemented or runtime-tested yet. See [Unified Shader Engine Architecture](docs/UNIFIED-SHADER-ENGINE.md) for the staged implementation and validation requirements.
+**Shader packs are not loadable in the current alpha.** The catalog and read-only metadata preview are implemented. A bounded per-pack option-override storage API and standalone regression test are now present as groundwork, but the options screen is still read-only and does not yet edit or apply those values. No shader compiler, render-pass pipeline, or OptiFine pack rendering compatibility has been implemented or runtime-tested yet. See [Unified Shader Engine Architecture](docs/UNIFIED-SHADER-ENGINE.md) for the staged implementation and validation requirements.
 
 ## Engineering status
 
