@@ -74,3 +74,6 @@ Off-screen target allocation and scoped binding now preserve draw and read frame
 The target clear operation now temporarily disables scissor testing and enables color/depth write masks so a prior GUI or renderer state cannot leave part of the off-screen target uncleared. It restores the previous clear color/depth values, color/depth masks, scissor enable state, framebuffer bindings, and viewport even when the clear scope exits exceptionally.
 
 This hardens the off-screen resource layer only. It does not yet schedule a render pass or composite the target onto Minecraft's main framebuffer.
+
+
+Off-screen target resize and close now reject attempts made while that target is bound for reading or drawing. This prevents deleting an active framebuffer from silently replacing the caller's binding with framebuffer zero and invalidating the surrounding scope.
