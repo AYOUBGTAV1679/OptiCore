@@ -47,7 +47,7 @@ public final class ModCompatibilityScanner {
         {"TerraBlender", "terrablender", "World-generation library; verify target version"},
         {"Simple Voice Chat", "voicechat", "Audio and overlay integration test required"},
         {"VoidFog", "voidfog", "Fog pipeline integration test required"},
-        {"What Are They Up To", "whataretheyup to", "Entity rendering test required; verify mod ID"},
+        {"What Are They Up To", "watut", "Entity rendering test required; verify mod ID"},
         {"Weather2", "weather2", "Weather and particle rendering test required"},
         {"Xaero's Minimap", "xaerominimap", "HUD overlay integration test required"},
         {"YUNG's API", "yungsapi", "Library dependency; verify Forge build"},
