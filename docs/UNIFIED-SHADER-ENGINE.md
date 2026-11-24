@@ -123,3 +123,10 @@ This is declaration inventory only. It is not a complete GLSL grammar parser, do
 A bounded declaration-level comparison now checks fragment-stage inputs against vertex-stage outputs by name, GLSL type, and array suffix. It reports missing producer outputs and obvious type/array mismatches, and exposes whether either source inventory was truncated. Standalone tests cover matched declarations, missing outputs, type mismatches, and array-size mismatches.
 
 This result is deliberately named an inventory compatibility check: it does not account for macro expansion, conditional compilation, interface blocks, interpolation qualifiers, built-in variables, geometry/tessellation stages, or full GLSL linking rules. A clean report is not proof that a driver will link the program. No GPU compilation or rendering has been added.
+
+
+## Alpha update — assembled program descriptors
+
+A program descriptor now combines the existing bounded include resolver, GLSL declaration inventory, and conservative vertex/fragment interface comparison for one paired program path. It reports each stage's expanded source, included-file list, read errors, truncation state, and interface diagnostics. The API supports shader-pack folders and ZIP archives without extracting archive contents, and regression tests cover both formats, include inventory, interface matching, invalid identifiers, and missing stages.
+
+The descriptor's `readyForCompiler` flag means only that source assembly completed within limits and the current lexical interface check found no blockers. It is not a GLSL compile or GPU link result. No program objects are created and no shader is activated or rendered by this milestone.
