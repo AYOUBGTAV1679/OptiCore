@@ -1,14 +1,9 @@
 package dev.opticore.client.shader;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -18,7 +13,7 @@ import java.util.zip.ZipFile;
  */
 public final class ShaderPackMetadata {
     private static final String PROPERTIES_PATH = "shaders/shaders.properties";
-    private static final int MAX_PROPERTIES_BYTES = 256 * 1024;
+    private static final int MAX_PROPERTIES_BYTES = ShaderPropertiesParser.MAX_PROPERTIES_BYTES;
 
     private ShaderPackMetadata() {}
 
@@ -47,39 +42,9 @@ public final class ShaderPackMetadata {
 
 
     static Summary parseProperties(byte[] bytes) {
-        if (bytes == null || bytes.length > MAX_PROPERTIES_BYTES) return Summary.empty();
-        Properties properties = new Properties();
-        try {
-            properties.load(new ByteArrayInputStream(bytes));
-            String screen = properties.getProperty("screen", "").trim();
-            String sliders = properties.getProperty("sliders", "").trim();
-            Set<String> controls = new LinkedHashSet<>();
-            addTokens(controls, screen);
-            addTokens(controls, sliders);
-            controls.removeIf(token -> token.startsWith("[") || token.startsWith("]"));
-            return new Summary(true, properties.size(), countTokens(sliders), screen,
-                    new ArrayList<>(controls));
-        } catch (IOException | IllegalArgumentException ignored) {
-            return Summary.empty();
-        }
-    }
-
-    private static int countTokens(String value) {
-        if (value.isBlank()) return 0;
-        int count = 0;
-        for (String token : value.split("[,\\s]+")) {
-            if (!token.isBlank() && !token.startsWith("[") && !token.startsWith("]")) count++;
-        }
-        return count;
-    }
-
-    private static void addTokens(Set<String> output, String value) {
-        for (String token : value.split("[,\\s]+")) {
-            String normalized = token.trim();
-            if (normalized.isEmpty() || normalized.startsWith("[") || normalized.startsWith("]")) continue;
-            if (normalized.equals("<empty>") || normalized.equals("profile")) continue;
-            if (!normalized.isEmpty()) output.add(normalized);
-        }
+        ShaderPropertiesParser.Summary parsed = ShaderPropertiesParser.parse(bytes);
+        return new Summary(parsed.hasProperties(), parsed.propertyCount(), parsed.sliderCount(),
+                parsed.screenDefinition(), parsed.controls());
     }
 
     private static InputStream openProperties(ShaderPackRepository.Pack pack) throws IOException {
