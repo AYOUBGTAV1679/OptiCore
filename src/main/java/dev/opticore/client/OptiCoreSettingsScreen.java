@@ -44,7 +44,7 @@ public class OptiCoreSettingsScreen extends Screen {
                 .bounds(center - 105, top + 112, 210, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
-                .bounds(center - 105, top + 168, 210, 20).build());
+                .bounds(center - 105, top + 140, 210, 20).build());
     }
 
     private static Component cacheBudgetText() {
@@ -63,7 +63,7 @@ public class OptiCoreSettingsScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, height / 4 - 28, 0xFFFFFF);
         graphics.drawCenteredString(font, Component.translatable("screen.opticore.zoom_hint"),
-                width / 2, height / 4 + 65, 0xAAAAAA);
+                width / 2, height / 4 + 166, 0xAAAAAA);
     }
 
     @Override
