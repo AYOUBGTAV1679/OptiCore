@@ -24,7 +24,8 @@ public final class ChunkDiagnostics {
             return;
         }
         latest = new Snapshot(dispatcher.getToBatchCount(), dispatcher.getToUpload(),
-                dispatcher.getFreeBufferCount(), dispatcher.getStats());
+                dispatcher.getFreeBufferCount(), dispatcher.getStats(), ChunkRenderCache.cache().stats(),
+                ChunkRenderCache.cache().currentBytes(), ChunkRenderCache.cache().maxBytes());
     }
 
     public static Snapshot snapshot() {
@@ -32,17 +33,25 @@ public final class ChunkDiagnostics {
     }
 
     public static final class Snapshot {
-        private static final Snapshot EMPTY = new Snapshot(0, 0, 0, "Unavailable");
+        private static final Snapshot EMPTY = new Snapshot(0, 0, 0, "Unavailable",
+                new dev.opticore.cache.SmartChunkCache.Stats(0, 0, 0, 0, 0, 0), 0, 0);
         public final int queuedBuilds;
         public final int pendingUploads;
         public final int freeBuffers;
         public final String dispatcherStats;
+        public final dev.opticore.cache.SmartChunkCache.Stats cacheStats;
+        public final long cacheBytes;
+        public final long cacheBudgetBytes;
 
-        private Snapshot(int queuedBuilds, int pendingUploads, int freeBuffers, String dispatcherStats) {
+        private Snapshot(int queuedBuilds, int pendingUploads, int freeBuffers, String dispatcherStats,
+                         dev.opticore.cache.SmartChunkCache.Stats cacheStats, long cacheBytes, long cacheBudgetBytes) {
             this.queuedBuilds = queuedBuilds;
             this.pendingUploads = pendingUploads;
             this.freeBuffers = freeBuffers;
             this.dispatcherStats = dispatcherStats;
+            this.cacheStats = cacheStats;
+            this.cacheBytes = cacheBytes;
+            this.cacheBudgetBytes = cacheBudgetBytes;
         }
     }
 }
