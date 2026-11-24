@@ -31,11 +31,17 @@ public final class ShaderRenderGraphExecutorSelfTest {
     }
 
     private static void stopsWhenHandlerIsMissing() {
-        ShaderRenderGraph graph = singlePassGraph();
+        ShaderRenderGraph graph = ShaderRenderGraph.builder()
+                .addPass("first", Set.of(), Set.of("a"), Set.of(), ShaderRenderGraph.DepthMode.NONE)
+                .addPass("second", Set.of("a"), Set.of("b"), Set.of(), ShaderRenderGraph.DepthMode.NONE)
+                .build();
+        boolean[] called = {false};
         ShaderRenderGraphExecutor.ExecutionResult result =
-                ShaderRenderGraphExecutor.execute(graph, Map.of());
+                ShaderRenderGraphExecutor.execute(graph,
+                        Map.of("first", pass -> called[0] = true));
         check(!result.success(), "missing handler must fail");
-        check("draw".equals(result.failedPass()), "missing handler should identify pass");
+        check("second".equals(result.failedPass()), "missing handler should identify pass");
+        check(!called[0], "preflight must detect missing later handlers before any pass executes");
         check(result.completedPasses().isEmpty(), "nothing should be marked complete");
     }
 
