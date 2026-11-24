@@ -50,11 +50,16 @@ public final class ShaderPackScreen extends Screen {
         }
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.refresh"),
-                button -> refreshPacks()).bounds(center - 150, height - 52, 96, 20).build());
+                button -> refreshPacks()).bounds(center - 150, height - 52, 70, 20).build());
+        Button optionsButton = Button.builder(Component.translatable("screen.opticore.shaders.options"),
+                button -> minecraft.setScreen(new ShaderPackOptionsScreen(this, selected, selectedMetadata)))
+                .bounds(center - 76, height - 52, 70, 20).build();
+        optionsButton.active = selectedMetadata.hasProperties();
+        addRenderableWidget(optionsButton);
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.open_folder"),
-                button -> openFolder()).bounds(center - 50, height - 52, 112, 20).build());
+                button -> openFolder()).bounds(center - 2, height - 52, 90, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"),
-                button -> onClose()).bounds(center + 66, height - 52, 84, 20).build());
+                button -> onClose()).bounds(center + 92, height - 52, 58, 20).build());
     }
 
     private Component selectionText(String name) {
