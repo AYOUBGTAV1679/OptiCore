@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
@@ -38,10 +37,10 @@ public final class ShaderPackInventory {
         }
     }
 
-    public static Summary inspect(ShaderPackRepository.Pack pack) {
-        if (pack == null || pack.path() == null) return Summary.empty();
+    public static Summary inspect(Path packPath, boolean archive) {
+        if (packPath == null) return Summary.empty();
         try {
-            return pack.archive() ? inspectArchive(pack.path()) : inspectDirectory(pack.path());
+            return archive ? inspectArchive(packPath) : inspectDirectory(packPath);
         } catch (IOException | SecurityException ignored) {
             return Summary.empty();
         }
@@ -79,8 +78,9 @@ public final class ShaderPackInventory {
                 }
                 declaredBytes += size;
                 sourceFiles++;
-                if (name.endsWith(".vsh")) vertexFiles++;
-                else if (name.endsWith(".fsh")) fragmentFiles++;
+                String lower = name.toLowerCase(Locale.ROOT);
+                if (lower.endsWith(".vsh")) vertexFiles++;
+                else if (lower.endsWith(".fsh")) fragmentFiles++;
                 else includeFiles++;
                 addProgram(programs, name);
             }
@@ -94,6 +94,7 @@ public final class ShaderPackInventory {
         if (!root.startsWith(packDirectory.normalize()) || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
             return Summary.empty();
         }
+        int scannedEntries = 0;
         int sourceFiles = 0;
         int vertexFiles = 0;
         int fragmentFiles = 0;
@@ -104,6 +105,10 @@ public final class ShaderPackInventory {
         try (var paths = Files.walk(root, 32)) {
             var iterator = paths.iterator();
             while (iterator.hasNext()) {
+                if (++scannedEntries > MAX_ARCHIVE_ENTRIES) {
+                    truncated = true;
+                    break;
+                }
                 Path file = iterator.next();
                 if (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)) continue;
                 String relative = root.relativize(file).toString().replace(file.getFileSystem().getSeparator(), "/");
