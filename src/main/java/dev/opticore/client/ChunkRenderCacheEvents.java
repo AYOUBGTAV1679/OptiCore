@@ -1,7 +1,7 @@
 package dev.opticore.client;
 
 import dev.opticore.OptiCore;
-
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -19,28 +19,32 @@ public final class ChunkRenderCacheEvents {
 
     @SubscribeEvent
     public static void onChunkUnload(ChunkEvent.Unload event) {
-        if (event.getLevel().isClientSide()) {
-            ChunkRenderCache.invalidateChunk(event.getLevel(),
+        if (event.getLevel() instanceof Level level && level.isClientSide()) {
+            ChunkRenderCache.invalidateChunk(level,
                     event.getChunk().getPos().x, event.getChunk().getPos().z);
         }
     }
 
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
-        ChunkRenderCache.invalidateChunk(event.getLevel(),
-                event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+        if (event.getLevel() instanceof Level level && level.isClientSide()) {
+            ChunkRenderCache.invalidateChunk(level,
+                    event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+        }
     }
 
     @SubscribeEvent
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
-        ChunkRenderCache.invalidateChunk(event.getLevel(),
-                event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+        if (event.getLevel() instanceof Level level && level.isClientSide()) {
+            ChunkRenderCache.invalidateChunk(level,
+                    event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+        }
     }
 
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload event) {
-        if (event.getLevel().isClientSide()) {
-            ChunkRenderCache.invalidateDimension(event.getLevel().dimension());
+        if (event.getLevel() instanceof Level level && level.isClientSide()) {
+            ChunkRenderCache.invalidateDimension(level.dimension());
         }
     }
 }
