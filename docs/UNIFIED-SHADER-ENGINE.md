@@ -18,8 +18,8 @@ The target is practical compatibility with the OptiFine shader-pack format used 
 
 ## Single-pipeline design
 
-1. **Pack discovery** — enumerate shader-pack folders and ZIP files under the Minecraft shaderpacks directory. Do not extract untrusted archives blindly; validate paths and impose size/count limits.
-2. **Pack metadata and options** — read supported shaders.properties values, expose pack options, and preserve unknown options without pretending they are implemented.
+1. **Pack discovery** — implemented as an initial catalog for top-level shader-pack folders and ZIP files under `shaderpacks/`. Selection is persisted. This stage does not extract archives. ZIP entry paths receive basic filtering; stricter entry-count and archive-size limits remain required before broader parsing.
+2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet.
 3. **Compatibility parser** — parse the supported OptiFine-style program layout, shader properties, uniforms, and texture declarations. Report unsupported syntax before activation.
 4. **Program compiler** — compile vertex/fragment programs and link them into owned program objects. Cache compiled results only for the current resource generation and graphics context.
 5. **Render graph** — execute supported shadow, terrain/entity, composite, and final passes in a deterministic order. Every pass declares inputs, outputs, depth behavior, and resource dependencies.
@@ -74,11 +74,11 @@ A milestone is complete only when:
 
 ## Implementation sequence
 
-1. Add a client-only shader-pack catalog and safe archive validation.
-2. Add parser and compatibility diagnostics with unit tests.
+1. Harden the existing client-only shader-pack catalog with archive entry-count/size limits and regression tests.
+2. Expand the metadata parser and compatibility diagnostics with unit tests.
 3. Establish a render-thread-owned program/resource lifecycle.
 4. Implement a minimal pass graph and a test shader.
 5. Add OptiFine-format compatibility incrementally, with a test pack for each supported feature.
-6. Add settings UI and quality profiles after the pipeline is stable.
+6. Add editable settings UI and quality profiles after the pipeline is stable.
 
 This document is an engineering plan. It does not mean shader loading, shader compilation, or shader rendering is implemented in the current build.
