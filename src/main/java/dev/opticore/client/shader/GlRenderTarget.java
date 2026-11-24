@@ -45,6 +45,7 @@ public final class GlRenderTarget implements AutoCloseable {
     public void resize(int newWidth, int newHeight) {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
+        ensureNotBound();
         validateSize(newWidth, newHeight);
         if (width == newWidth && height == newHeight) return;
 
@@ -183,6 +184,15 @@ public final class GlRenderTarget implements AutoCloseable {
         if (closed) throw new IllegalStateException("Render target is closed");
     }
 
+    /** Prevent deletion/replacement from invalidating an active scoped framebuffer binding. */
+    private void ensureNotBound() {
+        int draw = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int read = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        if (draw == framebuffer || read == framebuffer) {
+            throw new IllegalStateException("Render target cannot be resized or closed while it is bound");
+        }
+    }
+
     private static void deleteObjects(int framebuffer, int texture, int renderbuffer) {
         if (framebuffer != 0) GL30.glDeleteFramebuffers(framebuffer);
         if (texture != 0) GL11.glDeleteTextures(texture);
@@ -193,6 +203,7 @@ public final class GlRenderTarget implements AutoCloseable {
     public void close() {
         RenderSystem.assertOnRenderThread();
         if (closed) return;
+        ensureNotBound();
         deleteObjects(framebuffer, colorTexture, depthRenderbuffer);
         framebuffer = 0;
         colorTexture = 0;
