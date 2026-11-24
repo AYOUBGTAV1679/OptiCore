@@ -39,7 +39,17 @@ public final class ShaderPackMetadata {
             byte[] bytes = input.readNBytes(MAX_PROPERTIES_BYTES + 1);
             if (bytes.length > MAX_PROPERTIES_BYTES) return Summary.empty();
 
-            Properties properties = new Properties();
+            return parseProperties(bytes);
+        } catch (IOException | IllegalArgumentException ignored) {
+            return Summary.empty();
+        }
+    }
+
+
+    static Summary parseProperties(byte[] bytes) {
+        if (bytes == null || bytes.length > MAX_PROPERTIES_BYTES) return Summary.empty();
+        Properties properties = new Properties();
+        try {
             properties.load(new ByteArrayInputStream(bytes));
             String screen = properties.getProperty("screen", "").trim();
             String sliders = properties.getProperty("sliders", "").trim();
@@ -67,7 +77,6 @@ public final class ShaderPackMetadata {
         for (String token : value.split("[,\\s]+")) {
             String normalized = token.trim();
             if (normalized.isEmpty() || normalized.startsWith("[") || normalized.startsWith("]")) continue;
-            if (normalized.startsWith("!")) normalized = normalized.substring(1);
             if (normalized.equals("<empty>") || normalized.equals("profile")) continue;
             if (!normalized.isEmpty()) output.add(normalized);
         }
