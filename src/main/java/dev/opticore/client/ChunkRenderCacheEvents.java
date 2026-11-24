@@ -35,8 +35,9 @@ public final class ChunkRenderCacheEvents {
     @SubscribeEvent
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getLevel() instanceof Level level && level.isClientSide()) {
-            ChunkRenderCache.invalidateChunk(level,
-                    event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+            // Placement at a chunk edge can change the neighboring section's
+            // visible face geometry just like breaking a block.
+            ChunkRenderCache.invalidateBlockAndNeighbors(level, event.getPos());
         }
     }
 
