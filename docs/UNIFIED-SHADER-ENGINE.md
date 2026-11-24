@@ -19,3 +19,10 @@ The client resource-reload listener now schedules cache cleanup through Minecraf
 Added an explicit runtime bridge from the saved shader-pack selection to the source descriptor, GL compiler, and bounded program cache. A caller can request a program by its relative program ID; the bridge resolves the selected folder/ZIP, runs bounded include expansion and declaration preflight, then asks the GL backend to compile and link the two stages. Failures are returned as diagnostics and do not produce a program handle.
 
 This is now a real selected-pack-to-GLSL-compile path when explicitly called on the render thread with a current graphics context. It still does not enumerate and compile every program automatically, activate the pack globally, bind uniforms or textures, draw terrain/entities, or execute shadow/composite/final passes. No in-game shader-pack rendering is claimed.
+
+
+## Alpha update — bounded off-screen render target foundation
+
+Added a render-thread-owned off-screen target abstraction for the next render-graph stage. Each target owns an RGBA8 color texture, a depth renderbuffer, and a framebuffer. Allocation is transactional: incomplete targets are discarded, prior framebuffer/texture/renderbuffer bindings are restored, and an existing target is retained if a resize allocation fails.
+
+Targets enforce dimension and pixel-count limits, support explicit clear and scoped bind/restore operations, and release their GL objects on close. This is resource infrastructure only: no world-render stage uses the target yet, no shader uniforms or scene textures are populated, and no shadow/composite/final pass is active. Runtime validation with a live Forge graphics context remains necessary.
