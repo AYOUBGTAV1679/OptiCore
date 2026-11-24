@@ -6,6 +6,9 @@ import dev.opticore.client.shader.SceneUniformSnapshot;
 import dev.opticore.client.shader.SceneEnvironmentSnapshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
+import dev.opticore.client.shader.SceneEnvironmentSnapshot;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -21,12 +24,18 @@ import net.minecraftforge.fml.common.Mod;
 public final class OptiCoreClientEvents {
     private static volatile SceneUniformSnapshot latestSceneUniformSnapshot;
     private static volatile SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot;
+    private static volatile SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot;
 
     private OptiCoreClientEvents() {}
 
     /** Latest read-only scene snapshot; null until capture is enabled and a level frame completes. */
     public static SceneUniformSnapshot latestSceneUniformSnapshot() {
         return latestSceneUniformSnapshot;
+    }
+
+    /** Latest fog, weather, and camera light sample; null until capture is enabled. */
+    public static SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot() {
+        return latestSceneEnvironmentSnapshot;
     }
 
     /** Latest fog, weather, and camera light sample; null until capture is enabled. */
@@ -61,6 +70,16 @@ public final class OptiCoreClientEvents {
                 mc.getWindow().getWidth(), mc.getWindow().getHeight(),
                 mc.level.getGameTime(), mc.level.getDayTime(),
                 mc.level.dimension().location().toString());
+
+        net.minecraft.world.phys.Vec3 fog = mc.level.getSkyColor(camera, event.getPartialTick());
+        BlockPos cameraBlock = BlockPos.containing(camera.x, camera.y, camera.z);
+        latestSceneEnvironmentSnapshot = new SceneEnvironmentSnapshot(
+                (float) fog.x, (float) fog.y, (float) fog.z,
+                mc.level.getRainLevel(event.getPartialTick()),
+                mc.level.getThunderLevel(event.getPartialTick()),
+                mc.level.getSkyDarken() / 15.0f,
+                mc.level.getBrightness(LightLayer.BLOCK, cameraBlock),
+                mc.level.getBrightness(LightLayer.SKY, cameraBlock));
 
         net.minecraft.world.phys.Vec3 fog = mc.level.getSkyColor(camera, event.getPartialTick());
         BlockPos cameraBlock = BlockPos.containing(camera.x, camera.y, camera.z);
