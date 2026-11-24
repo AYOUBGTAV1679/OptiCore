@@ -3,14 +3,14 @@ package dev.opticore.client.shader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public final class ShaderPackMetadataSelfTest {
+public final class ShaderPropertiesParserSelfTest {
     private ShaderPackMetadataSelfTest() {}
 
     public static void main(String[] args) {
         String source = "screen=[BASIC] shadowMapResolution !oldLighting [ADVANCED] profile\n"
                 + "sliders=shadowMapResolution,shadowDistance\n"
                 + "oldLighting=false\n";
-        ShaderPackMetadata.Summary summary = ShaderPackMetadata.parseProperties(
+        ShaderPropertiesParser.Summary summary = ShaderPropertiesParser.parse(
                 source.getBytes(StandardCharsets.ISO_8859_1));
         check(summary.hasProperties(), "properties detected");
         check(summary.propertyCount() == 3, "property count");
@@ -20,7 +20,7 @@ public final class ShaderPackMetadataSelfTest {
                 "shadowDistance")), "screen and slider identifiers collected");
         check(summary.controls().stream().filter("shadowMapResolution"::equals).count() == 1,
                 "duplicate identifier deduplicated");
-        check(!ShaderPackMetadata.parseProperties(new byte[256 * 1024 + 1]).hasProperties(),
+        check(!ShaderPropertiesParser.parse(new byte[256 * 1024 + 1]).hasProperties(),
                 "oversized properties rejected");
         check(!ShaderPackMetadata.parseProperties("bad=\\uZZZZ".getBytes(StandardCharsets.ISO_8859_1))
                 .hasProperties(), "malformed escape rejected");
