@@ -86,3 +86,10 @@ Added an immutable scene snapshot model and a Forge 1.20.1 render-stage observer
 Capture is disabled by default. The observer does not bind programs, alter render state, allocate GPU resources, or draw anything; sampling occurs after the level render completes. The snapshot validates finite values and defensively copies matrices. Standalone regression tests cover immutability, matrix validation, partial-tick bounds, time conversion, and day-cycle normalization.
 
 Fog color/density, lightmap values, inverse matrices, and per-pack OptiFine uniform aliases are intentionally not synthesized yet. They require separate API and semantic validation before being exposed as compatibility uniforms. No world shader rendering is enabled by this observer.
+
+
+## Alpha update — common scene uniform binder
+
+Added an explicit render-thread uniform binder for an already-bound OptiCore GL program. It uploads the captured model-view and projection matrices plus the commonly used OptiFine-style names `gbufferModelView`, `gbufferProjection`, `cameraPosition`, `viewWidth`, `viewHeight`, `frameTimeCounter`, `worldTime`, and `worldDay`. Uniforms absent from a particular program remain harmless no-ops through the existing location lookup behavior.
+
+This is deliberately a small compatibility starter set, not a claim of complete OptiFine uniform parity. It does not synthesize inverse matrices, fog, rain/thunder, eye brightness, lightmap, entity/block context, shadow parameters, or texture samplers. The binder is an explicit API and is not called automatically by the world renderer; callers must bind the program first and invoke it on the render thread.
