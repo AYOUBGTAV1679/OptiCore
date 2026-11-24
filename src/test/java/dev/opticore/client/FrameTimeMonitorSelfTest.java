@@ -8,6 +8,11 @@ public final class FrameTimeMonitorSelfTest {
         FrameTimeMonitor.reset();
         check(FrameTimeMonitor.latestFrameTimeMs() == 0.0D, "reset must clear latest frame time");
         check(FrameTimeMonitor.onePercentLowFps() == 0.0D, "reset must clear percentile");
+        String initialDisplay = FrameTimeMonitor.displayText();
+        check(initialDisplay.equals("Frame time: -- ms | 1% low: -- FPS"),
+                "reset must restore the placeholder HUD text");
+        check(initialDisplay == FrameTimeMonitor.displayText(),
+                "reading cached HUD text must not create a new string");
 
         for (int i = 0; i < 180; i++) {
             FrameTimeMonitor.sampleFrame();
@@ -22,6 +27,8 @@ public final class FrameTimeMonitorSelfTest {
         FrameTimeMonitor.reset();
         check(FrameTimeMonitor.latestFrameTimeMs() == 0.0D, "reset must clear latest sample");
         check(FrameTimeMonitor.onePercentLowFps() == 0.0D, "reset must clear cached 1% low");
+        check(FrameTimeMonitor.displayText().equals("Frame time: -- ms | 1% low: -- FPS"),
+                "reset must clear cached display text");
         System.out.println("FrameTimeMonitorSelfTest: all checks passed");
     }
 
