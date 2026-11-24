@@ -27,8 +27,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderGlslInterfaceScanner.java \
   src/test/java/dev/opticore/client/shader/ShaderGlslInterfaceScannerSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderStageInterfaceValidator.java \
-  src/test/java/dev/opticore/client/shader/ShaderStageInterfaceValidatorSelfTest.java
-  src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \\
+  src/test/java/dev/opticore/client/shader/ShaderStageInterfaceValidatorSelfTest.java \
+  src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \
   src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
