@@ -35,3 +35,10 @@ Added a render-thread-only LRU manager for named off-screen targets. It caps the
 The resource-reload listener now clears both compiled shader programs and managed off-screen targets on Minecraft's render-call queue. Off-screen clear operations also restore the prior global GL clear-color value.
 
 This remains resource management, not a render graph or world integration. No terrain/entity geometry is rendered into these targets, and no shader pack pass is activated. A live Forge client test is still required to validate driver behavior and lifecycle under resize/reload.
+
+
+## Alpha update — declarative render graph model
+
+Added a Minecraft-independent immutable render-graph description. Each pass declares its input resources, output resources, explicit pass dependencies, and depth behavior. Validation checks missing producers and inputs, missing dependencies, duplicate writers, invalid pass declarations, and dependency cycles. A stable topological schedule is returned only when validation succeeds; resource producer/consumer relationships automatically create ordering edges.
+
+The graph model is intentionally declarative and performs no OpenGL calls. It is not yet connected to Forge world-render events, Minecraft's world renderer, shader uniforms, or framebuffer execution. It does not draw terrain, entities, shadows, reflections, or post-processing. A later integration step must define concrete pass executors, external Minecraft render resources, GL-state restoration, and a safe vanilla fallback before enabling world-render changes.
