@@ -21,6 +21,7 @@ public final class OptiCoreClientEvents {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+        ChunkRenderCache.applyConfiguredBudget();
         ChunkDiagnostics.tick(mc);
 
         while (OptiCoreClient.OPEN_SETTINGS.consumeClick()) {
