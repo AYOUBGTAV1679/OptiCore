@@ -21,5 +21,8 @@
   "screen.opticore.shaders.empty": "No shader packs found. Add a ZIP or folder containing shaders/ to shaderpacks.",
   "screen.opticore.shaders.status_ready": "Pack selection is stored; shader loading is not implemented yet.",
   "screen.opticore.shaders.status_saved": "Selection saved. It will be applied when the shader loader is implemented.",
-  "screen.opticore.shaders.status_error": "Could not save the shader selection."
+  "screen.opticore.shaders.status_error": "Could not save the shader selection.",
+  "screen.opticore.shaders.metadata": "Pack properties: %s | sliders: %s",
+  "screen.opticore.shaders.no_metadata": "No shaders/shaders.properties metadata found.",
+  "screen.opticore.shaders.list_limited": "More packs detected; list is limited by screen height."
 }
