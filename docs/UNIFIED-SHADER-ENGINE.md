@@ -19,7 +19,7 @@ The target is practical compatibility with the OptiFine shader-pack format used 
 ## Single-pipeline design
 
 1. **Pack discovery** — implemented as an initial catalog for top-level shader-pack folders and ZIP files under `shaderpacks/`. Selection is persisted. This stage does not extract archives. ZIP discovery rejects unsafe entry paths and archives with more than 20,000 entries; the catalog does not extract archive contents.
-2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet.
+2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet. A bounded source inventory counts `.vsh`, `.fsh`, and `.glsl` files and reports program filename stems; it does not parse or compile their contents.
 3. **Compatibility parser** — parse the supported OptiFine-style program layout, shader properties, uniforms, and texture declarations. Report unsupported syntax before activation.
 4. **Program compiler** — compile vertex/fragment programs and link them into owned program objects. Cache compiled results only for the current resource generation and graphics context.
 5. **Render graph** — execute supported shadow, terrain/entity, composite, and final passes in a deterministic order. Every pass declares inputs, outputs, depth behavior, and resource dependencies.
@@ -75,7 +75,7 @@ A milestone is complete only when:
 ## Implementation sequence
 
 1. Harden the client-only shader-pack catalog with bounded ZIP entry enumeration and path validation (20,000-entry cap), covered by standalone regression tests.
-2. Expand the metadata parser and compatibility diagnostics with unit tests.
+2. Expand the metadata parser, source inventory, and compatibility diagnostics with unit tests.
 3. Establish a render-thread-owned program/resource lifecycle.
 4. Implement a minimal pass graph and a test shader.
 5. Add OptiFine-format compatibility incrementally, with a test pack for each supported feature.
