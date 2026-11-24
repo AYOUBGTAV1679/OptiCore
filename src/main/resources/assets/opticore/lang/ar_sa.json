@@ -11,5 +11,15 @@
   "screen.opticore.done": "تم",
   "screen.opticore.on": "مفعّل",
   "screen.opticore.off": "معطّل",
-  "screen.opticore.zoom_hint": "اضغط باستمرار على C للتقريب"
+  "screen.opticore.zoom_hint": "اضغط باستمرار على C للتقريب",
+  "screen.opticore.shaders.open": "الشيدرات...",
+  "screen.opticore.shaders.title": "حزم الشيدر",
+  "screen.opticore.shaders.refresh": "تحديث القائمة",
+  "screen.opticore.shaders.open_folder": "فتح المجلد",
+  "screen.opticore.shaders.selected": "المحدد: %s",
+  "screen.opticore.shaders.count": "الحزم المكتشفة: %s",
+  "screen.opticore.shaders.empty": "لم يتم العثور على حزم. ضع ملف ZIP أو مجلداً يحتوي shaders/ داخل shaderpacks.",
+  "screen.opticore.shaders.status_ready": "تم حفظ الاختيار؛ تحميل الشيدر الفعلي لم يُنفذ بعد.",
+  "screen.opticore.shaders.status_saved": "تم حفظ الاختيار. سيُفعّل بعد تنفيذ محرك الشيدر.",
+  "screen.opticore.shaders.status_error": "تعذر حفظ اختيار الشيدر."
 }
