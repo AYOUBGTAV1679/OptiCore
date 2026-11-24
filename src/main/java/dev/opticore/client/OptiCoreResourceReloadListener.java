@@ -1,5 +1,7 @@
 package dev.opticore.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import dev.opticore.client.shader.GlShaderProgramCache;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
@@ -11,6 +13,9 @@ public final class OptiCoreResourceReloadListener implements ResourceManagerRelo
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         ChunkRenderCache.onResourcesReloaded();
+        // Resource reload callbacks are not guaranteed to run with the GL
+        // context current. Defer program deletion to Minecraft's render queue.
+        RenderSystem.recordRenderCall(GlShaderProgramCache::clear);
     }
 
     @Override
