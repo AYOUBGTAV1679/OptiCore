@@ -15,6 +15,7 @@ public final class ShaderPackScreen extends Screen {
     private String statusKey = "screen.opticore.shaders.status_ready";
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
     private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
+    private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
 
     public ShaderPackScreen(Screen parent) {
         super(Component.translatable("screen.opticore.shaders.title"));
@@ -36,6 +37,8 @@ public final class ShaderPackScreen extends Screen {
                 : ShaderPackMetadata.inspect(selectedPack);
         selectedInventory = selectedPack == null ? ShaderPackInventory.Summary.empty()
                 : ShaderPackInventory.inspect(selectedPack.path(), selectedPack.archive());
+        selectedPrograms = selectedPack == null ? ShaderProgramIndex.Summary.empty()
+                : ShaderProgramIndex.inspect(selectedPack.path(), selectedPack.archive());
 
         int center = width / 2;
         int y = 48;
@@ -114,7 +117,9 @@ public final class ShaderPackScreen extends Screen {
         if (selectedInventory.sourceFiles() > 0) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
-                            selectedInventory.vertexFiles(), selectedInventory.fragmentFiles()),
+                            selectedInventory.vertexFiles(), selectedInventory.fragmentFiles(),
+                            selectedPrograms.pairedPrograms(), selectedPrograms.vertexOnly(),
+                            selectedPrograms.fragmentOnly()),
                     width / 2, height - 64, 0xA6D8A8);
         }
         if (selectedMetadata.hasProperties()) {
