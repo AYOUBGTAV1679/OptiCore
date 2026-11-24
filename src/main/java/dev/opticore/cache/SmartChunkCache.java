@@ -46,7 +46,12 @@ public final class SmartChunkCache<V extends CacheEntry> {
 
     public boolean put(RenderCacheKey key, V value) {
         Objects.requireNonNull(key, "key"); Objects.requireNonNull(value, "value");
-        long bytes = Math.max(0L, value.sizeBytes());
+        long bytes = value.sizeBytes();
+        if (bytes < 0L) {
+            rejected.incrementAndGet();
+            safeRelease(value);
+            return false;
+        }
         List<V> release = new ArrayList<>(2);
         boolean stored;
         lock.lock();
