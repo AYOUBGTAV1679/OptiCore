@@ -11,6 +11,7 @@ An experimental, independent performance-modification project for Minecraft Java
 - Hold **C** to zoom (configurable zoom factor).
 - Optional FPS counter.
 - Optional read-only chunk renderer queue diagnostics.
+- Optional rolling frame-time monitor (current frame time and estimated 1% low FPS).
 - Configurable bounded cache budget (8–512 MiB; default 32 MiB).
 - Client lifecycle invalidation for chunk unloads, block edits, chunk-border neighbors, dimension unloads, and resource reloads.
 - English and Arabic interface translations.
@@ -27,6 +28,8 @@ Do not put the artifact ZIP itself in the `mods` folder. Back up the instance be
 ## Compatibility
 
 OptiCore is intended to work without Embeddium or Oculus. Compatibility with other rendering, animation, audio, world-generation, and utility mods is **not yet certified**. A mod being detected by the compatibility screen does not mean it has passed an in-game test. See [the compatibility status document](docs/COMPATIBILITY-STATUS.md).
+
+The frame-time monitor is disabled by default and can be enabled in the settings screen. It is a diagnostic measurement, not an FPS-boost feature; see [Alpha 10 Frame-Time Monitor](docs/ALPHA-10-FRAME-TIME-MONITOR.md).
 
 ## Engineering status
 
