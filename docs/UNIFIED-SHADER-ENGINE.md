@@ -12,3 +12,10 @@ This is the first actual GPU compile/link capability in the codebase, but it is 
 Added a render-thread-only LRU cache for linked GL programs with a hard limit of 32 entries. Cache hits require exact vertex and fragment source matches. Replacement programs are compiled before old entries are released, so a failed replacement does not discard the last valid cached program. Evicted and explicitly cleared entries release their GL handles.
 
 The client resource-reload listener now schedules cache cleanup through Minecraft's render-call queue, so GL deletion is deferred until the render thread has the context. This establishes bounded ownership and reload invalidation for compiled programs. It is still not a pack activation system or render graph: no pack is automatically compiled, no world pass binds these programs, and resize/context-loss handling beyond resource reload remains to be implemented and tested.
+
+
+## Alpha update — selected-pack compile bridge
+
+Added an explicit runtime bridge from the saved shader-pack selection to the source descriptor, GL compiler, and bounded program cache. A caller can request a program by its relative program ID; the bridge resolves the selected folder/ZIP, runs bounded include expansion and declaration preflight, then asks the GL backend to compile and link the two stages. Failures are returned as diagnostics and do not produce a program handle.
+
+This is now a real selected-pack-to-GLSL-compile path when explicitly called on the render thread with a current graphics context. It still does not enumerate and compile every program automatically, activate the pack globally, bind uniforms or textures, draw terrain/entities, or execute shadow/composite/final passes. No in-game shader-pack rendering is claimed.
