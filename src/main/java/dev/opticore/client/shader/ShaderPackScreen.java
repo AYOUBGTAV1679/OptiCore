@@ -14,6 +14,7 @@ public final class ShaderPackScreen extends Screen {
     private String selected = "OFF";
     private String statusKey = "screen.opticore.shaders.status_ready";
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
+    private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
 
     public ShaderPackScreen(Screen parent) {
         super(Component.translatable("screen.opticore.shaders.title"));
@@ -29,9 +30,12 @@ public final class ShaderPackScreen extends Screen {
         clearWidgets();
         packs = ShaderPackRepository.discover();
         selected = ShaderPackRepository.activePack();
-        selectedMetadata = packs.stream().filter(pack -> pack.name().equals(selected))
-                .findFirst().map(ShaderPackMetadata::inspect)
-                .orElse(ShaderPackMetadata.Summary.empty());
+        ShaderPackRepository.Pack selectedPack = packs.stream().filter(pack -> pack.name().equals(selected))
+                .findFirst().orElse(null);
+        selectedMetadata = selectedPack == null ? ShaderPackMetadata.Summary.empty()
+                : ShaderPackMetadata.inspect(selectedPack);
+        selectedInventory = selectedPack == null ? ShaderPackInventory.Summary.empty()
+                : ShaderPackInventory.inspect(selectedPack);
 
         int center = width / 2;
         int y = 48;
@@ -107,6 +111,12 @@ public final class ShaderPackScreen extends Screen {
                 width / 2, height - 91, 0xAAAAAA);
         graphics.drawCenteredString(font, Component.translatable(statusKey),
                 width / 2, height - 78, 0xAAAAAA);
+        if (selectedInventory.sourceFiles() > 0) {
+            graphics.drawCenteredString(font,
+                    Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
+                            selectedInventory.vertexFiles(), selectedInventory.fragmentFiles()),
+                    width / 2, height - 48, 0xA6D8A8);
+        }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.metadata", selectedMetadata.propertyCount(), selectedMetadata.sliderCount()),
