@@ -26,9 +26,9 @@ public final class ShaderSourcePreflight {
     private static final long MAX_FILE_BYTES = 512L * 1024;
     private static final long MAX_TOTAL_BYTES = 16L * 1024 * 1024;
     private static final Pattern MAIN = Pattern.compile("\\bvoid\\s+main\\s*\\(");
-    private static final Pattern VERSION = Pattern.compile("(?m)^\\s*#\\s*version\\s+([0-9]+)(?:\\s+([A-Za-z]+))?");
-    private static final Pattern EXTENSION = Pattern.compile("(?m)^\\s*#\\s*extension\\s+([A-Za-z0-9_]+)\\s*:");
-    private static final Pattern INCLUDE = Pattern.compile("(?m)^\\s*#\\s*include\\s+[<\"][^>\"]+[>\"]");
+    private static final Pattern VERSION = Pattern.compile("(?m)^[ \\t]*#[ \\t]*version[ \\t]+([0-9]+)(?:[ \\t]+([A-Za-z]+))?");
+    private static final Pattern EXTENSION = Pattern.compile("(?m)^[ \\t]*#[ \\t]*extension[ \\t]+([A-Za-z0-9_]+)[ \\t]*:");
+    private static final Pattern INCLUDE = Pattern.compile("(?m)^[ \\t]*#[ \\t]*include[ \\t]+[<\"][^>\"]+[>\"]");
     private ShaderSourcePreflight() {}
 
     public record Summary(int inspectedStages, int stagesWithoutMain, int versionedStages,
