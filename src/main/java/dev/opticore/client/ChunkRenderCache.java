@@ -1,6 +1,7 @@
 package dev.opticore.client;
 
 import dev.opticore.cache.CacheEntry;
+import dev.opticore.cache.ChunkBoundaryInvalidation;
 import dev.opticore.cache.SmartChunkCache;
 import dev.opticore.cache.RenderCacheKey;
 import dev.opticore.OptiCoreConfig;
@@ -69,16 +70,11 @@ public final class ChunkRenderCache {
             net.minecraft.core.BlockPos pos) {
         if (level == null || pos == null || !level.isClientSide()) return;
 
-        int chunkX = pos.getX() >> 4;
-        int chunkZ = pos.getZ() >> 4;
-        int localX = pos.getX() & 15;
-        int localZ = pos.getZ() & 15;
-
-        invalidateChunk(level, chunkX, chunkZ);
-        if (localX == 0) invalidateChunk(level, chunkX - 1, chunkZ);
-        if (localX == 15) invalidateChunk(level, chunkX + 1, chunkZ);
-        if (localZ == 0) invalidateChunk(level, chunkX, chunkZ - 1);
-        if (localZ == 15) invalidateChunk(level, chunkX, chunkZ + 1);
+        String dimension = dimensionId(level.dimension());
+        for (ChunkBoundaryInvalidation.ChunkCoordinate coordinate
+                : ChunkBoundaryInvalidation.affectedByBlockEdit(pos.getX(), pos.getZ())) {
+            CACHE.invalidateChunk(dimension, coordinate.x(), coordinate.z());
+        }
     }
 
     public static void invalidateDimension(ResourceKey<Level> dimension) {
