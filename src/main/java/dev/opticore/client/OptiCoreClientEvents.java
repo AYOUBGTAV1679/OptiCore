@@ -44,13 +44,29 @@ public final class OptiCoreClientEvents {
         if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) return;
         boolean showFps = OptiCoreConfig.SHOW_FPS.get();
         boolean showChunkDiagnostics = OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get();
-        if (!showFps && !showChunkDiagnostics) return;
+        boolean showFrameTime = OptiCoreConfig.SHOW_FRAME_TIME.get();
+        if (showFrameTime) {
+            FrameTimeMonitor.sampleFrame();
+        } else {
+            FrameTimeMonitor.reset();
+        }
+        if (!showFps && !showChunkDiagnostics && !showFrameTime) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui) return;
         int y = 6;
         if (showFps) {
             event.getGuiGraphics().drawString(mc.font,
                     Component.literal("OptiCore | " + mc.getFps() + " FPS"), 6, y, 0xFFFFFF, true);
+            y += 12;
+        }
+        if (showFrameTime) {
+            double frameTimeMs = FrameTimeMonitor.latestFrameTimeMs();
+            double onePercentLow = FrameTimeMonitor.onePercentLowFps();
+            String lowText = onePercentLow > 0.0D ? String.format(java.util.Locale.ROOT, "%.1f", onePercentLow) : "--";
+            event.getGuiGraphics().drawString(mc.font,
+                    Component.literal(String.format(java.util.Locale.ROOT,
+                            "Frame time: %.2f ms | 1%% low: %s FPS", frameTimeMs, lowText)),
+                    6, y, 0xFFE6A8, true);
             y += 12;
         }
         if (showChunkDiagnostics) {
