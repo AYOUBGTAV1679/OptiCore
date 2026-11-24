@@ -6,7 +6,9 @@ The optional Frame Time Monitor adds a HUD line with:
 - Latest measured frame time in milliseconds.
 - A rolling 1% low FPS estimate derived from the 99th-percentile frame time over the most recent 120 rendered frames.
 
-The monitor is disabled by default and can be enabled from the OptiCore settings screen. Its label is translated in English and Arabic. Sampling uses a fixed-size ring buffer; sorting is performed only when the HUD requests the 1% low value.
+The monitor is disabled by default and can be enabled from the OptiCore settings screen. Its label is translated in English and Arabic. Sampling uses fixed-size buffers without per-frame allocations; the percentile is refreshed every 15 samples rather than sorting on every rendered frame.
+
+A plain-JDK regression test now checks sampling, finite percentile output, and reset behavior as part of the CI test script.
 
 ## Interpretation
 
