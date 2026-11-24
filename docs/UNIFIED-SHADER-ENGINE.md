@@ -26,3 +26,12 @@ This is now a real selected-pack-to-GLSL-compile path when explicitly called on 
 Added a render-thread-owned off-screen target abstraction for the next render-graph stage. Each target owns an RGBA8 color texture, a depth renderbuffer, and a framebuffer. Allocation is transactional: incomplete targets are discarded, prior framebuffer/texture/renderbuffer bindings are restored, and an existing target is retained if a resize allocation fails.
 
 Targets enforce dimension and pixel-count limits, support explicit clear and scoped bind/restore operations, and release their GL objects on close. This is resource infrastructure only: no world-render stage uses the target yet, no shader uniforms or scene textures are populated, and no shadow/composite/final pass is active. Runtime validation with a live Forge graphics context remains necessary.
+
+
+## Alpha update — bounded render-target manager and reload lifecycle
+
+Added a render-thread-only LRU manager for named off-screen targets. It caps the cache at four targets and 16,777,216 aggregate pixels. Resize requests are budget-checked and use the target's transactional replacement path; new allocations happen before eviction so an allocation failure does not discard existing targets. Explicit release and full clear close their OpenGL resources.
+
+The resource-reload listener now clears both compiled shader programs and managed off-screen targets on Minecraft's render-call queue. Off-screen clear operations also restore the prior global GL clear-color value.
+
+This remains resource management, not a render graph or world integration. No terrain/entity geometry is rendered into these targets, and no shader pack pass is activated. A live Forge client test is still required to validate driver behavior and lifecycle under resize/reload.
