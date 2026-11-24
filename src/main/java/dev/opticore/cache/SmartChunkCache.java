@@ -61,8 +61,12 @@ public final class SmartChunkCache<V extends CacheEntry> {
                 if (old == null || old.value != value) release.add(value);
                 stored = false;
             } else {
+                // Make room before adding so currentBytes + bytes cannot overflow
+                // even when callers configure a budget near Long.MAX_VALUE.
+                evictUntilFits(bytes, release);
                 map.put(key, new Slot<>(value, bytes, resourceGen, settingsGen));
-                currentBytes += bytes; evictToLimit(release); stored = true;
+                currentBytes += bytes;
+                stored = true;
             }
         } finally { lock.unlock(); }
         release.forEach(this::safeRelease);
@@ -135,6 +139,19 @@ public final class SmartChunkCache<V extends CacheEntry> {
         } finally { lock.unlock(); }
         release.forEach(this::safeRelease);
         return release.size();
+    }
+
+    /** Caller must hold the cache lock; bytes must be <= maxBytes. */
+    private void evictUntilFits(long bytes, List<V> release) {
+        long available = maxBytes - bytes;
+        Iterator<Map.Entry<RenderCacheKey, Slot<V>>> it = map.entrySet().iterator();
+        while (currentBytes > available && it.hasNext()) {
+            Slot<V> slot = it.next().getValue();
+            it.remove();
+            currentBytes -= slot.bytes;
+            evictions.incrementAndGet();
+            release.add(slot.value);
+        }
     }
 
     /** Caller must hold the cache lock. */
