@@ -51,6 +51,7 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderGlslInterfaceScannerSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderStageInterfaceValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramDescriptorSelfTest
-java -cp "$OUT" dev.opticore.client.shader.SceneUniformSnapshotSelfTest\njava -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest\njava -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest
+java -cp "$OUT" dev.opticore.client.shader.SceneUniformSnapshotSelfTest
+java -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphExecutorSelfTest
