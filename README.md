@@ -35,14 +35,14 @@ Smooth zoom transitions are enabled by default and can be switched off in settin
 
 ## Engineering status
 
-The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md) and [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md).
+The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle and a Mixin config are now prepared for future client-side renderer hooks, but the config contains no active injections yet. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
 
 Performance must be evaluated against a repeatable unmodified-Forge baseline. The project's [performance validation plan](docs/PERFORMANCE-VALIDATION-PLAN.md) defines the required scenes, measurements, and pass/fail rules. No controlled benchmark has been completed yet.
 
 ## Planned work
 
-1. Verify a safe hook at the chunk mesh compilation boundary.
-2. Implement CPU-side immutable mesh artifact reuse with complete invalidation and regression tests.
+1. Add and runtime-verify a minimal client-only instrumentation hook at the chunk rebuild boundary.
+2. Implement owned immutable CPU mesh snapshots and safe upload reconstruction, with complete invalidation and regression tests.
 3. Measure performance against an unmodified Forge baseline on repeatable scenes and low-end hardware.
 4. Add optional rendering features only after the core renderer path is stable.
 5. Validate compatibility with the user's target mod list through actual game launches and gameplay tests.
