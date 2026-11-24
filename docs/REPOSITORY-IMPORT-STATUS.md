@@ -1,6 +1,6 @@
 # Repository Import Status
 
-## Added to this development branch
+## Present on this development branch
 
 - ForgeGradle project configuration for Minecraft 1.20.1 / Forge 47.2.0 / Java 17.
 - Mod entry point and client configuration.
@@ -8,20 +8,20 @@
 - Read-only chunk dispatcher diagnostics HUD.
 - Mod presence scanner.
 - Forge mod metadata and English UI strings.
-- GitHub Actions workflow to build the Forge mod and upload the resulting JAR artifact.
+- Bounded, thread-safe, Minecraft-independent LRU cache implementation:
+  - `SmartChunkCache`
+  - `CacheEntry`
+  - `RenderCacheKey`
+- Dependency-free cache regression and concurrency self-tests.
+- `scripts/run-cache-tests.sh` test runner.
+- GitHub Actions workflow runs cache tests, then builds the Forge mod and uploads the resulting JAR artifact.
 
-## Still to import from the Alpha 09 source archive
+## Scope and limitations
 
-The standalone cache implementation and its tests have not yet been committed as source files in this branch:
+The cache is a standalone data structure only. It is not connected to Minecraft's chunk mesh compilation, GPU buffers, or the renderer. The diagnostics HUD reads dispatcher counters; it does not itself improve FPS or change chunk scheduling.
 
-- `src/main/java/dev/opticore/cache/SmartChunkCache.java`
-- `src/main/java/dev/opticore/cache/CacheEntry.java`
-- `src/main/java/dev/opticore/cache/RenderCacheKey.java`
-- `src/test/java/dev/opticore/cache/SmartChunkCacheSelfTest.java`
-- `scripts/run-cache-tests.sh`
+The branch now contains the previously missing cache implementation and test files from the Alpha 09 source snapshot. A successful Forge build and in-game test are still required before calling this a working mod release.
 
-The Alpha 09 ZIP remains the complete local source snapshot. Do not treat the GitHub branch as a complete mirror of that archive yet.
+## CI verification
 
-## CI status
-
-The workflow has been added, but no completed GitHub Actions run is visible yet. A successful JAR build has therefore not been confirmed. The next verification step is to confirm that Actions is enabled for the repository, then inspect the build job and fix any Forge compilation errors it reports.
+The workflow runs on pushes to `main` and `development/**`, pull requests targeting `main`, and manual dispatch. It first runs the standalone Java cache regression tests, then runs the ForgeGradle build and uploads the JAR if successful. Check the Actions run result before distributing a build.
