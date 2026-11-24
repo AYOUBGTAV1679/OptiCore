@@ -6,6 +6,7 @@
   "screen.opticore.zoom": "Zoom: %s",
   "screen.opticore.fps": "FPS Counter: %s",
   "screen.opticore.chunk_diagnostics": "Chunk Diagnostics: %s",
+  "screen.opticore.frame_time": "Frame Time Monitor: %s",
   "screen.opticore.done": "Done",
   "screen.opticore.on": "On",
   "screen.opticore.off": "Off",
