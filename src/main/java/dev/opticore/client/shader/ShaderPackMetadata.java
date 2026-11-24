@@ -4,13 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
  * Reads the optional OptiFine-style shader pack properties file.
- * This is metadata inspection only; it does not compile or activate shaders.
+ * This inspects declarations only; it does not compile or activate shaders.
  */
 public final class ShaderPackMetadata {
     private static final String PROPERTIES_PATH = "shaders/shaders.properties";
@@ -19,9 +23,13 @@ public final class ShaderPackMetadata {
     private ShaderPackMetadata() {}
 
     public record Summary(boolean hasProperties, int propertyCount, int sliderCount,
-                          String screenDefinition) {
+                          String screenDefinition, List<String> controls) {
+        public Summary {
+            controls = List.copyOf(controls);
+        }
+
         public static Summary empty() {
-            return new Summary(false, 0, 0, "");
+            return new Summary(false, 0, 0, "", List.of());
         }
     }
 
@@ -33,17 +41,35 @@ public final class ShaderPackMetadata {
 
             Properties properties = new Properties();
             properties.load(new ByteArrayInputStream(bytes));
+            String screen = properties.getProperty("screen", "").trim();
             String sliders = properties.getProperty("sliders", "").trim();
-            int sliderCount = 0;
-            if (!sliders.isEmpty()) {
-                for (String value : sliders.split("[, ]+")) {
-                    if (!value.isBlank()) sliderCount++;
-                }
-            }
-            return new Summary(true, properties.size(), sliderCount,
-                    properties.getProperty("screen", "").trim());
+            Set<String> controls = new LinkedHashSet<>();
+            addTokens(controls, screen);
+            addTokens(controls, sliders);
+            controls.removeIf(token -> token.startsWith("[") || token.startsWith("]"));
+            return new Summary(true, properties.size(), countTokens(sliders), screen,
+                    new ArrayList<>(controls));
         } catch (IOException | IllegalArgumentException ignored) {
             return Summary.empty();
+        }
+    }
+
+    private static int countTokens(String value) {
+        if (value.isBlank()) return 0;
+        int count = 0;
+        for (String token : value.split("[,\\s]+")) {
+            if (!token.isBlank() && !token.startsWith("[") && !token.startsWith("]")) count++;
+        }
+        return count;
+    }
+
+    private static void addTokens(Set<String> output, String value) {
+        for (String token : value.split("[,\\s]+")) {
+            String normalized = token.trim();
+            if (normalized.isEmpty() || normalized.startsWith("[") || normalized.startsWith("]")) continue;
+            if (normalized.startsWith("!")) normalized = normalized.substring(1);
+            if (normalized.equals("<empty>") || normalized.equals("profile")) continue;
+            if (!normalized.isEmpty()) output.add(normalized);
         }
     }
 
