@@ -67,13 +67,8 @@ public final class OptiCoreClientEvents {
             y += 12;
         }
         if (showFrameTime) {
-            double frameTimeMs = FrameTimeMonitor.latestFrameTimeMs();
-            double onePercentLow = FrameTimeMonitor.onePercentLowFps();
-            String lowText = onePercentLow > 0.0D ? String.format(java.util.Locale.ROOT, "%.1f", onePercentLow) : "--";
             event.getGuiGraphics().drawString(mc.font,
-                    Component.literal(String.format(java.util.Locale.ROOT,
-                            "Frame time: %.2f ms | 1%% low: %s FPS", frameTimeMs, lowText)),
-                    6, y, 0xFFE6A8, true);
+                    Component.literal(FrameTimeMonitor.displayText()), 6, y, 0xFFE6A8, true);
             y += 12;
         }
         if (showChunkDiagnostics) {
