@@ -48,13 +48,21 @@ public final class ShaderRenderGraphExecutor {
             passes.put(pass.id(), pass);
         }
 
-        List<String> completed = new ArrayList<>();
+        // Resolve every handler before invoking any pass. A missing later handler
+        // must not leave the frame half-rendered after earlier passes have run.
+        Map<String, PassHandler> orderedHandlers = new LinkedHashMap<>();
         for (String passId : validation.executionOrder()) {
             PassHandler handler = handlers.get(passId);
             if (handler == null) {
-                return new ExecutionResult(false, completed, passId,
+                return new ExecutionResult(false, List.of(), passId,
                         List.of("No execution handler registered for pass '" + passId + "'."));
             }
+            orderedHandlers.put(passId, handler);
+        }
+
+        List<String> completed = new ArrayList<>();
+        for (String passId : validation.executionOrder()) {
+            PassHandler handler = orderedHandlers.get(passId);
             try {
                 handler.execute(passes.get(passId));
                 completed.add(passId);
