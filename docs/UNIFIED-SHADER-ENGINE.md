@@ -109,3 +109,10 @@ The GLSL preflight now masks line/block comments and quoted text before checking
 A bounded include resolver now expands quoted or angle-bracket includes from shader-pack folders and ZIP archives without extracting ZIP contents. It rejects absolute paths, traversal, unsafe archive names, and symbolic links; detects include cycles; and enforces limits of 16 nested levels, 256 distinct files, 512 KiB per source, and 4 MiB total source bytes. Folder, ZIP, nested include, cycle, and traversal cases have standalone regression coverage.
 
 These components are still preflight/compatibility infrastructure. They do not parse full GLSL grammar, process conditional preprocessing, compile or link GPU programs, or render shader passes. The resolver is not yet wired into a runtime shader compiler.
+
+
+## Alpha update — GLSL interface declaration inventory
+
+A bounded lexical scanner now inventories common global GLSL declarations from an already-expanded source string: uniform variables, sampler/image uniforms, stage inputs, and stage outputs (including simple layout-qualified declarations). It records array suffixes and flags duplicate uniform names within a source. Source input is capped at 4 MiB, and comments/string contents are masked to avoid common false positives.
+
+This is declaration inventory only. It is not a complete GLSL grammar parser, does not validate cross-stage interface compatibility, does not evaluate macros or conditional compilation, and does not replace driver compilation/linking. The scanner is not yet connected to a runtime shader activation path.
