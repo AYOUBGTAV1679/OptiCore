@@ -54,9 +54,7 @@ public final class ShaderPackRepository {
 
     private static boolean containsShaderDirectory(Path archive) {
         try (ZipFile zip = new ZipFile(archive.toFile())) {
-            return zip.stream().map(ZipEntry::getName)
-                    .anyMatch(name -> name.startsWith("shaders/") && !name.startsWith("/")
-                            && !name.contains("../") && !name.contains("\\..\\"));
+            return ShaderPackArchiveValidator.containsRootShaderDirectory(zip);
         } catch (IOException ignored) {
             return false;
         }
