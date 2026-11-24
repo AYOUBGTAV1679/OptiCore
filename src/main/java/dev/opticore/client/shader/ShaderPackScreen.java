@@ -35,7 +35,7 @@ public final class ShaderPackScreen extends Screen {
         selectedMetadata = selectedPack == null ? ShaderPackMetadata.Summary.empty()
                 : ShaderPackMetadata.inspect(selectedPack);
         selectedInventory = selectedPack == null ? ShaderPackInventory.Summary.empty()
-                : ShaderPackInventory.inspect(selectedPack);
+                : ShaderPackInventory.inspect(selectedPack.path(), selectedPack.archive());
 
         int center = width / 2;
         int y = 48;
@@ -108,14 +108,14 @@ public final class ShaderPackScreen extends Screen {
                 width / 2, 32, 0xC8E6FF);
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.count", packs.size()),
-                width / 2, height - 91, 0xAAAAAA);
+                width / 2, height - 112, 0xAAAAAA);
         graphics.drawCenteredString(font, Component.translatable(statusKey),
-                width / 2, height - 78, 0xAAAAAA);
+                width / 2, height - 96, 0xAAAAAA);
         if (selectedInventory.sourceFiles() > 0) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
                             selectedInventory.vertexFiles(), selectedInventory.fragmentFiles()),
-                    width / 2, height - 48, 0xA6D8A8);
+                    width / 2, height - 80, 0xA6D8A8);
         }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
@@ -124,7 +124,7 @@ public final class ShaderPackScreen extends Screen {
         } else if (!"OFF".equals(selected)) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.no_metadata"),
-                    width / 2, height - 64, 0xAAAAAA);
+                    width / 2, height - 80, 0xAAAAAA);
         }
         if (packs.isEmpty()) {
             graphics.drawCenteredString(font,
@@ -133,7 +133,7 @@ public final class ShaderPackScreen extends Screen {
         } else if (packs.size() > Math.max(0, (height - 164) / 24)) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.list_limited"),
-                    width / 2, height - 105, 0xAAAAAA);
+                    width / 2, height - 128, 0xAAAAAA);
         }
     }
 
