@@ -13,10 +13,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-/**
- * Discovers shader packs without loading or compiling them.
- * A pack is considered discoverable when it contains shaders/ at its root.
- */
+/** Discovers shader packs without loading or compiling them. */
 public final class ShaderPackRepository {
     private static final String ACTIVE_KEY = "activePack";
     private static final Path CONFIG_FILE = Minecraft.getInstance().gameDirectory.toPath()
@@ -37,9 +34,6 @@ public final class ShaderPackRepository {
                         packs.add(new Pack(path.getFileName().toString(), path, false));
                     }
                 });
-                entries = null;
-            } catch (UnsupportedOperationException ignored) {
-                // Directory listing is handled by the outer IOException guard.
             }
             try (var entries = Files.list(directory)) {
                 entries.filter(Files::isRegularFile)
@@ -60,16 +54,15 @@ public final class ShaderPackRepository {
     private static boolean containsShaderDirectory(Path archive) {
         try (ZipFile zip = new ZipFile(archive.toFile())) {
             return zip.stream().map(ZipEntry::getName)
-                    .anyMatch(name -> name.startsWith("shaders/") && !name.startsWith("../")
-                            && !name.startsWith("/") && !name.contains("/../"));
+                    .anyMatch(name -> name.startsWith("shaders/") && !name.startsWith("/")
+                            && !name.contains("../"));
         } catch (IOException ignored) {
             return false;
         }
     }
 
     public static String activePack() {
-        Properties properties = readProperties();
-        return properties.getProperty(ACTIVE_KEY, "OFF");
+        return readProperties().getProperty(ACTIVE_KEY, "OFF");
     }
 
     public static boolean select(String name) {
