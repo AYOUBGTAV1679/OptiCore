@@ -2,16 +2,16 @@ package dev.opticore.client.shader;
 
 /** Immutable, read-only weather, fog-colour, and camera light sample for one rendered frame. */
 public final class SceneEnvironmentSnapshot {
-    private final float fogRed, fogGreen, fogBlue;
+    private final float skyRed, skyGreen, skyBlue;
     private final float rainStrength, thunderStrength, skyDarken;
     private final int blockLight, skyLight;
 
-    public SceneEnvironmentSnapshot(float fogRed, float fogGreen, float fogBlue,
+    public SceneEnvironmentSnapshot(float skyRed, float skyGreen, float skyBlue,
             float rainStrength, float thunderStrength, float skyDarken,
             int blockLight, int skyLight) {
-        this.fogRed = finiteUnit(fogRed, "fogRed");
-        this.fogGreen = finiteUnit(fogGreen, "fogGreen");
-        this.fogBlue = finiteUnit(fogBlue, "fogBlue");
+        this.skyRed = finiteUnit(skyRed, "skyRed");
+        this.skyGreen = finiteUnit(skyGreen, "skyGreen");
+        this.skyBlue = finiteUnit(skyBlue, "skyBlue");
         this.rainStrength = finiteUnit(rainStrength, "rainStrength");
         this.thunderStrength = finiteUnit(thunderStrength, "thunderStrength");
         this.skyDarken = finiteUnit(skyDarken, "skyDarken");
@@ -22,9 +22,9 @@ public final class SceneEnvironmentSnapshot {
         this.skyLight = skyLight;
     }
 
-    public float fogRed() { return fogRed; }
-    public float fogGreen() { return fogGreen; }
-    public float fogBlue() { return fogBlue; }
+    public float skyRed() { return skyRed; }
+    public float skyGreen() { return skyGreen; }
+    public float skyBlue() { return skyBlue; }
     public float rainStrength() { return rainStrength; }
     public float thunderStrength() { return thunderStrength; }
     public float skyDarken() { return skyDarken; }
