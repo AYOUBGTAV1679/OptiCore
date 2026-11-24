@@ -112,3 +112,10 @@ The common uniform binder now has an overload that accepts this environment samp
 ## Accuracy note — captured sky colour versus fog parameters
 
 The current Forge observer samples `ClientLevel.getSkyColor(camera, partialTick)`. This is a sky-colour sample used as an environment input; it is not Minecraft's resolved fog colour or fog density. The corresponding uniform is therefore named `skyColor`, not `fogColor`. True fog colour/distance and eye-medium parameters remain unimplemented until a stable, correctly timed fog capture point is added. This avoids feeding a misleading sky-colour value into shader packs as if it were OptiFine fog data.
+
+
+## Alpha update — inverse scene matrices
+
+Added a dependency-free, column-major 4x4 inversion utility using pivoted Gauss-Jordan elimination in double precision. Singular, malformed, non-finite, or out-of-float-range matrices are rejected instead of uploading invalid values. Scene snapshots expose inverse model-view and projection matrices, and the uniform binder uploads `gbufferModelViewInverse` and `gbufferProjectionInverse` alongside the original matrices.
+
+Standalone tests cover identity, translation, multiplication by the computed inverse, malformed input, and singular matrices. This supplies matrix data only; normal matrices, shadow-camera matrices, and the full OptiFine alias set remain separate work.
