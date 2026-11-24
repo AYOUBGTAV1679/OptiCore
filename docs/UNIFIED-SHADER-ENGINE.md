@@ -116,3 +116,10 @@ These components are still preflight/compatibility infrastructure. They do not p
 A bounded lexical scanner now inventories common global GLSL declarations from an already-expanded source string: uniform variables, sampler/image uniforms, stage inputs, and stage outputs (including simple layout-qualified declarations). It records array suffixes and flags duplicate uniform names within a source. Source input is capped at 4 MiB, and comments/string contents are masked to avoid common false positives.
 
 This is declaration inventory only. It is not a complete GLSL grammar parser, does not validate cross-stage interface compatibility, does not evaluate macros or conditional compilation, and does not replace driver compilation/linking. The scanner is not yet connected to a runtime shader activation path.
+
+
+## Alpha update — conservative vertex/fragment interface comparison
+
+A bounded declaration-level comparison now checks fragment-stage inputs against vertex-stage outputs by name, GLSL type, and array suffix. It reports missing producer outputs and obvious type/array mismatches, and exposes whether either source inventory was truncated. Standalone tests cover matched declarations, missing outputs, type mismatches, and array-size mismatches.
+
+This result is deliberately named an inventory compatibility check: it does not account for macro expansion, conditional compilation, interface blocks, interpolation qualifiers, built-in variables, geometry/tessellation stages, or full GLSL linking rules. A clean report is not proof that a driver will link the program. No GPU compilation or rendering has been added.
