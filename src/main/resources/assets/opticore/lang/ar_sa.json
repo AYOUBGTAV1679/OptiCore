@@ -21,5 +21,8 @@
   "screen.opticore.shaders.empty": "لم يتم العثور على حزم. ضع ملف ZIP أو مجلداً يحتوي shaders/ داخل shaderpacks.",
   "screen.opticore.shaders.status_ready": "تم حفظ الاختيار؛ تحميل الشيدر الفعلي لم يُنفذ بعد.",
   "screen.opticore.shaders.status_saved": "تم حفظ الاختيار. سيُفعّل بعد تنفيذ محرك الشيدر.",
-  "screen.opticore.shaders.status_error": "تعذر حفظ اختيار الشيدر."
+  "screen.opticore.shaders.status_error": "تعذر حفظ اختيار الشيدر.",
+  "screen.opticore.shaders.metadata": "خصائص الحزمة: %s | أشرطة التحكم: %s",
+  "screen.opticore.shaders.no_metadata": "لم يتم العثور على ملف خصائص shaders/shaders.properties.",
+  "screen.opticore.shaders.list_limited": "تم اكتشاف حزم إضافية؛ القائمة محدودة بارتفاع الشاشة."
 }
