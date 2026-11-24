@@ -31,3 +31,4 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderPackMetadataSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackInventorySelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramIndexSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderSourcePreflightSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
