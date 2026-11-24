@@ -33,9 +33,15 @@ The frame-time monitor is disabled by default and can be enabled in the settings
 
 Smooth zoom transitions are enabled by default and can be switched off in settings. See [Alpha 11 Smooth Zoom](docs/ALPHA-11-SMOOTH-ZOOM.md).
 
+## Unified shader direction
+
+OptiCore is planned to use **one integrated shader engine**, following the OptiFine-style shader-pack workflow. Shadows, water, reflections, entity/terrain shading, and post-processing will run through the same program compiler, render-pass graph, and GPU resource manager—not separate shader systems. The compatibility target is the OptiFine shader-pack format for Minecraft 1.20.1, implemented incrementally with a vanilla fallback and low-memory safeguards.
+
+**Shader packs are not loadable in the current alpha.** No shader compiler, render-pass pipeline, or OptiFine pack compatibility has been implemented or runtime-tested yet. See [Unified Shader Engine Architecture](docs/UNIFIED-SHADER-ENGINE.md) for the staged implementation and validation requirements.
+
 ## Engineering status
 
-The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle and a Mixin config are now prepared for future client-side renderer hooks, but the config contains no active injections yet. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
+The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle and a Mixin config are prepared for future client-side renderer hooks, but the config contains no active injections yet. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
 
 Performance must be evaluated against a repeatable unmodified-Forge baseline. The project's [performance validation plan](docs/PERFORMANCE-VALIDATION-PLAN.md) defines the required scenes, measurements, and pass/fail rules. No controlled benchmark has been completed yet.
 
@@ -44,8 +50,9 @@ Performance must be evaluated against a repeatable unmodified-Forge baseline. Th
 1. Add and runtime-verify a minimal client-only instrumentation hook at the chunk rebuild boundary.
 2. Implement owned immutable CPU mesh snapshots and safe upload reconstruction, with complete invalidation and regression tests.
 3. Measure performance against an unmodified Forge baseline on repeatable scenes and low-end hardware.
-4. Add optional rendering features only after the core renderer path is stable.
-5. Validate compatibility with the user's target mod list through actual game launches and gameplay tests.
+4. Build the unified shader engine in stages: safe pack discovery, compatibility parsing, program compilation, render-pass graph, and OptiFine-format support.
+5. Add optional visual features only through that shared pipeline after the core renderer path is stable.
+6. Validate compatibility with the target mod list and shader packs through actual game launches and gameplay tests.
 
 ## Build from source
 
