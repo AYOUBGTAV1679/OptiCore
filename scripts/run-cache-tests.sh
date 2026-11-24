@@ -9,7 +9,7 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/FrameTimeMonitor.java \
   src/main/java/dev/opticore/client/ZoomController.java \
   src/test/java/dev/opticore/client/FrameTimeMonitorSelfTest.java \
-  src/test/java/dev/opticore/client/ZoomControllerSelfTest.java
+  src/test/java/dev/opticore/client/ZoomControllerSelfTest.java \\\n  src/main/java/dev/opticore/client/shader/ShaderPackOptionStore.java \\\n  src/test/java/dev/opticore/client/shader/ShaderPackOptionStoreSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
-java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
+java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest\njava -cp "$OUT" dev.opticore.client.shader.ShaderPackOptionStoreSelfTest
