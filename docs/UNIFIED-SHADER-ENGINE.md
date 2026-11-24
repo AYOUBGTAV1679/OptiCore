@@ -49,3 +49,12 @@ The graph model is intentionally declarative and performs no OpenGL calls. It is
 Added a backend-agnostic executor for validated render graphs. It invokes caller-registered pass handlers in dependency order, refuses to run an invalid graph, reports missing handlers, and stops immediately on the first handler exception while preserving an accurate list of completed passes. This provides deterministic scheduling and failure reporting for a future renderer backend.
 
 The executor does not itself bind framebuffers, compile or bind programs, manipulate Minecraft render buffers, or restore OpenGL state. Any future OpenGL pass handler must scope and restore its own GL state and provide a vanilla fallback at the integration boundary. No Forge world-render event is hooked yet; the executor is currently infrastructure covered by Minecraft-independent tests.
+
+
+## Alpha update — scoped shader program binding and executor preflight
+
+GlShaderProgram.bindScoped() now captures GL_CURRENT_PROGRAM, binds the custom program, and restores the previously active program when its Binding is closed. This avoids assuming that program zero was active before an OptiCore pass and gives future pass handlers a safer state boundary.
+
+The render-graph executor now resolves every required handler before invoking the first pass. A missing handler later in the schedule therefore fails before any earlier pass can partially draw the frame. Tests cover this preflight behavior as well as the existing stop-on-exception path.
+
+These changes improve the safety primitives but do not yet connect the graph to a Forge render event or draw the Minecraft scene. bindScoped() restores only the active program; any future handler that changes textures, framebuffers, viewport, blend/depth state, uniforms, or buffers must restore those states separately.
