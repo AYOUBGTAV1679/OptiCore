@@ -15,7 +15,7 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderPackArchiveValidator.java \
   src/test/java/dev/opticore/client/shader/ShaderPackArchiveValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderPackMetadata.java \
-  src/test/java/dev/opticore/client/shader/ShaderPackMetadataSelfTest.java
+  src/test/java/dev/opticore/client/shader/ShaderPropertiesParserSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
 java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
