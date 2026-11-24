@@ -7,7 +7,7 @@ public final class SceneEnvironmentSnapshotSelfTest {
     public static void main(String[] args) {
         SceneEnvironmentSnapshot sample = new SceneEnvironmentSnapshot(
                 0.2f, 0.4f, 0.8f, 0.5f, 0.25f, 0.1f, 15, 12);
-        check(sample.fogGreen() == 0.4f, "fog channels");
+        check(sample.skyGreen() == 0.4f, "fog channels");
         check(sample.rainStrength() == 0.5f && sample.thunderStrength() == 0.25f,
                 "weather strengths");
         check(sample.blockLight() == 15 && sample.skyLight() == 12, "light levels");
