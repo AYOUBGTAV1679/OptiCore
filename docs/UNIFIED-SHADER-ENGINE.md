@@ -58,3 +58,10 @@ GlShaderProgram.bindScoped() now captures GL_CURRENT_PROGRAM, binds the custom p
 The render-graph executor now resolves every required handler before invoking the first pass. A missing handler later in the schedule therefore fails before any earlier pass can partially draw the frame. Tests cover this preflight behavior as well as the existing stop-on-exception path.
 
 These changes improve the safety primitives but do not yet connect the graph to a Forge render event or draw the Minecraft scene. bindScoped() restores only the active program; any future handler that changes textures, framebuffers, viewport, blend/depth state, uniforms, or buffers must restore those states separately.
+
+
+## Alpha update — typed GLSL uniform uploads
+
+GlShaderProgram now caches uniform locations per linked program and exposes bounded typed setters for integer/sampler indices, float, vec2, vec3, vec4, and column-major mat4 values. Uploads require the owning program to be currently bound, and missing/optimized-out uniforms are treated as no-ops as OpenGL specifies. The matrix API validates that at least 16 floats remain in the supplied buffer.
+
+This supplies the basic parameter-upload layer needed by future shader passes. It does not yet map OptiFine's standard uniforms (camera matrices, time, fog, lightmap, world time, etc.) or bind texture inputs; those require a dedicated Minecraft/OptiFine compatibility layer and runtime testing.
