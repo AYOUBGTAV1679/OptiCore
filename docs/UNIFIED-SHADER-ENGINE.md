@@ -93,3 +93,10 @@ This is storage infrastructure only. The current options screen remains read-onl
 ## Alpha update — shader program pairing preflight
 
 The pack manager now reports how many program paths have both a vertex and fragment stage, plus unmatched stages. Pairing uses the full relative path under `shaders/`, avoiding false matches when different subfolders reuse the same filename. The scan is bounded by archive-entry and program-count limits, rejects unsafe ZIP paths, and is covered by folder and ZIP regression tests. These counts are a structural preflight only; they do not establish GLSL validity or runtime compatibility.
+
+
+## Alpha update — bounded GLSL source preflight
+
+A source-level preflight now reads vertex and fragment source files from shader-pack folders and ZIP archives under strict per-file, aggregate-byte, file-count, and archive-entry limits. It reports stages without a recognizable `void main(...)` entry point, detected `#version` declarations, and simple `#include` directive counts. Unsafe ZIP paths are ignored.
+
+This scan is intentionally heuristic: it does not strip comments, resolve includes, parse GLSL grammar, validate stage interfaces, invoke a GPU compiler, or prove that a program will link. A detected `main` or version is only a diagnostic signal. Shader compilation and rendering remain unimplemented.
