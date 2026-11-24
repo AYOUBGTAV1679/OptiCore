@@ -31,6 +31,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \
   src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java \
   src/main/java/dev/opticore/client/shader/SceneUniformSnapshot.java \
+  src/main/java/dev/opticore/client/shader/SceneEnvironmentSnapshot.java \
+  src/test/java/dev/opticore/client/shader/SceneEnvironmentSnapshotSelfTest.java \
   src/test/java/dev/opticore/client/shader/SceneUniformSnapshotSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderRenderGraph.java \
   src/test/java/dev/opticore/client/shader/ShaderRenderGraphSelfTest.java \
