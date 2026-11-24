@@ -23,7 +23,7 @@
   "screen.opticore.shaders.status_saved": "Selection saved. It will be applied when the shader loader is implemented.",
   "screen.opticore.shaders.status_error": "Could not save the shader selection.",
   "screen.opticore.shaders.metadata": "Pack properties: %s | sliders: %s",
-  "screen.opticore.shaders.sources": "Shader sources: %s | vertex: %s | fragment: %s",
+  "screen.opticore.shaders.sources": "Sources: %s | vertex: %s | fragment: %s | paired programs: %s | vertex-only: %s | fragment-only: %s",
   "screen.opticore.shaders.no_metadata": "No shaders/shaders.properties metadata found.",
   "screen.opticore.shaders.list_limited": "More packs detected; list is limited by screen height.",
   "screen.opticore.shaders.options": "Options",
