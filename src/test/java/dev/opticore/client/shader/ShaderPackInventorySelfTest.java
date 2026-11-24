@@ -40,6 +40,7 @@ public final class ShaderPackInventorySelfTest {
         Files.deleteIfExists(shaders.resolve("gbuffers_terrain.fsh"));
         Files.deleteIfExists(shaders.resolve("common.glsl"));
         Files.deleteIfExists(shaders);
+        Files.deleteIfExists(folder.resolve("ignored.txt"));
         Files.deleteIfExists(folder);
         Files.deleteIfExists(zipPath);
         System.out.println("ShaderPackInventorySelfTest: 9 checks passed");
