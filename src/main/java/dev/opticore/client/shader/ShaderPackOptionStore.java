@@ -106,7 +106,7 @@ public final class ShaderPackOptionStore {
 
     private static boolean validValue(String value) {
         return value != null && value.length() <= MAX_VALUE_LENGTH
-                && value.indexOf('\\0') < 0;
+                && value.indexOf('\0') < 0;
     }
 
     private static String encode(String value) {
