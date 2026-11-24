@@ -3,6 +3,7 @@
   "key.opticore.open_settings": "Open OptiCore settings",
   "key.opticore.zoom": "Zoom",
   "screen.opticore.title": "OptiCore Settings",
+  "screen.opticore.smooth_zoom": "Smooth Zoom: %s",
   "screen.opticore.zoom": "Zoom: %s",
   "screen.opticore.fps": "FPS Counter: %s",
   "screen.opticore.chunk_diagnostics": "Chunk Diagnostics: %s",
