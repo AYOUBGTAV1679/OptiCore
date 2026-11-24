@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class SmartChunkCacheSelfTest {
     static int passed, failed;
     static final class E implements CacheEntry {
-        final long size; final AtomicInteger released = new AtomicInteger(); final boolean throwsOnRelease;
+        volatile long size; final AtomicInteger released = new AtomicInteger(); final boolean throwsOnRelease;
         E(long size) { this(size, false); }
         E(long size, boolean throwsOnRelease) { this.size = size; this.throwsOnRelease = throwsOnRelease; }
         public long sizeBytes() { return size; }
@@ -95,6 +95,12 @@ public final class SmartChunkCacheSelfTest {
         check("negative size estimate is rejected without replacing valid entry",
                 !accepted && invalid.released.get() == 1 && c.get(k(0,0,0)) == retained
                         && c.currentBytes() == 4 && c.stats().rejected() == 1);
+
+        retained.size = -1;
+        boolean sameInstanceAccepted = c.put(k(0,0,0), retained);
+        check("rejected re-put does not release an instance still owned by cache",
+                !sameInstanceAccepted && retained.released.get() == 0
+                        && c.get(k(0,0,0)) == retained && c.currentBytes() == 4);
     }
     static void largeBudgetAdditionDoesNotOverflow() {
         var c = new SmartChunkCache<E>(Long.MAX_VALUE);
