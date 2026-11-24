@@ -49,7 +49,13 @@ public final class SmartChunkCache<V extends CacheEntry> {
         long bytes = value.sizeBytes();
         if (bytes < 0L) {
             rejected.incrementAndGet();
-            safeRelease(value);
+            boolean alreadyOwnedByCache;
+            lock.lock();
+            try {
+                Slot<V> existing = map.get(key);
+                alreadyOwnedByCache = existing != null && existing.value == value;
+            } finally { lock.unlock(); }
+            if (!alreadyOwnedByCache) safeRelease(value);
             return false;
         }
         List<V> release = new ArrayList<>(2);
