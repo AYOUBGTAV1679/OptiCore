@@ -23,7 +23,7 @@ public final class SmartChunkCacheSelfTest {
         else { failed++; System.out.println("FAIL  " + name); }
     }
     public static void main(String[] args) throws Exception {
-        hitMiss(); keyDependencyIdentity(); lruOrder(); getRefreshesRecency(); oversizeRejected(); shrinkEvicts();
+        hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); shrinkEvicts();
         invalidateChunk(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
@@ -49,6 +49,25 @@ public final class SmartChunkCacheSelfTest {
                 !base.equals(changedSettings));
         check("dependency variants still invalidate as the same chunk",
                 base.inChunk("overworld", 2, 3) && changedNeighbor.inChunk("overworld", 2, 3));
+    }
+    static void boundaryInvalidationTargets() {
+        var interior = ChunkBoundaryInvalidation.affectedByBlockEdit(17, 34);
+        check("interior block edit invalidates only its own chunk",
+                interior.equals(List.of(new ChunkBoundaryInvalidation.ChunkCoordinate(1, 2))));
+
+        var corner = ChunkBoundaryInvalidation.affectedByBlockEdit(0, 15);
+        check("positive chunk corner invalidates current and both face neighbors",
+                corner.equals(List.of(
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(0, 0),
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(-1, 0),
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(0, 1))));
+
+        var negative = ChunkBoundaryInvalidation.affectedByBlockEdit(-1, -16);
+        check("negative world coordinates use floor-based chunk boundaries",
+                negative.equals(List.of(
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(-1, -1),
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(0, -1),
+                        new ChunkBoundaryInvalidation.ChunkCoordinate(-1, -2))));
     }
     static void lruOrder() {
         var c = new SmartChunkCache<E>(30); E a=new E(10), b=new E(10), d=new E(10), f=new E(10);
