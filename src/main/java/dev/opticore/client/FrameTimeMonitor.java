@@ -1,15 +1,18 @@
 package dev.opticore.client;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Rolling frame-time sampler. All methods are expected to be called on the
  * Minecraft render thread. Sampling uses fixed-size buffers and does not
- * allocate memory per frame.
+ * allocate memory per frame. The HUD text is refreshed at most four times
+ * per second so formatting does not add work to every rendered frame.
  */
 public final class FrameTimeMonitor {
     private static final int WINDOW_SIZE = 120;
     private static final int PERCENTILE_REFRESH_INTERVAL = 15;
+    private static final long DISPLAY_REFRESH_NANOS = 250_000_000L;
     private static final long[] SAMPLES_NANOS = new long[WINDOW_SIZE];
     private static final long[] SORT_BUFFER = new long[WINDOW_SIZE];
 
@@ -18,7 +21,9 @@ public final class FrameTimeMonitor {
     private static int samplesSincePercentileRefresh;
     private static long previousFrameNanos;
     private static long latestFrameNanos;
+    private static long lastDisplayRefreshNanos;
     private static double cachedOnePercentLowFps;
+    private static String cachedDisplayText = "Frame time: -- ms | 1% low: -- FPS";
 
     private FrameTimeMonitor() {}
 
@@ -39,6 +44,9 @@ public final class FrameTimeMonitor {
             }
         }
         previousFrameNanos = now;
+        if (now - lastDisplayRefreshNanos >= DISPLAY_REFRESH_NANOS) {
+            refreshDisplayText(now);
+        }
     }
 
     public static double latestFrameTimeMs() {
@@ -54,6 +62,11 @@ public final class FrameTimeMonitor {
         return cachedOnePercentLowFps;
     }
 
+    /** Returns the last HUD string; formatting is throttled to 4 Hz. */
+    public static String displayText() {
+        return cachedDisplayText;
+    }
+
     private static void refreshOnePercentLow() {
         System.arraycopy(SAMPLES_NANOS, 0, SORT_BUFFER, 0, sampleCount);
         Arrays.sort(SORT_BUFFER, 0, sampleCount);
@@ -65,10 +78,20 @@ public final class FrameTimeMonitor {
         samplesSincePercentileRefresh = 0;
     }
 
+    private static void refreshDisplayText(long now) {
+        String lowText = cachedOnePercentLowFps > 0.0D
+                ? String.format(Locale.ROOT, "%.1f", cachedOnePercentLowFps) : "--";
+        cachedDisplayText = String.format(Locale.ROOT,
+                "Frame time: %.2f ms | 1%% low: %s FPS", latestFrameTimeMs(), lowText);
+        lastDisplayRefreshNanos = now;
+    }
+
     public static void reset() {
         previousFrameNanos = 0L;
         latestFrameNanos = 0L;
+        lastDisplayRefreshNanos = 0L;
         cachedOnePercentLowFps = 0.0D;
+        cachedDisplayText = "Frame time: -- ms | 1% low: -- FPS";
         nextIndex = 0;
         sampleCount = 0;
         samplesSincePercentileRefresh = 0;
