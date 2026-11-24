@@ -33,6 +33,25 @@ public final class ChunkRenderCache {
         return new RenderCacheKey(dimensionId(level.dimension()), chunkX, chunkZ, sectionY);
     }
 
+    /**
+     * Build a dependency-complete key for a future CPU mesh artifact producer.
+     * Fingerprints must be derived from the exact neighbor block-state, light,
+     * and render-setting inputs used to compile the section. This method does
+     * not itself hook or alter Minecraft's mesh compilation path.
+     */
+    public static RenderCacheKey meshKey(Level level, int chunkX, int chunkZ, int sectionY,
+            long neighborStateFingerprint, long lightFingerprint,
+            long renderSettingsFingerprint) {
+        if (level == null || !level.isClientSide()) return null;
+        return new RenderCacheKey(dimensionId(level.dimension()), chunkX, chunkZ, sectionY,
+                neighborStateFingerprint, lightFingerprint, renderSettingsFingerprint);
+    }
+
+    public static void onRenderSettingsChanged() {
+        CACHE.onRenderSettingsChanged();
+        CACHE.purgeStale();
+    }
+
     public static SmartChunkCache<CacheEntry> cache() {
         return CACHE;
     }
