@@ -32,6 +32,8 @@ OptiCore is intended to work without Embeddium or Oculus. Compatibility with oth
 
 The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md) and [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md).
 
+Performance must be evaluated against a repeatable unmodified-Forge baseline. The project's [performance validation plan](docs/PERFORMANCE-VALIDATION-PLAN.md) defines the required scenes, measurements, and pass/fail rules. No controlled benchmark has been completed yet.
+
 ## Planned work
 
 1. Verify a safe hook at the chunk mesh compilation boundary.
