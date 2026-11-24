@@ -120,7 +120,7 @@ public final class ShaderPackScreen extends Screen {
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.metadata", selectedMetadata.propertyCount(), selectedMetadata.sliderCount()),
-                    width / 2, height - 64, 0xA6D8A8);
+                    width / 2, height - 80, 0xA6D8A8);
         } else if (!"OFF".equals(selected)) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.no_metadata"),
