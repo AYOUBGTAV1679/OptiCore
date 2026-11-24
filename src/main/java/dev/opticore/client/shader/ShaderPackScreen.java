@@ -104,12 +104,11 @@ public final class ShaderPackScreen extends Screen {
                 width / 2, height - 78, 0xAAAAAA);
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
-                    Component.literal("Pack properties: " + selectedMetadata.propertyCount()
-                            + " | sliders: " + selectedMetadata.sliderCount()),
+                    Component.translatable("screen.opticore.shaders.metadata", selectedMetadata.propertyCount(), selectedMetadata.sliderCount()),
                     width / 2, height - 64, 0xA6D8A8);
         } else if (!"OFF".equals(selected)) {
             graphics.drawCenteredString(font,
-                    Component.literal("No shaders/shaders.properties metadata found"),
+                    Component.translatable("screen.opticore.shaders.no_metadata"),
                     width / 2, height - 64, 0xAAAAAA);
         }
         if (packs.isEmpty()) {
@@ -118,7 +117,7 @@ public final class ShaderPackScreen extends Screen {
                     width / 2, height / 2, 0xFFFFFF);
         } else if (packs.size() > Math.max(0, (height - 164) / 24)) {
             graphics.drawCenteredString(font,
-                    Component.literal("List limited by screen height; more packs are detected."),
+                    Component.translatable("screen.opticore.shaders.list_limited"),
                     width / 2, height - 105, 0xAAAAAA);
         }
     }
