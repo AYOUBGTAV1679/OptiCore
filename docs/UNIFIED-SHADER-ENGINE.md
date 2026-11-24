@@ -77,3 +77,12 @@ This hardens the off-screen resource layer only. It does not yet schedule a rend
 
 
 Off-screen target resize and close now reject attempts made while that target is bound for reading or drawing. This prevents deleting an active framebuffer from silently replacing the caller's binding with framebuffer zero and invalidating the surrounding scope.
+
+
+## Alpha update — scene uniform capture adapter
+
+Added an immutable scene snapshot model and a Forge 1.20.1 render-stage observer. When the client config option captureSceneUniforms is enabled, OptiCore samples the pose-stack model-view matrix, projection matrix, camera world position, partial tick, render tick, viewport size, dimension ID, game time, and day time at RenderLevelStageEvent.Stage.AFTER_LEVEL. The latest snapshot is exposed through a read-only accessor for the next uniform-binding layer.
+
+Capture is disabled by default. The observer does not bind programs, alter render state, allocate GPU resources, or draw anything; sampling occurs after the level render completes. The snapshot validates finite values and defensively copies matrices. Standalone regression tests cover immutability, matrix validation, partial-tick bounds, time conversion, and day-cycle normalization.
+
+Fog color/density, lightmap values, inverse matrices, and per-pack OptiFine uniform aliases are intentionally not synthesized yet. They require separate API and semantic validation before being exposed as compatibility uniforms. No world shader rendering is enabled by this observer.
