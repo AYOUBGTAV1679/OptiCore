@@ -82,3 +82,9 @@ A milestone is complete only when:
 6. Add editable settings UI and quality profiles after the pipeline is stable.
 
 This document is an engineering plan. It does not mean shader loading, shader compilation, or shader rendering is implemented in the current build.
+
+## Alpha update — option persistence groundwork
+
+A small bounded storage component now persists raw option override strings independently for each pack and option identifier. It rejects unsafe pack names, malformed identifiers, oversized values, and oversized configuration files; writes use a temporary file and atomic replacement where supported. The standalone test suite covers pack isolation, save/load/removal, and input bounds.
+
+This is storage infrastructure only. The current options screen remains read-only: it does not create widgets from declarations, write values through this store, interpret option types, or apply values to GLSL uniforms. Those steps require a verified parser for the shader-pack property semantics before UI controls are introduced.
