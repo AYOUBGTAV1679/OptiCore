@@ -62,25 +62,16 @@ public final class OptiCoreClientEvents {
                 mc.level.getGameTime(), mc.level.getDayTime(),
                 mc.level.dimension().location().toString());
 
-        net.minecraft.world.phys.Vec3 fog = mc.level.getSkyColor(camera, event.getPartialTick());
+        net.minecraft.world.phys.Vec3 skyColor = mc.level.getSkyColor(camera, event.getPartialTick());
         BlockPos cameraBlock = BlockPos.containing(camera.x, camera.y, camera.z);
         latestSceneEnvironmentSnapshot = new SceneEnvironmentSnapshot(
-                (float) fog.x, (float) fog.y, (float) fog.z,
+                (float) skyColor.x, (float) skyColor.y, (float) skyColor.z,
                 mc.level.getRainLevel(event.getPartialTick()),
                 mc.level.getThunderLevel(event.getPartialTick()),
                 mc.level.getSkyDarken() / 15.0f,
                 mc.level.getBrightness(LightLayer.BLOCK, cameraBlock),
                 mc.level.getBrightness(LightLayer.SKY, cameraBlock));
 
-        net.minecraft.world.phys.Vec3 fog = mc.level.getSkyColor(camera, event.getPartialTick());
-        BlockPos cameraBlock = BlockPos.containing(camera.x, camera.y, camera.z);
-        latestSceneEnvironmentSnapshot = new SceneEnvironmentSnapshot(
-                (float) fog.x, (float) fog.y, (float) fog.z,
-                mc.level.getRainLevel(event.getPartialTick()),
-                mc.level.getThunderLevel(event.getPartialTick()),
-                mc.level.getSkyDarken() / 15.0f,
-                mc.level.getBrightness(LightLayer.BLOCK, cameraBlock),
-                mc.level.getBrightness(LightLayer.SKY, cameraBlock));
     }
 
     @SubscribeEvent
