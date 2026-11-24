@@ -3,6 +3,7 @@
   "key.opticore.open_settings": "فتح إعدادات OptiCore",
   "key.opticore.zoom": "تقريب",
   "screen.opticore.title": "إعدادات OptiCore",
+  "screen.opticore.smooth_zoom": "التقريب السلس: %s",
   "screen.opticore.zoom": "مستوى التقريب: %s",
   "screen.opticore.fps": "عداد FPS: %s",
   "screen.opticore.chunk_diagnostics": "تشخيص الرندر: %s",
