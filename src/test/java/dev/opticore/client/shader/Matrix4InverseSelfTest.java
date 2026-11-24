@@ -32,6 +32,10 @@ public final class Matrix4InverseSelfTest {
         return result;
     }
 
+    private static void check(boolean condition, String message) {
+        if (!condition) throw new AssertionError(message);
+    }
+
     private static void checkMatrix(float[] expected, float[] actual, String message) {
         for (int i = 0; i < 16; i++) {
             if (!close(expected[i], actual[i])) throw new AssertionError(message + " at " + i);
