@@ -2,11 +2,13 @@ package dev.opticore.client;
 
 import dev.opticore.OptiCore;
 import dev.opticore.OptiCoreConfig;
+import dev.opticore.client.shader.SceneUniformSnapshot;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ComputeFovModifierEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -14,7 +16,42 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = OptiCore.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class OptiCoreClientEvents {
+    private static volatile SceneUniformSnapshot latestSceneUniformSnapshot;
+
     private OptiCoreClientEvents() {}
+
+    /** Latest read-only scene snapshot; null until capture is enabled and a level frame completes. */
+    public static SceneUniformSnapshot latestSceneUniformSnapshot() {
+        return latestSceneUniformSnapshot;
+    }
+
+    /**
+     * Observe the completed level stage without changing render state or issuing GL calls.
+     * Capture is opt-in and disabled by default.
+     */
+    @SubscribeEvent
+    public static void onLevelRenderStage(RenderLevelStageEvent event) {
+        if (!OptiCoreConfig.CAPTURE_SCENE_UNIFORMS.get()
+                || event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            latestSceneUniformSnapshot = null;
+            return;
+        }
+
+        float[] modelView = new float[16];
+        float[] projection = new float[16];
+        event.getPoseStack().last().pose().get(modelView);
+        event.getProjectionMatrix().get(projection);
+        net.minecraft.world.phys.Vec3 camera = event.getCamera().getPosition();
+        latestSceneUniformSnapshot = new SceneUniformSnapshot(
+                modelView, projection,
+                camera.x, camera.y, camera.z,
+                event.getPartialTick(), event.getRenderTick(),
+                mc.getWindow().getWidth(), mc.getWindow().getHeight(),
+                mc.level.getGameTime(), mc.level.getDayTime(),
+                mc.level.dimension().location().toString());
+    }
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
