@@ -78,6 +78,6 @@ public final class ShaderProgramDescriptor {
     private static boolean safeProgramId(String id) {
         return id != null && !id.isBlank() && !id.startsWith("/")
                 && !id.contains("..") && !id.contains("\\")
-                && !id.contains("\\0") && !id.matches("^[A-Za-z]:.*");
+                && id.indexOf('\0') < 0 && !id.matches("^[A-Za-z]:.*");
     }
 }
