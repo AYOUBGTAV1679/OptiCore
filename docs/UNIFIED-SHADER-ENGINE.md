@@ -42,3 +42,10 @@ This remains resource management, not a render graph or world integration. No te
 Added a Minecraft-independent immutable render-graph description. Each pass declares its input resources, output resources, explicit pass dependencies, and depth behavior. Validation checks missing producers and inputs, missing dependencies, duplicate writers, invalid pass declarations, and dependency cycles. A stable topological schedule is returned only when validation succeeds; resource producer/consumer relationships automatically create ordering edges.
 
 The graph model is intentionally declarative and performs no OpenGL calls. It is not yet connected to Forge world-render events, Minecraft's world renderer, shader uniforms, or framebuffer execution. It does not draw terrain, entities, shadows, reflections, or post-processing. A later integration step must define concrete pass executors, external Minecraft render resources, GL-state restoration, and a safe vanilla fallback before enabling world-render changes.
+
+
+## Alpha update — fail-safe render graph executor
+
+Added a backend-agnostic executor for validated render graphs. It invokes caller-registered pass handlers in dependency order, refuses to run an invalid graph, reports missing handlers, and stops immediately on the first handler exception while preserving an accurate list of completed passes. This provides deterministic scheduling and failure reporting for a future renderer backend.
+
+The executor does not itself bind framebuffers, compile or bind programs, manipulate Minecraft render buffers, or restore OpenGL state. Any future OpenGL pass handler must scope and restore its own GL state and provide a vanilla fallback at the integration boundary. No Forge world-render event is hooked yet; the executor is currently infrastructure covered by Minecraft-independent tests.
