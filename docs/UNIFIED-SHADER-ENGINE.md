@@ -100,3 +100,12 @@ The pack manager now reports how many program paths have both a vertex and fragm
 A source-level preflight now reads vertex and fragment source files from shader-pack folders and ZIP archives under strict per-file, aggregate-byte, file-count, and archive-entry limits. It reports stages without a recognizable `void main(...)` entry point, detected `#version` declarations, and simple `#include` directive counts. Unsafe ZIP paths are ignored.
 
 This scan is intentionally heuristic: it does not strip comments, resolve includes, parse GLSL grammar, validate stage interfaces, invoke a GPU compiler, or prove that a program will link. A detected `main` or version is only a diagnostic signal. Shader compilation and rendering remain unimplemented.
+
+
+## Alpha update — lexical preflight and bounded include expansion
+
+The GLSL preflight now masks line/block comments and quoted text before checking for a recognizable `void main(...)` entry point. It extracts basic `#version` and `#extension` directives and counts include directives. Directive matching is constrained to a single line to avoid whitespace-regex matches spanning unrelated lines.
+
+A bounded include resolver now expands quoted or angle-bracket includes from shader-pack folders and ZIP archives without extracting ZIP contents. It rejects absolute paths, traversal, unsafe archive names, and symbolic links; detects include cycles; and enforces limits of 16 nested levels, 256 distinct files, 512 KiB per source, and 4 MiB total source bytes. Folder, ZIP, nested include, cycle, and traversal cases have standalone regression coverage.
+
+These components are still preflight/compatibility infrastructure. They do not parse full GLSL grammar, process conditional preprocessing, compile or link GPU programs, or render shader passes. The resolver is not yet wired into a runtime shader compiler.
