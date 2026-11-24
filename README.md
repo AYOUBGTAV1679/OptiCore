@@ -31,6 +31,8 @@ OptiCore is intended to work without Embeddium or Oculus. Compatibility with oth
 
 The frame-time monitor is disabled by default and can be enabled in the settings screen. It is a diagnostic measurement, not an FPS-boost feature; see [Alpha 10 Frame-Time Monitor](docs/ALPHA-10-FRAME-TIME-MONITOR.md).
 
+Smooth zoom transitions are enabled by default and can be switched off in settings. See [Alpha 11 Smooth Zoom](docs/ALPHA-11-SMOOTH-ZOOM.md).
+
 ## Engineering status
 
 The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md) and [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md).
