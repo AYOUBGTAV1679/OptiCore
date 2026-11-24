@@ -14,8 +14,9 @@ CPU-side render artifacts.
   block-state geometry, lighting, and render settings.
 - Regression tests verify that changing each dependency fingerprint produces a
   distinct cache identity.
-- Cache insertion evicts before adding bytes, preventing `long` accounting overflow
-  for budgets configured near `Long.MAX_VALUE`; a regression test covers this edge.
+- Cache insertion rejects negative size estimates and evicts before adding bytes,
+  preventing invalid accounting and `long` overflow for budgets near
+  `Long.MAX_VALUE`; regression tests cover both edge cases.
 - Block-edit boundary calculation is isolated from Minecraft classes and tested
   for interior edits, positive-coordinate edges/corners, and negative world
   coordinates. Both block placement and breaking use the same invalidation path.
