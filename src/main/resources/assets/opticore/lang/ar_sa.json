@@ -1,0 +1,13 @@
+{
+  "key.categories.opticore": "OptiCore",
+  "key.opticore.open_settings": "فتح إعدادات OptiCore",
+  "key.opticore.zoom": "تقريب",
+  "screen.opticore.title": "إعدادات OptiCore",
+  "screen.opticore.zoom": "مستوى التقريب: %s",
+  "screen.opticore.fps": "عداد FPS: %s",
+  "screen.opticore.chunk_diagnostics": "تشخيص الرندر: %s",
+  "screen.opticore.done": "تم",
+  "screen.opticore.on": "مفعّل",
+  "screen.opticore.off": "معطّل",
+  "screen.opticore.zoom_hint": "اضغط باستمرار على C للتقريب"
+}
