@@ -18,7 +18,7 @@ The target is practical compatibility with the OptiFine shader-pack format used 
 
 ## Single-pipeline design
 
-1. **Pack discovery** — implemented as an initial catalog for top-level shader-pack folders and ZIP files under `shaderpacks/`. Selection is persisted. This stage does not extract archives. ZIP entry paths receive basic filtering; stricter entry-count and archive-size limits remain required before broader parsing.
+1. **Pack discovery** — implemented as an initial catalog for top-level shader-pack folders and ZIP files under `shaderpacks/`. Selection is persisted. This stage does not extract archives. ZIP discovery rejects unsafe entry paths and archives with more than 20,000 entries; the catalog does not extract archive contents.
 2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet.
 3. **Compatibility parser** — parse the supported OptiFine-style program layout, shader properties, uniforms, and texture declarations. Report unsupported syntax before activation.
 4. **Program compiler** — compile vertex/fragment programs and link them into owned program objects. Cache compiled results only for the current resource generation and graphics context.
@@ -74,7 +74,7 @@ A milestone is complete only when:
 
 ## Implementation sequence
 
-1. Harden the existing client-only shader-pack catalog with archive entry-count/size limits and regression tests.
+1. Harden the client-only shader-pack catalog with bounded ZIP entry enumeration and path validation (20,000-entry cap), covered by standalone regression tests.
 2. Expand the metadata parser and compatibility diagnostics with unit tests.
 3. Establish a render-thread-owned program/resource lifecycle.
 4. Implement a minimal pass graph and a test shader.
