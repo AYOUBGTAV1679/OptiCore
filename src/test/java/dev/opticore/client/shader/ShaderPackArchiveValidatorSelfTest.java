@@ -26,9 +26,41 @@ public final class ShaderPackArchiveValidatorSelfTest {
         check(!ShaderPackArchiveValidator.isSafeEntryName("/shaders/evil.fsh"), "absolute path rejected");
         check(ShaderPackArchiveValidator.isSafeEntryName("shaders/composite.fsh"), "normal shader path accepted");
 
+
+        Path crowded = Files.createTempFile("opticore-shaders-crowded", ".zip");
+        try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(crowded))) {
+            output.putNextEntry(new ZipEntry("shaders/first.fsh"));
+            output.write(1);
+            output.closeEntry();
+            for (int i = 1; i < ShaderPackArchiveValidator.MAX_ENTRIES; i++) {
+                output.putNextEntry(new ZipEntry("assets/file" + i));
+                output.write(1);
+                output.closeEntry();
+            }
+        }
+        try (var zip = new java.util.zip.ZipFile(crowded.toFile())) {
+            check(ShaderPackArchiveValidator.containsRootShaderDirectory(zip), "entry count at limit accepted");
+        }
+        Path overLimit = Files.createTempFile("opticore-shaders-over-limit", ".zip");
+        try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(overLimit))) {
+            output.putNextEntry(new ZipEntry("shaders/first.fsh"));
+            output.write(1);
+            output.closeEntry();
+            for (int i = 1; i <= ShaderPackArchiveValidator.MAX_ENTRIES; i++) {
+                output.putNextEntry(new ZipEntry("assets/file" + i));
+                output.write(1);
+                output.closeEntry();
+            }
+        }
+        try (var zip = new java.util.zip.ZipFile(overLimit.toFile())) {
+            check(!ShaderPackArchiveValidator.containsRootShaderDirectory(zip), "entry count over limit rejected");
+        }
+
         Files.deleteIfExists(valid);
         Files.deleteIfExists(nested);
-        System.out.println("ShaderPackArchiveValidatorSelfTest: 6 checks passed");
+        Files.deleteIfExists(crowded);
+        Files.deleteIfExists(overLimit);
+        System.out.println("ShaderPackArchiveValidatorSelfTest: 8 checks passed");
     }
 
     private static void writeZip(Path file, String entryName) throws Exception {
