@@ -28,8 +28,7 @@ public final class ChunkRenderCacheEvents {
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (event.getLevel() instanceof Level level && level.isClientSide()) {
-            ChunkRenderCache.invalidateChunk(level,
-                    event.getPos().getX() >> 4, event.getPos().getZ() >> 4);
+            ChunkRenderCache.invalidateBlockAndNeighbors(level, event.getPos());
         }
     }
 
