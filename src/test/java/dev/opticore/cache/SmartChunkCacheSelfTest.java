@@ -23,7 +23,7 @@ public final class SmartChunkCacheSelfTest {
         else { failed++; System.out.println("FAIL  " + name); }
     }
     public static void main(String[] args) throws Exception {
-        hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); shrinkEvicts();
+        hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); largeBudgetAdditionDoesNotOverflow(); shrinkEvicts();
         invalidateChunk(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
@@ -85,6 +85,16 @@ public final class SmartChunkCacheSelfTest {
         var c=new SmartChunkCache<E>(50); E big=new E(51);
         check("oversized value rejected", !c.put(k(0,0,0),big));
         check("rejected value released once", big.released.get()==1 && c.size()==0 && c.stats().rejected()==1);
+    }
+    static void largeBudgetAdditionDoesNotOverflow() {
+        var c = new SmartChunkCache<E>(Long.MAX_VALUE);
+        E almostFull = new E(Long.MAX_VALUE - 5);
+        E next = new E(10);
+        c.put(k(0,0,0), almostFull);
+        c.put(k(1,0,0), next);
+        check("large budget evicts before byte-count addition can overflow",
+                c.currentBytes() == 10 && c.get(k(0,0,0)) == null
+                        && c.get(k(1,0,0)) == next && almostFull.released.get() == 1);
     }
     static void shrinkEvicts() {
         var c=new SmartChunkCache<E>(100);
