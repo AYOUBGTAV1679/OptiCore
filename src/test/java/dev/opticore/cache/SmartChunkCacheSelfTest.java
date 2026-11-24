@@ -23,7 +23,7 @@ public final class SmartChunkCacheSelfTest {
         else { failed++; System.out.println("FAIL  " + name); }
     }
     public static void main(String[] args) throws Exception {
-        hitMiss(); lruOrder(); getRefreshesRecency(); oversizeRejected(); shrinkEvicts();
+        hitMiss(); keyDependencyIdentity(); lruOrder(); getRefreshesRecency(); oversizeRejected(); shrinkEvicts();
         invalidateChunk(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
@@ -35,6 +35,20 @@ public final class SmartChunkCacheSelfTest {
         c.put(k(0,0,0), e);
         check("stored lookup is a hit", c.get(k(0,0,0)) == e);
         check("hit/miss counters", c.stats().hits() == 1 && c.stats().misses() == 1);
+    }
+    static void keyDependencyIdentity() {
+        var base = new RenderCacheKey("overworld", 2, 3, 4, 11L, 21L, 31L);
+        var changedNeighbor = new RenderCacheKey("overworld", 2, 3, 4, 12L, 21L, 31L);
+        var changedLight = new RenderCacheKey("overworld", 2, 3, 4, 11L, 22L, 31L);
+        var changedSettings = new RenderCacheKey("overworld", 2, 3, 4, 11L, 21L, 32L);
+        check("mesh key changes when neighbor geometry dependencies change",
+                !base.equals(changedNeighbor));
+        check("mesh key changes when lighting dependencies change",
+                !base.equals(changedLight));
+        check("mesh key changes when render settings change",
+                !base.equals(changedSettings));
+        check("dependency variants still invalidate as the same chunk",
+                base.inChunk("overworld", 2, 3) && changedNeighbor.inChunk("overworld", 2, 3));
     }
     static void lruOrder() {
         var c = new SmartChunkCache<E>(30); E a=new E(10), b=new E(10), d=new E(10), f=new E(10);
