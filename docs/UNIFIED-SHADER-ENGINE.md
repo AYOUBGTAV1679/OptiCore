@@ -65,3 +65,12 @@ These changes improve the safety primitives but do not yet connect the graph to 
 GlShaderProgram now caches uniform locations per linked program and exposes bounded typed setters for integer/sampler indices, float, vec2, vec3, vec4, and column-major mat4 values. Uploads require the owning program to be currently bound, and missing/optimized-out uniforms are treated as no-ops as OpenGL specifies. The matrix API validates that at least 16 floats remain in the supplied buffer.
 
 This supplies the basic parameter-upload layer needed by future shader passes. It does not yet map OptiFine's standard uniforms (camera matrices, time, fog, lightmap, world time, etc.) or bind texture inputs; those require a dedicated Minecraft/OptiFine compatibility layer and runtime testing.
+
+
+## Alpha update — framebuffer isolation and complete clears
+
+Off-screen target allocation and scoped binding now preserve draw and read framebuffer bindings independently instead of collapsing both through the combined framebuffer binding. This matters when another renderer temporarily uses distinct read/draw targets.
+
+The target clear operation now temporarily disables scissor testing and enables color/depth write masks so a prior GUI or renderer state cannot leave part of the off-screen target uncleared. It restores the previous clear color/depth values, color/depth masks, scissor enable state, framebuffer bindings, and viewport even when the clear scope exits exceptionally.
+
+This hardens the off-screen resource layer only. It does not yet schedule a render pass or composite the target onto Minecraft's main framebuffer.
