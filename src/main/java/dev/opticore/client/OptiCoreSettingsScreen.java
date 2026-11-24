@@ -1,6 +1,7 @@
 package dev.opticore.client;
 
 import dev.opticore.OptiCoreConfig;
+import dev.opticore.client.shader.ShaderPackScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -54,8 +55,12 @@ public class OptiCoreSettingsScreen extends Screen {
                 minecraft.setScreen(new OptiCoreCompatibilityScreen(this)))
                 .bounds(center - 105, top + 168, 210, 20).build());
 
-        addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
+        addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.open"), button ->
+                minecraft.setScreen(new ShaderPackScreen(this)))
                 .bounds(center - 105, top + 196, 210, 20).build());
+
+        addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
+                .bounds(center - 105, top + 224, 210, 20).build());
     }
 
     private static Component cacheBudgetText() {
@@ -74,7 +79,7 @@ public class OptiCoreSettingsScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, height / 4 - 28, 0xFFFFFF);
         graphics.drawCenteredString(font, Component.translatable("screen.opticore.zoom_hint"),
-                width / 2, height / 4 + 222, 0xAAAAAA);
+                width / 2, height / 4 + 250, 0xAAAAAA);
     }
 
     @Override
