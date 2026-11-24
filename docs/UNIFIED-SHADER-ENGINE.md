@@ -107,3 +107,8 @@ The common uniform binder now has an overload that accepts this environment samp
 Added a separate immutable environment snapshot for sky/fog colour, rain strength, thunder strength, sky darkening, and block/sky light levels sampled at the camera's block position. The Forge observer captures it alongside the matrices and time data, only when the existing opt-in capture setting is enabled.
 
 The common uniform binder now has an overload that accepts this environment sample and uploads `fogColor`, `rainStrength`, `wetness`, `thunderStrength`, `skyDarken`, `blockLightLevel`, and `skyLightLevel` when the corresponding uniforms exist. The original two-argument method remains available and skips environment values. These names and values are a practical starter mapping, not full OptiFine semantic parity: fog distance, eye brightness, weather transitions, biome-specific fog rules, entity/block light contexts, and shadow uniforms still need dedicated work and validation.
+
+
+## Accuracy note — captured sky colour versus fog parameters
+
+The current Forge observer samples `ClientLevel.getSkyColor(camera, partialTick)`. This is a sky-colour sample used as an environment input; it is not Minecraft's resolved fog colour or fog density. The corresponding uniform is therefore named `skyColor`, not `fogColor`. True fog colour/distance and eye-medium parameters remain unimplemented until a stable, correctly timed fog capture point is added. This avoids feeding a misleading sky-colour value into shader packs as if it were OptiFine fog data.
