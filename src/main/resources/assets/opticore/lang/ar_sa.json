@@ -23,7 +23,7 @@
   "screen.opticore.shaders.status_saved": "تم حفظ الاختيار. سيُفعّل بعد تنفيذ محرك الشيدر.",
   "screen.opticore.shaders.status_error": "تعذر حفظ اختيار الشيدر.",
   "screen.opticore.shaders.metadata": "خصائص الحزمة: %s | أشرطة التحكم: %s",
-  "screen.opticore.shaders.sources": "ملفات الشيدر: %s | Vertex: %s | Fragment: %s",
+  "screen.opticore.shaders.sources": "ملفات المصدر: %s | Vertex: %s | Fragment: %s | البرامج المكتملة: %s | Vertex فقط: %s | Fragment فقط: %s",
   "screen.opticore.shaders.no_metadata": "لم يتم العثور على ملف خصائص shaders/shaders.properties.",
   "screen.opticore.shaders.list_limited": "تم اكتشاف حزم إضافية؛ القائمة محدودة بارتفاع الشاشة.",
   "screen.opticore.shaders.options": "الخيارات",
