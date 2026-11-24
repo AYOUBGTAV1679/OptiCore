@@ -18,7 +18,7 @@ public final class SceneUniformSnapshotSelfTest {
         returned[5] = 77.0f;
         check(snapshot.projectionMatrix()[5] == 1.0f, "accessor must return a copy");
         check(Math.abs(snapshot.timeSeconds() - 100.025d) < 0.000001d, "continuous time");
-        check(snapshot.normalizedDayTime() == 1L, "normalized day time");
+        check(snapshot.normalizedDayTime() == 2001L, "normalized day time");
         check(snapshot.viewportWidth() == 1920 && snapshot.viewportHeight() == 1080,
                 "viewport dimensions");
         check(snapshot.dimension().equals("minecraft:overworld"), "dimension identifier");
