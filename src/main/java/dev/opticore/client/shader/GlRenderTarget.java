@@ -124,11 +124,16 @@ public final class GlRenderTarget implements AutoCloseable {
     public void clear(float red, float green, float blue, float alpha, boolean clearDepth) {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
+        java.nio.FloatBuffer previousClear = org.lwjgl.BufferUtils.createFloatBuffer(4);
+        GL11.glGetFloatv(GL11.GL_COLOR_CLEAR_VALUE, previousClear);
         try (Binding ignored = bind()) {
             GL11.glClearColor(red, green, blue, alpha);
             int mask = GL11.GL_COLOR_BUFFER_BIT;
             if (clearDepth) mask |= GL11.GL_DEPTH_BUFFER_BIT;
             GL11.glClear(mask);
+        } finally {
+            GL11.glClearColor(previousClear.get(0), previousClear.get(1),
+                    previousClear.get(2), previousClear.get(3));
         }
     }
 
