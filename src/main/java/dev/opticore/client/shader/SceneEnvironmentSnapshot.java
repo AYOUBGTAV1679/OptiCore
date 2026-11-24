@@ -1,6 +1,6 @@
 package dev.opticore.client.shader;
 
-/** Immutable, read-only weather, fog-colour, and camera light sample for one rendered frame. */
+/** Immutable, read-only weather, sky-colour, and camera light sample for one rendered frame. */
 public final class SceneEnvironmentSnapshot {
     private final float skyRed, skyGreen, skyBlue;
     private final float rainStrength, thunderStrength, skyDarken;
