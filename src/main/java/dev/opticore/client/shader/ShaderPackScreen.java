@@ -115,7 +115,7 @@ public final class ShaderPackScreen extends Screen {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
                             selectedInventory.vertexFiles(), selectedInventory.fragmentFiles()),
-                    width / 2, height - 80, 0xA6D8A8);
+                    width / 2, height - 64, 0xA6D8A8);
         }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
