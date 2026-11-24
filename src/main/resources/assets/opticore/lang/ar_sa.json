@@ -24,5 +24,10 @@
   "screen.opticore.shaders.status_error": "تعذر حفظ اختيار الشيدر.",
   "screen.opticore.shaders.metadata": "خصائص الحزمة: %s | أشرطة التحكم: %s",
   "screen.opticore.shaders.no_metadata": "لم يتم العثور على ملف خصائص shaders/shaders.properties.",
-  "screen.opticore.shaders.list_limited": "تم اكتشاف حزم إضافية؛ القائمة محدودة بارتفاع الشاشة."
+  "screen.opticore.shaders.list_limited": "تم اكتشاف حزم إضافية؛ القائمة محدودة بارتفاع الشاشة.",
+  "screen.opticore.shaders.options": "الخيارات",
+  "screen.opticore.shaders.options_title": "خيارات حزمة الشيدر",
+  "screen.opticore.shaders.options_readonly": "عرض التعريفات المكتشفة فقط — التعديل غير متاح حالياً.",
+  "screen.opticore.shaders.options_empty": "هذه الحزمة لا تعرّف شاشة خيارات أو أشرطة تحكم.",
+  "screen.opticore.shaders.options_count": "عناصر التحكم المكتشفة: %s"
 }
