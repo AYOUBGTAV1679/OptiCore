@@ -6,6 +6,7 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec SPEC;
     public static final ForgeConfigSpec.BooleanValue SHOW_FPS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_ZOOM;
+    public static final ForgeConfigSpec.BooleanValue SMOOTH_ZOOM;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHUNK_DIAGNOSTICS;
     public static final ForgeConfigSpec.BooleanValue SHOW_FRAME_TIME;
     public static final ForgeConfigSpec.DoubleValue ZOOM_FACTOR;
@@ -18,6 +19,8 @@ public final class OptiCoreConfig {
                 .define("showFps", true);
         ENABLE_ZOOM = builder.comment("Enable hold-to-zoom.")
                 .define("enableZoom", true);
+        SMOOTH_ZOOM = builder.comment("Smoothly animate zoom in and out.")
+                .define("smoothZoom", true);
         SHOW_CHUNK_DIAGNOSTICS = builder.comment("Show read-only chunk renderer queue diagnostics on the HUD.")
                 .define("showChunkDiagnostics", false);
         SHOW_FRAME_TIME = builder.comment("Show rolling frame time and estimated 1% low FPS on the HUD.")
