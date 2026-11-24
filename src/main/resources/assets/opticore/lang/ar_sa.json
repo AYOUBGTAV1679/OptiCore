@@ -6,6 +6,7 @@
   "screen.opticore.zoom": "مستوى التقريب: %s",
   "screen.opticore.fps": "عداد FPS: %s",
   "screen.opticore.chunk_diagnostics": "تشخيص الرندر: %s",
+  "screen.opticore.frame_time": "مراقبة زمن الإطار: %s",
   "screen.opticore.done": "تم",
   "screen.opticore.on": "مفعّل",
   "screen.opticore.off": "معطّل",
