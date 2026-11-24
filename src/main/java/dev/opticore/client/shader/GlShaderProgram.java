@@ -89,14 +89,23 @@ public final class GlShaderProgram implements AutoCloseable {
         }
     }
 
-    /** Binds this program. The caller is responsible for restoring prior GL state. */
+    /** Binds this program without capturing previous state. Prefer bindScoped(). */
     public void use() {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
         GL20.glUseProgram(program);
     }
 
-    /** Stops using any custom program; callers should restore their captured state instead when needed. */
+    /** Binds this program and restores the previously active program on close. */
+    public Binding bindScoped() {
+        RenderSystem.assertOnRenderThread();
+        ensureOpen();
+        int previousProgram = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+        GL20.glUseProgram(program);
+        return new Binding(previousProgram);
+    }
+
+    /** Restores the default program; use only when zero is the intended prior state. */
     public static void unbind() {
         RenderSystem.assertOnRenderThread();
         GL20.glUseProgram(0);
@@ -121,5 +130,23 @@ public final class GlShaderProgram implements AutoCloseable {
         if (closed) return;
         GL20.glDeleteProgram(program);
         closed = true;
+    }
+
+    /** Scoped GL_CURRENT_PROGRAM binding with idempotent restoration. */
+    public static final class Binding implements AutoCloseable {
+        private final int previousProgram;
+        private boolean closed;
+
+        private Binding(int previousProgram) {
+            this.previousProgram = previousProgram;
+        }
+
+        @Override
+        public void close() {
+            RenderSystem.assertOnRenderThread();
+            if (closed) return;
+            GL20.glUseProgram(previousProgram);
+            closed = true;
+        }
     }
 }
