@@ -21,7 +21,7 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderProgramIndex.java \
   src/test/java/dev/opticore/client/shader/ShaderProgramIndexSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderSourcePreflight.java \
-  src/test/java/dev/opticore/client/shader/ShaderSourcePreflightSelfTest.java \\
+  src/test/java/dev/opticore/client/shader/ShaderSourcePreflightSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderIncludeResolver.java \\
   src/test/java/dev/opticore/client/shader/ShaderIncludeResolverSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
