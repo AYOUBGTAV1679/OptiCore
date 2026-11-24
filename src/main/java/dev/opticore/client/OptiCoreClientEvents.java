@@ -63,6 +63,12 @@ public final class OptiCoreClientEvents {
             event.getGuiGraphics().drawString(mc.font,
                     Component.literal("Dispatcher: " + snapshot.dispatcherStats),
                     6, y + 12, 0xB8E6FF, true);
+            event.getGuiGraphics().drawString(mc.font,
+                    Component.literal("OptiCore cache: " + snapshot.cacheStats.hits() + " hits / "
+                            + snapshot.cacheStats.misses() + " misses | "
+                            + (snapshot.cacheBytes / 1024L) + " / "
+                            + (snapshot.cacheBudgetBytes / 1024L) + " KiB"),
+                    6, y + 24, 0xB8E6FF, true);
         }
     }
 }
