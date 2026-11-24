@@ -19,7 +19,7 @@ The target is practical compatibility with the OptiFine shader-pack format used 
 ## Single-pipeline design
 
 1. **Pack discovery** — implemented as an initial catalog for top-level shader-pack folders and ZIP files under `shaderpacks/`. Selection is persisted. This stage does not extract archives. ZIP discovery rejects unsafe entry paths and archives with more than 20,000 entries; the catalog does not extract archive contents.
-2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet. A bounded source inventory counts `.vsh`, `.fsh`, and `.glsl` files and reports program filename stems; it does not parse or compile their contents.
+2. **Pack metadata and options** — initial read-only inspection is implemented for `shaders/shaders.properties`, including property count plus `screen` and `sliders` identifiers. A preview screen lists declared identifiers. These are not editable controls and do not change shader behavior yet. A bounded source inventory counts `.vsh`, `.fsh`, and `.glsl` files. A separate preflight pairs vertex and fragment files by relative path and reports complete, vertex-only, and fragment-only program sets for folders and ZIP archives. This is structural pairing only; it does not parse GLSL, validate interfaces, or compile programs.
 3. **Compatibility parser** — parse the supported OptiFine-style program layout, shader properties, uniforms, and texture declarations. Report unsupported syntax before activation.
 4. **Program compiler** — compile vertex/fragment programs and link them into owned program objects. Cache compiled results only for the current resource generation and graphics context.
 5. **Render graph** — execute supported shadow, terrain/entity, composite, and final passes in a deterministic order. Every pass declares inputs, outputs, depth behavior, and resource dependencies.
@@ -88,3 +88,8 @@ This document is an engineering plan. It does not mean shader loading, shader co
 A small bounded storage component now persists raw option override strings independently for each pack and option identifier. It rejects unsafe pack names, malformed identifiers, oversized values, and oversized configuration files; writes use a temporary file and atomic replacement where supported. The standalone test suite covers pack isolation, save/load/removal, and input bounds.
 
 This is storage infrastructure only. The current options screen remains read-only: it does not create widgets from declarations, write values through this store, interpret option types, or apply values to GLSL uniforms. Those steps require a verified parser for the shader-pack property semantics before UI controls are introduced.
+
+
+## Alpha update — shader program pairing preflight
+
+The pack manager now reports how many program paths have both a vertex and fragment stage, plus unmatched stages. Pairing uses the full relative path under `shaders/`, avoiding false matches when different subfolders reuse the same filename. The scan is bounded by archive-entry and program-count limits, rejects unsafe ZIP paths, and is covered by folder and ZIP regression tests. These counts are a structural preflight only; they do not establish GLSL validity or runtime compatibility.
