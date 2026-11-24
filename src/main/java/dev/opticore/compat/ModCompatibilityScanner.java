@@ -51,7 +51,7 @@ public final class ModCompatibilityScanner {
         {"Weather2", "weather2", "Weather and particle rendering test required"},
         {"Xaero's Minimap", "xaerominimap", "HUD overlay integration test required"},
         {"YUNG's API", "yungsapi", "Library dependency; verify Forge build"},
-        {"YUNG's Better Cave Biomes", "bettercaves", "World-generation and block rendering test required"},
+        {"YUNG's Cave Biomes", "yungs_cave_biomes", "World-generation and block rendering test required"},
         {"Embeddium", "embeddium", "Explicitly excluded by the OptiCore project", "excluded"},
         {"Oculus", "oculus", "Explicitly excluded by the OptiCore project", "excluded"}
     };
