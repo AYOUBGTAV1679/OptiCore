@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs Minecraft-independent cache and shader-pack inspection tests with a plain JDK 17+.
+# Runs Minecraft-independent cache, shader inspection, and render-graph tests with JDK 17+.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT=build/cache-test-classes
@@ -29,7 +29,9 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderStageInterfaceValidator.java \
   src/test/java/dev/opticore/client/shader/ShaderStageInterfaceValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \
-  src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java
+  src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java \
+  src/main/java/dev/opticore/client/shader/ShaderRenderGraph.java \
+  src/test/java/dev/opticore/client/shader/ShaderRenderGraphSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
 java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
@@ -43,3 +45,4 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderGlslInterfaceScannerSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderStageInterfaceValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramDescriptorSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphSelfTest
