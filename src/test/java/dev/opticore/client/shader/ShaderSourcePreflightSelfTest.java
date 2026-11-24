@@ -12,14 +12,14 @@ public final class ShaderSourcePreflightSelfTest {
         Path folder = Files.createTempDirectory("opticore-glsl-preflight");
         Path shaders = Files.createDirectories(folder.resolve("shaders/gbuffers"));
         Files.writeString(shaders.resolve("terrain.vsh"),
-                "#version 150\\n#extension GL_ARB_explicit_attrib_location : enable\\n"
-                        + "// void main() {}\\nvoid main() { gl_Position = vec4(0.0); }\\n");
+                "#version 150\n#extension GL_ARB_explicit_attrib_location : enable\n"
+                        + "// void main() {}\nvoid main() { gl_Position = vec4(0.0); }\n");
         Files.writeString(shaders.resolve("terrain.fsh"),
-                "#version 150\\n#include \\"common.glsl\\"\\n"
-                        + "/* void main() {} */\\nvoid main() {}\\n");
+                "#version 150\n#include \"common.glsl\"\n"
+                        + "/* void main() {} */\nvoid main() {}\n");
         Files.writeString(folder.resolve("shaders/shadow.fsh"),
-                "#version 120\\n// no entry point\\n"
-                        + "const char *fake = \\"void main() { }\\";\\n");
+                "#version 120\n// no entry point\n"
+                        + "const char *fake = \"void main() { }\";\n");
         ShaderSourcePreflight.Summary dir = ShaderSourcePreflight.inspect(folder, false);
         check(dir.inspectedStages() == 3, "directory stages");
         check(dir.stagesWithoutMain() == 1, "comments and strings do not fake main");
@@ -31,8 +31,8 @@ public final class ShaderSourcePreflightSelfTest {
 
         Path zipPath = Files.createTempFile("opticore-glsl-preflight", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            add(zip, "shaders/test.vsh", "/* void main() {} */\\nvoid main() {}");
-            add(zip, "shaders/test.fsh", "#version 150\\nvoid main() {}");
+            add(zip, "shaders/test.vsh", "/* void main() {} */\nvoid main() {}");
+            add(zip, "shaders/test.fsh", "#version 150\nvoid main() {}");
             add(zip, "../shaders/evil.vsh", "void main() {}");
         }
         ShaderSourcePreflight.Summary archive = ShaderSourcePreflight.inspect(zipPath, true);
