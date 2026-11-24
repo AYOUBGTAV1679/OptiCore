@@ -31,20 +31,26 @@ public class OptiCoreSettingsScreen extends Screen {
             button.setMessage(toggleText("screen.opticore.chunk_diagnostics", OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()));
         }).bounds(center - 105, top + 56, 210, 20).build());
 
+        addRenderableWidget(Button.builder(toggleText("screen.opticore.frame_time", OptiCoreConfig.SHOW_FRAME_TIME.get()), button -> {
+            OptiCoreConfig.SHOW_FRAME_TIME.set(!OptiCoreConfig.SHOW_FRAME_TIME.get());
+            if (!OptiCoreConfig.SHOW_FRAME_TIME.get()) FrameTimeMonitor.reset();
+            button.setMessage(toggleText("screen.opticore.frame_time", OptiCoreConfig.SHOW_FRAME_TIME.get()));
+        }).bounds(center - 105, top + 84, 210, 20).build());
+
         addRenderableWidget(Button.builder(cacheBudgetText(), button -> {
             int current = OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get();
             int next = current >= 256 ? 32 : current * 2;
             OptiCoreConfig.RENDER_CACHE_BUDGET_MB.set(next);
             ChunkRenderCache.applyConfiguredBudget();
             button.setMessage(cacheBudgetText());
-        }).bounds(center - 105, top + 84, 210, 20).build());
+        }).bounds(center - 105, top + 112, 210, 20).build());
 
         addRenderableWidget(Button.builder(Component.literal("Compatibility"), button ->
                 minecraft.setScreen(new OptiCoreCompatibilityScreen(this)))
-                .bounds(center - 105, top + 112, 210, 20).build());
+                .bounds(center - 105, top + 140, 210, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
-                .bounds(center - 105, top + 140, 210, 20).build());
+                .bounds(center - 105, top + 168, 210, 20).build());
     }
 
     private static Component cacheBudgetText() {
@@ -63,7 +69,7 @@ public class OptiCoreSettingsScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, title, width / 2, height / 4 - 28, 0xFFFFFF);
         graphics.drawCenteredString(font, Component.translatable("screen.opticore.zoom_hint"),
-                width / 2, height / 4 + 166, 0xAAAAAA);
+                width / 2, height / 4 + 194, 0xAAAAAA);
     }
 
     @Override
