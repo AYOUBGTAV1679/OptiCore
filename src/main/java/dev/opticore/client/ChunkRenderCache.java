@@ -22,7 +22,10 @@ public final class ChunkRenderCache {
     private ChunkRenderCache() {}
 
     public static void applyConfiguredBudget() {
-        CACHE.setMaxBytes(OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get() * MIB);
+        long configuredBytes = OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get() * MIB;
+        if (CACHE.maxBytes() != configuredBytes) {
+            CACHE.setMaxBytes(configuredBytes);
+        }
     }
 
     public static RenderCacheKey key(Level level, int chunkX, int chunkZ, int sectionY) {
