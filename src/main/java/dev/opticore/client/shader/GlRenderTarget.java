@@ -67,7 +67,8 @@ public final class GlRenderTarget implements AutoCloseable {
     }
 
     private static GlRenderTarget allocate(int width, int height) {
-        int previousFramebuffer = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+        int previousDrawFramebuffer = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int previousReadFramebuffer = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
         int previousTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
         int previousRenderbuffer = GL11.glGetInteger(GL30.GL_RENDERBUFFER_BINDING);
 
@@ -109,7 +110,8 @@ public final class GlRenderTarget implements AutoCloseable {
             deleteObjects(fbo, texture, depth);
             throw failure;
         } finally {
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDrawFramebuffer);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousReadFramebuffer);
             GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, previousRenderbuffer);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, previousTexture);
         }
@@ -126,7 +128,17 @@ public final class GlRenderTarget implements AutoCloseable {
         ensureOpen();
         java.nio.FloatBuffer previousClear = org.lwjgl.BufferUtils.createFloatBuffer(4);
         GL11.glGetFloatv(GL11.GL_COLOR_CLEAR_VALUE, previousClear);
+        double previousDepthClear = GL11.glGetDouble(GL11.GL_DEPTH_CLEAR_VALUE);
+        java.nio.ByteBuffer previousColorMask = org.lwjgl.BufferUtils.createByteBuffer(4);
+        GL11.glGetBooleanv(GL11.GL_COLOR_WRITEMASK, previousColorMask);
+        boolean previousDepthMask = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+        boolean scissorWasEnabled = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
         try (Binding ignored = bind()) {
+            // glClear obeys scissor and write masks; neutralize them so the
+            // off-screen target is initialized completely, then restore them.
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+            GL11.glColorMask(true, true, true, true);
+            GL11.glDepthMask(true);
             GL11.glClearColor(red, green, blue, alpha);
             int mask = GL11.GL_COLOR_BUFFER_BIT;
             if (clearDepth) mask |= GL11.GL_DEPTH_BUFFER_BIT;
@@ -134,6 +146,12 @@ public final class GlRenderTarget implements AutoCloseable {
         } finally {
             GL11.glClearColor(previousClear.get(0), previousClear.get(1),
                     previousClear.get(2), previousClear.get(3));
+            GL11.glClearDepth(previousDepthClear);
+            GL11.glColorMask(previousColorMask.get(0) != 0, previousColorMask.get(1) != 0,
+                    previousColorMask.get(2) != 0, previousColorMask.get(3) != 0);
+            GL11.glDepthMask(previousDepthMask);
+            if (scissorWasEnabled) GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            else GL11.glDisable(GL11.GL_SCISSOR_TEST);
         }
     }
 
@@ -184,7 +202,8 @@ public final class GlRenderTarget implements AutoCloseable {
 
     /** Scoped framebuffer + viewport binding that restores the previous state. */
     public static final class Binding implements AutoCloseable {
-        private final int previousFramebuffer;
+        private final int previousDrawFramebuffer;
+        private final int previousReadFramebuffer;
         private final int previousViewportX;
         private final int previousViewportY;
         private final int previousViewportWidth;
@@ -192,7 +211,8 @@ public final class GlRenderTarget implements AutoCloseable {
         private boolean closed;
 
         private Binding(int framebuffer, int width, int height) {
-            previousFramebuffer = GL11.glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+            previousDrawFramebuffer = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+            previousReadFramebuffer = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
             java.nio.IntBuffer viewport = org.lwjgl.BufferUtils.createIntBuffer(4);
             GL11.glGetIntegerv(GL11.GL_VIEWPORT, viewport);
             previousViewportX = viewport.get(0);
@@ -208,7 +228,8 @@ public final class GlRenderTarget implements AutoCloseable {
         public void close() {
             RenderSystem.assertOnRenderThread();
             if (closed) return;
-            GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDrawFramebuffer);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousReadFramebuffer);
             GL11.glViewport(previousViewportX, previousViewportY,
                     previousViewportWidth, previousViewportHeight);
             closed = true;
