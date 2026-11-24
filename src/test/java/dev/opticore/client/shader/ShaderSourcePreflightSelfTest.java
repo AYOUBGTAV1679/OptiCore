@@ -25,7 +25,7 @@ public final class ShaderSourcePreflightSelfTest {
         Path zipPath = Files.createTempFile("opticore-glsl-preflight", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
             add(zip, "shaders/test.vsh", "void main() {}");
-            add(zip, "shaders/test.fsh", "#version 150\\nvoid main() {}");
+            add(zip, "shaders/test.fsh", "#version 150\nvoid main() {}");
             add(zip, "../shaders/evil.vsh", "void main() {}");
         }
         ShaderSourcePreflight.Summary archive = ShaderSourcePreflight.inspect(zipPath, true);
