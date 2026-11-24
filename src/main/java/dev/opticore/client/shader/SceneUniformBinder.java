@@ -35,6 +35,6 @@ public final class SceneUniformBinder {
         program.setUniform1f("viewHeight", scene.viewportHeight());
         program.setUniform1f("frameTimeCounter", (float) (scene.timeSeconds() % 3600.0d));
         program.setUniform1i("worldTime", (int) scene.normalizedDayTime());
-        program.setUniform1i("worldDay", (int) Math.floorDiv(scene.gameTime(), 24000L));
+        program.setUniform1i("worldDay", (int) Math.floorDiv(scene.dayTime(), 24000L));
     }
 }
