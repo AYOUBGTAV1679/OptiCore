@@ -24,5 +24,10 @@
   "screen.opticore.shaders.status_error": "Could not save the shader selection.",
   "screen.opticore.shaders.metadata": "Pack properties: %s | sliders: %s",
   "screen.opticore.shaders.no_metadata": "No shaders/shaders.properties metadata found.",
-  "screen.opticore.shaders.list_limited": "More packs detected; list is limited by screen height."
+  "screen.opticore.shaders.list_limited": "More packs detected; list is limited by screen height.",
+  "screen.opticore.shaders.options": "Options",
+  "screen.opticore.shaders.options_title": "Shader Pack Options",
+  "screen.opticore.shaders.options_readonly": "Detected declarations only — editing is not available yet.",
+  "screen.opticore.shaders.options_empty": "This pack does not declare screen or slider options.",
+  "screen.opticore.shaders.options_count": "Detected controls: %s"
 }
