@@ -23,7 +23,7 @@ public final class SmartChunkCacheSelfTest {
         else { failed++; System.out.println("FAIL  " + name); }
     }
     public static void main(String[] args) throws Exception {
-        hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); largeBudgetAdditionDoesNotOverflow(); shrinkEvicts();
+        hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); negativeSizeRejected(); largeBudgetAdditionDoesNotOverflow(); shrinkEvicts();
         invalidateChunk(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
@@ -85,6 +85,16 @@ public final class SmartChunkCacheSelfTest {
         var c=new SmartChunkCache<E>(50); E big=new E(51);
         check("oversized value rejected", !c.put(k(0,0,0),big));
         check("rejected value released once", big.released.get()==1 && c.size()==0 && c.stats().rejected()==1);
+    }
+    static void negativeSizeRejected() {
+        var c = new SmartChunkCache<E>(100);
+        E retained = new E(4);
+        E invalid = new E(-1);
+        c.put(k(0,0,0), retained);
+        boolean accepted = c.put(k(0,0,0), invalid);
+        check("negative size estimate is rejected without replacing valid entry",
+                !accepted && invalid.released.get() == 1 && c.get(k(0,0,0)) == retained
+                        && c.currentBytes() == 4 && c.stats().rejected() == 1);
     }
     static void largeBudgetAdditionDoesNotOverflow() {
         var c = new SmartChunkCache<E>(Long.MAX_VALUE);
