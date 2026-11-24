@@ -37,7 +37,7 @@ public final class ShaderPackOptionStoreSelfTest {
 
         Files.deleteIfExists(file);
         Files.deleteIfExists(directory);
-        System.out.println("ShaderPackOptionStoreSelfTest: 10 checks passed");
+        System.out.println("ShaderPackOptionStoreSelfTest: 12 checks passed");
     }
 
     private static void check(boolean condition, String label) {
