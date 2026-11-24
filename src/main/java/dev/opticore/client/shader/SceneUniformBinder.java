@@ -22,6 +22,12 @@ public final class SceneUniformBinder {
     /** Uploads scene matrices/time and, when supplied, weather/fog/camera-light values. */
     public static void uploadCommon(GlShaderProgram program, SceneUniformSnapshot scene,
             SceneEnvironmentSnapshot environment) {
+        uploadCommon(program, scene, null);
+    }
+
+    /** Uploads scene matrices/time and, when supplied, weather/fog/camera-light values. */
+    public static void uploadCommon(GlShaderProgram program, SceneUniformSnapshot scene,
+            SceneEnvironmentSnapshot environment) {
         if (program == null) throw new NullPointerException("program");
         if (scene == null) throw new NullPointerException("scene");
 
@@ -42,6 +48,17 @@ public final class SceneUniformBinder {
         program.setUniform1f("frameTimeCounter", (float) (scene.timeSeconds() % 3600.0d));
         program.setUniform1i("worldTime", (int) scene.normalizedDayTime());
         program.setUniform1i("worldDay", (int) Math.floorDiv(scene.dayTime(), 24000L));
+
+        if (environment != null) {
+            program.setUniform3f("fogColor", environment.fogRed(),
+                    environment.fogGreen(), environment.fogBlue());
+            program.setUniform1f("rainStrength", environment.rainStrength());
+            program.setUniform1f("wetness", environment.rainStrength());
+            program.setUniform1f("thunderStrength", environment.thunderStrength());
+            program.setUniform1f("skyDarken", environment.skyDarken());
+            program.setUniform1i("blockLightLevel", environment.blockLight());
+            program.setUniform1i("skyLightLevel", environment.skyLight());
+        }
 
         if (environment != null) {
             program.setUniform3f("fogColor", environment.fogRed(),
