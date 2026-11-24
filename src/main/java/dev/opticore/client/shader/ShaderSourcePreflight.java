@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -26,15 +27,23 @@ public final class ShaderSourcePreflight {
     private static final long MAX_TOTAL_BYTES = 16L * 1024 * 1024;
     private static final Pattern MAIN = Pattern.compile("\\bvoid\\s+main\\s*\\(");
     private static final Pattern VERSION = Pattern.compile("(?m)^\\s*#\\s*version\\s+([0-9]+)(?:\\s+([A-Za-z]+))?");
+    private static final Pattern EXTENSION = Pattern.compile("(?m)^\\s*#\\s*extension\\s+([A-Za-z0-9_]+)\\s*:");
+    private static final Pattern INCLUDE = Pattern.compile("(?m)^\\s*#\\s*include\\s+[<\"][^>\"]+[>\"]");
     private ShaderSourcePreflight() {}
 
     public record Summary(int inspectedStages, int stagesWithoutMain, int versionedStages,
-                          Set<String> versions, int includeDirectives, boolean truncated) {
-        public Summary { versions = Set.copyOf(versions); }
-        public static Summary empty() { return new Summary(0, 0, 0, Set.of(), 0, false); }
+                          Set<String> versions, int includeDirectives, Set<String> extensions,
+                          int extensionDirectives, boolean truncated) {
+        public Summary {
+            versions = Set.copyOf(versions);
+            extensions = Set.copyOf(extensions);
+        }
+        public static Summary empty() {
+            return new Summary(0, 0, 0, Set.of(), 0, Set.of(), 0, false);
+        }
     }
 
-    private record StageResult(boolean hasMain, String version, int includes) {}
+    private record StageResult(boolean hasMain, String version, int includes, Set<String> extensions) {}
 
     public static Summary inspect(Path pack, boolean archive) {
         if (pack == null) return Summary.empty();
@@ -43,13 +52,14 @@ public final class ShaderSourcePreflight {
     }
 
     private static Summary inspectFolder(Path pack) throws IOException {
-        Path root = pack.resolve("shaders").normalize();
-        if (!root.startsWith(pack.normalize()) || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS))
+        Path normalizedPack = pack.toAbsolutePath().normalize();
+        Path root = normalizedPack.resolve("shaders").normalize();
+        if (!root.startsWith(normalizedPack) || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS))
             return Summary.empty();
-        int entries = 0, stages = 0, missingMain = 0, versioned = 0, includes = 0;
+        int entries = 0, stages = 0, missingMain = 0, versioned = 0, includes = 0, extensionCount = 0;
         long bytes = 0;
         boolean truncated = false;
-        Set<String> versions = new TreeSet<>();
+        Set<String> versions = new TreeSet<>(), extensions = new TreeSet<>();
         try (var paths = Files.walk(root, 32)) {
             var iterator = paths.iterator();
             while (iterator.hasNext()) {
@@ -68,16 +78,18 @@ public final class ShaderSourcePreflight {
                 if (!result.hasMain()) missingMain++;
                 if (result.version() != null) { versioned++; versions.add(result.version()); }
                 includes += result.includes();
+                extensions.addAll(result.extensions());
+                extensionCount += result.extensions().size();
             }
         }
-        return new Summary(stages, missingMain, versioned, versions, includes, truncated);
+        return new Summary(stages, missingMain, versioned, versions, includes, extensions, extensionCount, truncated);
     }
 
     private static Summary inspectZip(Path path) throws IOException {
-        int entries = 0, stages = 0, missingMain = 0, versioned = 0, includes = 0;
+        int entries = 0, stages = 0, missingMain = 0, versioned = 0, includes = 0, extensionCount = 0;
         long bytes = 0;
         boolean truncated = false;
-        Set<String> versions = new TreeSet<>();
+        Set<String> versions = new TreeSet<>(), extensions = new TreeSet<>();
         try (ZipFile zip = new ZipFile(path.toFile())) {
             Enumeration<? extends ZipEntry> iterator = zip.entries();
             while (iterator.hasMoreElements()) {
@@ -100,9 +112,11 @@ public final class ShaderSourcePreflight {
                 if (!result.hasMain()) missingMain++;
                 if (result.version() != null) { versioned++; versions.add(result.version()); }
                 includes += result.includes();
+                extensions.addAll(result.extensions());
+                extensionCount += result.extensions().size();
             }
         }
-        return new Summary(stages, missingMain, versioned, versions, includes, truncated);
+        return new Summary(stages, missingMain, versioned, versions, includes, extensions, extensionCount, truncated);
     }
 
     private static StageResult scan(InputStream input, long declaredSize) throws IOException {
@@ -116,16 +130,70 @@ public final class ShaderSourcePreflight {
                 source.append(buffer, 0, read);
             }
         }
-        String text = source.toString();
-        var main = MAIN.matcher(text);
-        var version = VERSION.matcher(text);
+
+        String withoutComments = stripComments(source);
+        String code = maskQuotedText(withoutComments);
+        Matcher main = MAIN.matcher(code);
+        Matcher version = VERSION.matcher(withoutComments);
         String versionValue = version.find() ? version.group(1)
                 + (version.group(2) == null ? "" : version.group(2)) : null;
+        Matcher includeMatcher = INCLUDE.matcher(withoutComments);
         int includeCount = 0;
-        var lines = text.split("\\R");
-        for (String line : lines) {
-            if (line.stripLeading().startsWith("#include")) includeCount++;
+        while (includeMatcher.find()) includeCount++;
+        Matcher extensionMatcher = EXTENSION.matcher(withoutComments);
+        Set<String> extensions = new TreeSet<>();
+        while (extensionMatcher.find()) extensions.add(extensionMatcher.group(1));
+        return new StageResult(main.find(), versionValue, includeCount, extensions);
+    }
+
+    /** Removes line and block comments while preserving newlines and quoted strings. */
+    private static String stripComments(CharSequence source) {
+        StringBuilder out = new StringBuilder(source.length());
+        boolean lineComment = false, blockComment = false, quoted = false, escaped = false;
+        char quote = 0;
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            char next = i + 1 < source.length() ? source.charAt(i + 1) : 0;
+            if (lineComment) {
+                if (c == '\n' || c == '\r') { lineComment = false; out.append(c); }
+                else out.append(' ');
+            } else if (blockComment) {
+                if (c == '*' && next == '/') { out.append("  "); i++; blockComment = false; }
+                else out.append(c == '\n' || c == '\r' ? c : ' ');
+            } else if (quoted) {
+                out.append(c);
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == quote) quoted = false;
+            } else if (c == '/' && next == '/') {
+                out.append("  "); i++; lineComment = true;
+            } else if (c == '/' && next == '*') {
+                out.append("  "); i++; blockComment = true;
+            } else {
+                out.append(c);
+                if (c == '"' || c == '\'') { quoted = true; quote = c; }
+            }
         }
-        return new StageResult(main.find(), versionValue, includeCount);
+        return out.toString();
+    }
+
+    /** Masks string/character contents so keywords inside literals are not treated as GLSL code. */
+    private static String maskQuotedText(String source) {
+        StringBuilder out = new StringBuilder(source.length());
+        boolean quoted = false, escaped = false;
+        char quote = 0;
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            if (quoted) {
+                if (c == '\n' || c == '\r') out.append(c); else out.append(' ');
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == quote) quoted = false;
+            } else {
+                if (c == '"' || c == '\'') { quoted = true; quote = c; out.append(' '); }
+                else out.append(c);
+            }
+        }
+        return out.toString();
     }
 }
