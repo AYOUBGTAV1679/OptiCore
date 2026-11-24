@@ -30,6 +30,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/ShaderStageInterfaceValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \
   src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java \
+  src/main/java/dev/opticore/client/shader/Matrix4Inverse.java \
+  src/test/java/dev/opticore/client/shader/Matrix4InverseSelfTest.java \
   src/main/java/dev/opticore/client/shader/SceneUniformSnapshot.java \
   src/main/java/dev/opticore/client/shader/SceneEnvironmentSnapshot.java \
   src/test/java/dev/opticore/client/shader/SceneEnvironmentSnapshotSelfTest.java \
@@ -51,6 +53,7 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderGlslInterfaceScannerSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderStageInterfaceValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramDescriptorSelfTest
+java -cp "$OUT" dev.opticore.client.shader.Matrix4InverseSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneUniformSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphSelfTest
