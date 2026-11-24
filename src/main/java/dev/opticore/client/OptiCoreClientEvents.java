@@ -31,11 +31,18 @@ public final class OptiCoreClientEvents {
 
     @SubscribeEvent
     public static void onComputeFov(ComputeFovModifierEvent event) {
-        if (!OptiCoreConfig.ENABLE_ZOOM.get()) return;
+        if (!OptiCoreConfig.ENABLE_ZOOM.get()) {
+            ZoomController.reset();
+            return;
+        }
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || !OptiCoreClient.ZOOM.isDown()) return;
-        float factor = OptiCoreConfig.ZOOM_FACTOR.get().floatValue();
-        event.setNewFovModifier(event.getFovModifier() * factor);
+        if (mc.player == null) {
+            ZoomController.reset();
+            return;
+        }
+        double factor = ZoomController.update(OptiCoreClient.ZOOM.isDown(),
+                OptiCoreConfig.ZOOM_FACTOR.get(), OptiCoreConfig.SMOOTH_ZOOM.get());
+        event.setNewFovModifier((float) (event.getFovModifier() * factor));
     }
 
     @SubscribeEvent
