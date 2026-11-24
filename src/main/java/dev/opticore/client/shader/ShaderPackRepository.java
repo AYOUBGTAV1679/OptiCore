@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -37,7 +38,7 @@ public final class ShaderPackRepository {
             }
             try (var entries = Files.list(directory)) {
                 entries.filter(Files::isRegularFile)
-                        .filter(path -> path.getFileName().toString().toLowerCase().endsWith(".zip"))
+                        .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".zip"))
                         .forEach(path -> {
                             if (containsShaderDirectory(path)) {
                                 packs.add(new Pack(path.getFileName().toString(), path, true));
@@ -55,7 +56,7 @@ public final class ShaderPackRepository {
         try (ZipFile zip = new ZipFile(archive.toFile())) {
             return zip.stream().map(ZipEntry::getName)
                     .anyMatch(name -> name.startsWith("shaders/") && !name.startsWith("/")
-                            && !name.contains("../"));
+                            && !name.contains("../") && !name.contains("\\..\\"));
         } catch (IOException ignored) {
             return false;
         }
@@ -66,6 +67,9 @@ public final class ShaderPackRepository {
     }
 
     public static boolean select(String name) {
+        if (!"OFF".equals(name) && discover().stream().noneMatch(pack -> pack.name().equals(name))) {
+            return false;
+        }
         Properties properties = readProperties();
         properties.setProperty(ACTIVE_KEY, name);
         try {
