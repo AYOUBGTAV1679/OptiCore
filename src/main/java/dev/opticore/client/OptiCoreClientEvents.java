@@ -6,9 +6,6 @@ import dev.opticore.client.shader.SceneUniformSnapshot;
 import dev.opticore.client.shader.SceneEnvironmentSnapshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
-import dev.opticore.client.shader.SceneEnvironmentSnapshot;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,18 +21,12 @@ import net.minecraftforge.fml.common.Mod;
 public final class OptiCoreClientEvents {
     private static volatile SceneUniformSnapshot latestSceneUniformSnapshot;
     private static volatile SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot;
-    private static volatile SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot;
 
     private OptiCoreClientEvents() {}
 
     /** Latest read-only scene snapshot; null until capture is enabled and a level frame completes. */
     public static SceneUniformSnapshot latestSceneUniformSnapshot() {
         return latestSceneUniformSnapshot;
-    }
-
-    /** Latest fog, weather, and camera light sample; null until capture is enabled. */
-    public static SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot() {
-        return latestSceneEnvironmentSnapshot;
     }
 
     /** Latest fog, weather, and camera light sample; null until capture is enabled. */
