@@ -37,7 +37,7 @@ public final class ModCompatibilityScanner {
         {"Entity Texture Features", "entity_texture_features", "Texture integration test required"},
         {"Essential", "essential", "Overlay and renderer integration test required"},
         {"Framework", "framework", "Library dependency; verify target version"},
-        {"From The Fog", "fromtheshadows", "Entity rendering test required; verify mod ID"},
+        {"From The Fog", "fromthefog", "Entity rendering test required"},
         {"GeckoLib", "geckolib", "Animated entity rendering test required"},
         {"Geophilic", "geophilic", "World-generation and block rendering test required"},
         {"JEI", "jei", "GUI overlay integration test required"},
