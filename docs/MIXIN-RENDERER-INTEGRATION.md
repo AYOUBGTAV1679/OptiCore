@@ -37,7 +37,7 @@ Use a minimal client-only instrumentation mixin around the rebuild future to mea
 
 ## Validation status
 
-Mixin build configuration has been added, but the empty configuration has no active mixin classes. A successful Gradle build is still required for this configuration change, followed by a real Forge client launch. No renderer behavior or FPS improvement is claimed by this foundation change.
+Mixin build configuration has been compiled successfully by GitHub Actions for the current PR head. Workflow run `45406256000` completed with a successful `forge-build` job, including the standalone regression suite, `gradle clean build`, and JAR artifact upload. The artifact `OptiCore-Forge-1.20.1` was present and unexpired at verification time. The configuration remains intentionally empty and has no active mixin classes. A real Forge client launch and in-game verification are still pending. No renderer behavior or FPS improvement is claimed by this foundation change.
 
 ## References
 
