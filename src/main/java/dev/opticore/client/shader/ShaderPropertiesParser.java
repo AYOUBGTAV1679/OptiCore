@@ -46,14 +46,14 @@ public final class ShaderPropertiesParser {
     private static int countTokens(String value) {
         if (value.isBlank()) return 0;
         int count = 0;
-        for (String token : value.split("[,\\\\s]+")) {
+        for (String token : value.split("[,\\s]+")) {
             if (!token.isBlank() && !token.startsWith("[") && !token.startsWith("]")) count++;
         }
         return count;
     }
 
     private static void addTokens(Set<String> output, String value) {
-        for (String token : value.split("[,\\\\s]+")) {
+        for (String token : value.split("[,\\s]+")) {
             String normalized = token.trim();
             if (normalized.isEmpty() || normalized.startsWith("[") || normalized.startsWith("]")) continue;
             if (normalized.equals("<empty>") || normalized.equals("profile")) continue;
