@@ -14,6 +14,9 @@ CPU-side render artifacts.
   block-state geometry, lighting, and render settings.
 - Regression tests verify that changing each dependency fingerprint produces a
   distinct cache identity.
+- Block-edit boundary calculation is isolated from Minecraft classes and tested
+  for interior edits, positive-coordinate edges/corners, and negative world
+  coordinates. Both block placement and breaking use the same invalidation path.
 
 ## Critical limitation
 This is **not compiled-mesh caching** and does not claim an FPS improvement.
@@ -34,3 +37,11 @@ must then be connected at a verified CPU mesh compilation boundary. Until the
 integration passes tests for edits, border changes, lighting, reloads, dimension
 changes, chunk unloads, and memory pressure, OptiCore must not skip vanilla
 mesh compilation or reuse a cached artifact.
+
+## Boundary invalidation tests
+
+`ChunkBoundaryInvalidation` computes the current chunk plus face-adjacent chunks
+when an edit lies on a chunk border. It uses arithmetic compatible with negative
+world coordinates (`>> 4` and `& 15`) and returns an immutable list. The
+Minecraft-facing cache owner applies those coordinates to the current dimension.
+This keeps coordinate math testable with the standalone JDK test suite.
