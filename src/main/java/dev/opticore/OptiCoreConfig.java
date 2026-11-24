@@ -8,6 +8,7 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_ZOOM;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHUNK_DIAGNOSTICS;
     public static final ForgeConfigSpec.DoubleValue ZOOM_FACTOR;
+    public static final ForgeConfigSpec.IntValue RENDER_CACHE_BUDGET_MB;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -18,6 +19,8 @@ public final class OptiCoreConfig {
                 .define("enableZoom", true);
         SHOW_CHUNK_DIAGNOSTICS = builder.comment("Show read-only chunk renderer queue diagnostics on the HUD.")
                 .define("showChunkDiagnostics", false);
+        RENDER_CACHE_BUDGET_MB = builder.comment("CPU-side render artifact cache budget in MiB.")
+                .defineInRange("renderCacheBudgetMb", 32, 8, 512);
         ZOOM_FACTOR = builder.comment("Zoom multiplier. Lower values zoom in further.")
                 .defineInRange("zoomFactor", 0.20D, 0.05D, 0.75D);
         builder.pop();
