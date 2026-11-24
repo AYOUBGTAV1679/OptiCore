@@ -9,6 +9,7 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec.BooleanValue SMOOTH_ZOOM;
     public static final ForgeConfigSpec.BooleanValue SHOW_CHUNK_DIAGNOSTICS;
     public static final ForgeConfigSpec.BooleanValue SHOW_FRAME_TIME;
+    public static final ForgeConfigSpec.BooleanValue CAPTURE_SCENE_UNIFORMS;
     public static final ForgeConfigSpec.DoubleValue ZOOM_FACTOR;
     public static final ForgeConfigSpec.IntValue RENDER_CACHE_BUDGET_MB;
 
@@ -25,6 +26,8 @@ public final class OptiCoreConfig {
                 .define("showChunkDiagnostics", false);
         SHOW_FRAME_TIME = builder.comment("Show rolling frame time and estimated 1% low FPS on the HUD.")
                 .define("showFrameTime", false);
+        CAPTURE_SCENE_UNIFORMS = builder.comment("Capture read-only scene matrices and camera/time data at AFTER_LEVEL for shader integration diagnostics.")
+                .define("captureSceneUniforms", false);
         RENDER_CACHE_BUDGET_MB = builder.comment("CPU-side render artifact cache budget in MiB.")
                 .defineInRange("renderCacheBudgetMb", 32, 8, 512);
         ZOOM_FACTOR = builder.comment("Zoom multiplier. Lower values zoom in further.")
