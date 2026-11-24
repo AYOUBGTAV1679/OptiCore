@@ -2,6 +2,7 @@ package dev.opticore.client.shader;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -32,12 +33,11 @@ public final class ShaderSourcePreflightSelfTest {
         check(archive.inspectedStages() == 2, "ZIP stages and unsafe path rejection");
         check(archive.stagesWithoutMain() == 0, "ZIP main detection");
 
-        Files.deleteIfExists(shaders.resolve("terrain.vsh"));
-        Files.deleteIfExists(shaders.resolve("terrain.fsh"));
-        Files.deleteIfExists(shaders.resolve("shadow.fsh"));
-        Files.deleteIfExists(shaders);
-        Files.deleteIfExists(folder.resolve("shaders"));
-        Files.deleteIfExists(folder);
+        try (var paths = Files.walk(folder)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                Files.deleteIfExists(path);
+            }
+        }
         Files.deleteIfExists(zipPath);
         System.out.println("ShaderSourcePreflightSelfTest: 8 checks passed");
     }
