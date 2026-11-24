@@ -26,6 +26,8 @@ The 1.20.1 API documentation exposes a more precise candidate than a render-stag
 - `CompileResults` contains a `Map<RenderType, BufferBuilder.RenderedBuffer>`, a visibility set, transparency sort state, and block-entity lists.
 - `RebuildTask.doTask(...)` is the asynchronous task entry point that invokes the compile work and coordinates the result.
 
+The nested `CompileResults` type is itself package-private, static, and final, even though its fields (`renderedLayers`, `visibilitySet`, `transparencyState`, `blockEntities`, and `globalBlockEntities`) are public. That visibility boundary matters: a normal external Java integration cannot simply name and consume this result type. A Mixin/accessor bridge or an injection that treats the callback value opaquely would be required, and the latter still would not solve payload ownership.
+
 This confirms where CPU-side build output exists before it becomes GPU vertex buffers. It does **not** mean the result is already safe to cache. `RenderedBuffer` is a builder-owned upload payload with a lifecycle, and the transparency sort state plus block-entity/visibility data must remain consistent with the render chunk. A prototype must establish ownership, copying/serialization, cancellation behavior, and the exact point at which the task result is accepted or discarded.
 
 ### Candidate hook assessment
