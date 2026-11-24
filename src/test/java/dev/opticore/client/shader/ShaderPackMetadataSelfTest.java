@@ -3,7 +3,7 @@ package dev.opticore.client.shader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public final class ShaderPropertiesParserSelfTest {
+public final class ShaderPackMetadataSelfTest {
     private ShaderPackMetadataSelfTest() {}
 
     public static void main(String[] args) {
@@ -22,7 +22,7 @@ public final class ShaderPropertiesParserSelfTest {
                 "duplicate identifier deduplicated");
         check(!ShaderPropertiesParser.parse(new byte[256 * 1024 + 1]).hasProperties(),
                 "oversized properties rejected");
-        check(!ShaderPackMetadata.parseProperties("bad=\\uZZZZ".getBytes(StandardCharsets.ISO_8859_1))
+        check(!ShaderPropertiesParser.parse("bad=\\uZZZZ".getBytes(StandardCharsets.ISO_8859_1))
                 .hasProperties(), "malformed escape rejected");
         System.out.println("ShaderPackMetadataSelfTest: 8 checks passed");
     }
