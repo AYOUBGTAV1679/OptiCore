@@ -41,8 +41,8 @@ public final class SceneUniformBinder {
         program.setUniform1i("worldDay", (int) Math.floorDiv(scene.dayTime(), 24000L));
 
         if (environment != null) {
-            program.setUniform3f("fogColor", environment.fogRed(),
-                    environment.fogGreen(), environment.fogBlue());
+            program.setUniform3f("skyColor", environment.skyRed(),
+                    environment.skyGreen(), environment.skyBlue());
             program.setUniform1f("rainStrength", environment.rainStrength());
             program.setUniform1f("wetness", environment.rainStrength());
             program.setUniform1f("thunderStrength", environment.thunderStrength());
