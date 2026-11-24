@@ -1,7 +1,7 @@
 package dev.opticore.client;
 
 import dev.opticore.OptiCore;
-import dev.opticore.cache.ChunkRenderCache;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
