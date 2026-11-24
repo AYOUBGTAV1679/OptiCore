@@ -42,6 +42,26 @@ public final class ChunkRenderCache {
         CACHE.invalidateChunk(dimensionId(level.dimension()), chunkX, chunkZ);
     }
 
+    /**
+     * A block edit can change the visible face geometry of a neighboring chunk
+     * when it occurs on a horizontal chunk border. Invalidate both sides.
+     */
+    public static void invalidateBlockAndNeighbors(Level level,
+            net.minecraft.core.BlockPos pos) {
+        if (level == null || pos == null || !level.isClientSide()) return;
+
+        int chunkX = pos.getX() >> 4;
+        int chunkZ = pos.getZ() >> 4;
+        int localX = pos.getX() & 15;
+        int localZ = pos.getZ() & 15;
+
+        invalidateChunk(level, chunkX, chunkZ);
+        if (localX == 0) invalidateChunk(level, chunkX - 1, chunkZ);
+        if (localX == 15) invalidateChunk(level, chunkX + 1, chunkZ);
+        if (localZ == 0) invalidateChunk(level, chunkX, chunkZ - 1);
+        if (localZ == 15) invalidateChunk(level, chunkX, chunkZ + 1);
+    }
+
     public static void invalidateDimension(ResourceKey<Level> dimension) {
         if (dimension != null) CACHE.invalidateDimension(dimensionId(dimension));
     }
