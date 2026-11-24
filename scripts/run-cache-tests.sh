@@ -23,7 +23,9 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderSourcePreflight.java \
   src/test/java/dev/opticore/client/shader/ShaderSourcePreflightSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderIncludeResolver.java \
-  src/test/java/dev/opticore/client/shader/ShaderIncludeResolverSelfTest.java
+  src/test/java/dev/opticore/client/shader/ShaderIncludeResolverSelfTest.java \\
+  src/main/java/dev/opticore/client/shader/ShaderGlslInterfaceScanner.java \\
+  src/test/java/dev/opticore/client/shader/ShaderGlslInterfaceScannerSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
 java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
@@ -34,3 +36,4 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderPackInventorySelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramIndexSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderSourcePreflightSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderGlslInterfaceScannerSelfTest
