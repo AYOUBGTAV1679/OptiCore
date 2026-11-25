@@ -49,7 +49,7 @@ public final class DirectionalShadowCamera {
 
         // Camera looks opposite the direction toward the light.
         double forwardX = -lightX, forwardY = -lightY, forwardZ = -lightZ;
-        double upX = Math.abs(forwardY) > 0.95 ? 0.0 : 0.0;
+        double upX = 0.0;
         double upY = Math.abs(forwardY) > 0.95 ? 0.0 : 1.0;
         double upZ = Math.abs(forwardY) > 0.95 ? 1.0 : 0.0;
 
@@ -75,8 +75,8 @@ public final class DirectionalShadowCamera {
         double snappedY = centerY + rightY * shiftRight + trueUpY * shiftUp;
         double snappedZ = centerZ + rightZ * shiftRight + trueUpZ * shiftUp;
 
-        // Keep the camera far enough along the light ray for the requested near plane.
-        double distance = near + halfExtent;
+        // Place the focus point just beyond the near plane, inside the depth range.
+        double distance = near + 1.0;
         float[] view = ShadowCameraMatrices.lookAt(
                 snappedX + lightX * distance, snappedY + lightY * distance, snappedZ + lightZ * distance,
                 snappedX, snappedY, snappedZ, upX, upY, upZ);
