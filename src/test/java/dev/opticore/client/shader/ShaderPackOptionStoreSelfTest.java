@@ -28,6 +28,8 @@ public final class ShaderPackOptionStoreSelfTest {
                 "null load path returns empty values");
         check(!ShaderPackOptionStore.save(null, "Example Pack", "option", "x"),
                 "null save path is rejected");
+        check(!ShaderPackOptionStore.save(Path.of(file.getRoot().toString()),
+                "Example Pack", "option", "x"), "filesystem root is not a storage file");
         check(!ShaderPackOptionStore.save(file, "../escape", "option", "x"),
                 "reject unsafe pack name");
         check(!ShaderPackOptionStore.save(file, "Example Pack", "bad/id", "x"),
@@ -41,7 +43,7 @@ public final class ShaderPackOptionStoreSelfTest {
 
         Files.deleteIfExists(file);
         Files.deleteIfExists(directory);
-        System.out.println("ShaderPackOptionStoreSelfTest: 14 checks passed");
+        System.out.println("ShaderPackOptionStoreSelfTest: 15 checks passed");
     }
 
     private static void check(boolean condition, String label) {
