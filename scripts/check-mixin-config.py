@@ -78,4 +78,18 @@ assert "chunkX != regionAccessor.opticore$getCenterX()" in capture_source and (
     "chunkZ != regionAccessor.opticore$getCenterZ()" in capture_source
 ), "Capture must skip uncertain center-cell attribution"
 
+# Diagnostic observation must never populate the reusable mesh cache until
+# target-section identity and real dependency fingerprints are available.
+capture_bridge_path = root / "src/main/java/dev/opticore/client/ChunkMeshCapture.java"
+capture_bridge = capture_bridge_path.read_text(encoding="utf-8")
+observe_start = capture_bridge.index("public static void observeCompilation(")
+observe_end = capture_bridge.index("public static long observedBufferCount()", observe_start)
+observe_body = capture_bridge[observe_start:observe_end]
+assert "captureAndStore(" not in observe_body and "storeMesh(" not in observe_body, (
+    "Diagnostic buffer observation must not enable cache insertion"
+)
+assert "ChunkRenderCache.storeMesh(" in capture_bridge, (
+    "The explicit future storage bridge should remain separately testable"
+)
+
 print("Mixin config checks: OK (client-only registration, diagnostics, chunk compile capture)")
