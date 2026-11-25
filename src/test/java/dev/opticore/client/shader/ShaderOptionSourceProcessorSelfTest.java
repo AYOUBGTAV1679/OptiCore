@@ -30,6 +30,12 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(result.source().contains("#define SHADOWS"), "commented boolean enable");
         check(result.source().contains("// #define BLOOM"), "active boolean disable");
         check(result.applied().size() == 3, "all valid overrides reported");
+        ShaderOptionSourceProcessor.Result unchangedValid = ShaderOptionSourceProcessor.apply(
+                "#define BLOOM\\n", declarations, Map.of("BLOOM", "true"));
+        check(unchangedValid.source().equals("#define BLOOM\\n"),
+                "already-matching boolean declaration remains unchanged");
+        check(unchangedValid.applied().contains("BLOOM"),
+                "already-matching declaration is still reported as applied");
 
         ShaderOptionSourceProcessor.Result invalid = ShaderOptionSourceProcessor.apply(source,
                 declarations, Map.of("QUALITY", "999", "UNKNOWN", "true"));
@@ -63,7 +69,7 @@ public final class ShaderOptionSourceProcessorSelfTest {
                 functionMacro, declarations, Map.of("QUALITY", "2"));
         check(macroResult.source().equals(functionMacro), "function-like macro is not rewritten");
         check(macroResult.ignored().size() == 1, "function-like macro override is reported ignored");
-        System.out.println("ShaderOptionSourceProcessorSelfTest: 14 checks passed");
+        System.out.println("ShaderOptionSourceProcessorSelfTest: 16 checks passed");
     }
 
     private static void check(boolean condition, String message) {
