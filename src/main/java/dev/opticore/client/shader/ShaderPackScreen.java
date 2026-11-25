@@ -16,6 +16,8 @@ public final class ShaderPackScreen extends Screen {
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
     private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
     private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
+    private int page;
+    private int pageSize = 1;
 
     public ShaderPackScreen(Screen parent) {
         super(Component.translatable("screen.opticore.shaders.title"));
@@ -31,8 +33,12 @@ public final class ShaderPackScreen extends Screen {
         clearWidgets();
         packs = ShaderPackRepository.discover();
         selected = ShaderPackRepository.activePack();
-        ShaderPackRepository.Pack selectedPack = packs.stream().filter(pack -> pack.name().equals(selected))
-                .findFirst().orElse(null);
+        pageSize = Math.max(1, (height - 190) / 24);
+        int pageCount = pageCount();
+        page = Math.max(0, Math.min(page, pageCount - 1));
+
+        ShaderPackRepository.Pack selectedPack = packs.stream()
+                .filter(pack -> pack.name().equals(selected)).findFirst().orElse(null);
         selectedMetadata = selectedPack == null ? ShaderPackMetadata.Summary.empty()
                 : ShaderPackMetadata.inspect(selectedPack);
         selectedInventory = selectedPack == null ? ShaderPackInventory.Summary.empty()
@@ -44,10 +50,11 @@ public final class ShaderPackScreen extends Screen {
         int y = 48;
         addRenderableWidget(Button.builder(selectionText("OFF"), button -> choose("OFF"))
                 .bounds(center - 150, y, 300, 20).build());
-        y += 25;
 
-        int visible = Math.max(0, Math.min(packs.size(), (height - 164) / 24));
-        for (int i = 0; i < visible; i++) {
+        int start = page * pageSize;
+        int end = Math.min(packs.size(), start + pageSize);
+        y += 25;
+        for (int i = start; i < end; i++) {
             ShaderPackRepository.Pack pack = packs.get(i);
             String label = pack.name() + (pack.archive() ? "  [ZIP]" : "  [Folder]");
             addRenderableWidget(Button.builder(selectionText(pack.name(), label),
@@ -56,17 +63,38 @@ public final class ShaderPackScreen extends Screen {
             y += 24;
         }
 
+        int navY = height - 78;
+        Button previous = Button.builder(Component.translatable("screen.opticore.shaders.previous"),
+                button -> changePage(-1)).bounds(center - 150, navY, 145, 20).build();
+        previous.active = page > 0;
+        addRenderableWidget(previous);
+        Button next = Button.builder(Component.translatable("screen.opticore.shaders.next"),
+                button -> changePage(1)).bounds(center + 5, navY, 145, 20).build();
+        next.active = page + 1 < pageCount();
+        addRenderableWidget(next);
+
+        int actionY = height - 29;
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.refresh"),
-                button -> refreshPacks()).bounds(center - 150, height - 52, 70, 20).build());
+                button -> { page = 0; refreshPacks(); })
+                .bounds(center - 150, actionY, 70, 20).build());
         Button optionsButton = Button.builder(Component.translatable("screen.opticore.shaders.options"),
                 button -> minecraft.setScreen(new ShaderPackOptionsScreen(this, selected, selectedMetadata)))
-                .bounds(center - 76, height - 52, 70, 20).build();
+                .bounds(center - 76, actionY, 70, 20).build();
         optionsButton.active = selectedMetadata.hasProperties();
         addRenderableWidget(optionsButton);
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.open_folder"),
-                button -> openFolder()).bounds(center - 2, height - 52, 90, 20).build());
+                button -> openFolder()).bounds(center - 2, actionY, 90, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"),
-                button -> onClose()).bounds(center + 92, height - 52, 58, 20).build());
+                button -> onClose()).bounds(center + 92, actionY, 58, 20).build());
+    }
+
+    private int pageCount() {
+        return Math.max(1, (packs.size() + pageSize - 1) / pageSize);
+    }
+
+    private void changePage(int delta) {
+        page = Math.max(0, Math.min(pageCount() - 1, page + delta));
+        refreshPacks();
     }
 
     private Component selectionText(String name) {
@@ -105,40 +133,41 @@ public final class ShaderPackScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(font, title, width / 2, 18, 0xFFFFFF);
+        graphics.drawCenteredString(font, title, width / 2, 16, 0xFFFFFF);
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.selected", selected),
-                width / 2, 32, 0xC8E6FF);
+                width / 2, 31, 0xC8E6FF);
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.count", packs.size()),
-                width / 2, height - 112, 0xAAAAAA);
+                width / 2, height - 144, 0xAAAAAA);
         graphics.drawCenteredString(font, Component.translatable(statusKey),
-                width / 2, height - 96, 0xAAAAAA);
+                width / 2, height - 128, 0xAAAAAA);
+        graphics.drawCenteredString(font,
+                Component.translatable("screen.opticore.shaders.page", page + 1, pageCount()),
+                width / 2, height - 56, 0xAAAAAA);
+
         if (selectedInventory.sourceFiles() > 0) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
                             selectedInventory.vertexFiles(), selectedInventory.fragmentFiles(),
                             selectedPrograms.pairedPrograms(), selectedPrograms.vertexOnly(),
                             selectedPrograms.fragmentOnly()),
-                    width / 2, height - 64, 0xA6D8A8);
+                    width / 2, height - 96, 0xA6D8A8);
         }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
-                    Component.translatable("screen.opticore.shaders.metadata", selectedMetadata.propertyCount(), selectedMetadata.sliderCount()),
-                    width / 2, height - 80, 0xA6D8A8);
+                    Component.translatable("screen.opticore.shaders.metadata",
+                            selectedMetadata.propertyCount(), selectedMetadata.sliderCount()),
+                    width / 2, height - 112, 0xA6D8A8);
         } else if (!"OFF".equals(selected)) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.no_metadata"),
-                    width / 2, height - 80, 0xAAAAAA);
+                    width / 2, height - 112, 0xAAAAAA);
         }
         if (packs.isEmpty()) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.empty"),
                     width / 2, height / 2, 0xFFFFFF);
-        } else if (packs.size() > Math.max(0, (height - 164) / 24)) {
-            graphics.drawCenteredString(font,
-                    Component.translatable("screen.opticore.shaders.list_limited"),
-                    width / 2, height - 128, 0xAAAAAA);
         }
     }
 
