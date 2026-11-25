@@ -47,7 +47,12 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(constOverride.source().equals("const int QUALITY = 2; // quality setting"),
                 "const initializer override preserves declaration suffix");
         check(constOverride.applied().contains("QUALITY"), "const override reported as applied");
-        System.out.println("ShaderOptionSourceProcessorSelfTest: 9 checks passed");
+        String functionMacro = "#define QUALITY(x) ((x) + 1)";
+        ShaderOptionSourceProcessor.Result macroResult = ShaderOptionSourceProcessor.apply(
+                functionMacro, declarations, Map.of("QUALITY", "2"));
+        check(macroResult.source().equals(functionMacro), "function-like macro is not rewritten");
+        check(macroResult.ignored().size() == 1, "function-like macro override is reported ignored");
+        System.out.println("ShaderOptionSourceProcessorSelfTest: 11 checks passed");
     }
 
     private static void check(boolean condition, String message) {
