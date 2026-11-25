@@ -40,10 +40,20 @@ public final class ShaderPackOptionStoreSelfTest {
                 "remove option override");
         check(!ShaderPackOptionStore.load(file, "Example Pack").containsKey("shadowQuality"),
                 "removed option absent");
+        check(ShaderPackOptionStore.save(file, "Example Pack", "fogStrength", "0.6"),
+                "save value before pack reset");
+        check(ShaderPackOptionStore.clearPack(file, "Example Pack"),
+                "clear all overrides for selected pack");
+        check(ShaderPackOptionStore.load(file, "Example Pack").isEmpty(),
+                "selected pack overrides cleared");
+        check("0.25".equals(ShaderPackOptionStore.load(file, "Other Pack")
+                .get("shadowQuality")), "reset preserves other pack values");
+        check(!ShaderPackOptionStore.clearPack(file, "../escape"),
+                "reject unsafe pack reset name");
 
         Files.deleteIfExists(file);
         Files.deleteIfExists(directory);
-        System.out.println("ShaderPackOptionStoreSelfTest: 15 checks passed");
+        System.out.println("ShaderPackOptionStoreSelfTest: 20 checks passed");
     }
 
     private static void check(boolean condition, String label) {
