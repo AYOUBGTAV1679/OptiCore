@@ -156,6 +156,39 @@ public final class GlRenderTarget implements AutoCloseable {
         }
     }
 
+    /**
+     * Copies a completed vanilla scene into this private target without sampling or
+     * modifying Minecraft's source framebuffer. Color and depth must have matching sizes.
+     */
+    public void copySceneFrom(com.mojang.blaze3d.pipeline.RenderTarget source) {
+        RenderSystem.assertOnRenderThread();
+        ensureOpen();
+        if (source == null) throw new IllegalArgumentException("Source render target is required");
+        if (!source.useDepth) throw new IllegalArgumentException("Source render target has no depth attachment");
+        if (source.width != width || source.height != height) {
+            throw new IllegalArgumentException("Source and destination dimensions must match");
+        }
+        if (source.frameBufferId == framebuffer) {
+            throw new IllegalArgumentException("Cannot copy a render target into itself");
+        }
+
+        int previousRead = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        int previousDraw = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        boolean scissorEnabled = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+        try {
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, source.frameBufferId);
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, framebuffer);
+            GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                    GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, GL11.GL_NEAREST);
+        } finally {
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDraw);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousRead);
+            if (scissorEnabled) GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            else GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        }
+    }
+
     public int colorTextureId() {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
