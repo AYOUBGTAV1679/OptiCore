@@ -18,6 +18,7 @@ public final class ShadowCameraMatricesSelfTest {
         expectFailure(()->ShadowCameraMatrices.orthographic(-1,1,-1,1,10,1),"invalid depth");
         System.out.println("ShadowCameraMatricesSelfTest: OK");
     }
+    private static void check(boolean condition,String message){ if(!condition) throw new AssertionError(message); }
     private static void checkMatrix(float[] e,float[] a,String message) {
         for(int i=0;i<16;i++) if(!close(e[i],a[i])) throw new AssertionError(message+" at "+i);
     }
