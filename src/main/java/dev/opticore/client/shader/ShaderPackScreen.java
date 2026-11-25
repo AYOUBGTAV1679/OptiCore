@@ -57,7 +57,7 @@ public final class ShaderPackScreen extends Screen {
         selectedPrograms = selectedPack == null ? ShaderProgramIndex.Summary.empty()
                 : ShaderProgramIndex.inspect(selectedPack.path(), selectedPack.archive());
         selectedOptions = selectedPack == null ? ShaderOptionParser.Summary.empty()
-                : ShaderOptionDiscovery.inspect(selectedPack);
+                : ShaderOptionDiscovery.inspect(selectedPack.path(), selectedPack.archive());
 
         int center = width / 2;
         int y = 48;
