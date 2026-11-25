@@ -36,6 +36,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/ShadowCameraMatricesSelfTest.java \
   src/main/java/dev/opticore/client/shader/DirectionalShadowCamera.java \
   src/test/java/dev/opticore/client/shader/DirectionalShadowCameraSelfTest.java \
+  src/main/java/dev/opticore/client/shader/DirectionalSunSnapshot.java \
+  src/test/java/dev/opticore/client/shader/DirectionalSunSnapshotSelfTest.java \
   src/test/java/dev/opticore/client/shader/Matrix3NormalSelfTest.java \
   src/test/java/dev/opticore/client/shader/Matrix4InverseSelfTest.java \
   src/main/java/dev/opticore/client/shader/SceneUniformSnapshot.java \
