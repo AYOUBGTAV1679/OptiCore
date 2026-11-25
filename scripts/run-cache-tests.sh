@@ -63,6 +63,7 @@ java -cp "$OUT" dev.opticore.client.shader.Matrix4InverseSelfTest
 java -cp "$OUT" dev.opticore.client.shader.Matrix3NormalSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShadowCameraMatricesSelfTest
 java -cp "$OUT" dev.opticore.client.shader.DirectionalShadowCameraSelfTest
+java -cp "$OUT" dev.opticore.client.shader.DirectionalSunSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneUniformSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphSelfTest
