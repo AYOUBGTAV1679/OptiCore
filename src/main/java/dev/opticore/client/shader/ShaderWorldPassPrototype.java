@@ -44,6 +44,13 @@ public final class ShaderWorldPassPrototype {
         }
     }
 
+    /** Recreates GL objects after Minecraft reloads client resources. */
+    public static void onResourcesReloaded() {
+        RenderSystem.assertOnRenderThread();
+        compositePass.close();
+        compositePass = new FullscreenCompositePass();
+    }
+
     public static long successfulCaptures() { return successfulCaptures; }
     public static int lastSuccessfulRenderTick() { return lastSuccessfulRenderTick; }
     public static String lastFailure() { return lastFailure; }
