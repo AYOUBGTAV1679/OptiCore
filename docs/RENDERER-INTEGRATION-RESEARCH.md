@@ -60,3 +60,14 @@ Therefore, using only (dimension, chunk X, chunk Z) as a key and storing live GP
 This research is a design note, not an implementation. OptiCore currently has a generic bounded cache and client UI/configuration. It does not yet intercept the vanilla chunk compilation pipeline, replace the renderer, or demonstrate an FPS improvement.
 
 The latest Alpha 07 commit has passed the cache regression tests and ForgeGradle build, and produced a downloadable JAR artifact. An in-game test is still required before any renderer integration or performance claim can be described as verified.
+
+
+## Shadow-caster integration checkpoint — LevelRenderer boundary
+
+A second API review of the exact Forge 47.2.0 documentation identifies `LevelRenderer.renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)` as a private method and `LevelRenderer.renderLevel(...)` as the public frame-level entry point. The renderer also exposes the current section-render dispatcher and rendered-section statistics. This is a more relevant geometry boundary than `RenderLevelStageEvent.AFTER_LEVEL`, which occurs after the world draw and cannot by itself replay terrain into a depth-only target.
+
+The method being private means a shadow pass cannot safely call it from ordinary OptiCore Java code. A client Mixin could potentially inject around the layer draw, but simply invoking the original layer draw again is not sufficient: the second draw must use the light view/projection matrices, a depth-only-compatible shader, a deliberately selected caster layer set, and the same visibility/section lifetime rules. It must also avoid drawing translucent layers as opaque casters and must restore all render state. Entity and block-entity casters require separate renderer paths.
+
+**Implementation decision:** do not add a speculative injection yet. The exact method signature is documented, but the bytecode call site, local pose-stack state, and Forge patch behavior have not been inspected in the built 47.2.0 artifact. A mixin at the wrong invocation point can duplicate the visible world draw or corrupt vanilla matrices. The next safe step is bytecode/source inspection of the exact Forge 47.2.0 client artifact, followed by a disabled instrumentation-only injection whose only output is a counter proving the target layer hook fires once per expected layer. Only after that test should a depth-only caster draw be added.
+
+This checkpoint is source/API research, not a working shadow implementation. There are still no actual terrain or entity casters in the OptiCore shadow map.
