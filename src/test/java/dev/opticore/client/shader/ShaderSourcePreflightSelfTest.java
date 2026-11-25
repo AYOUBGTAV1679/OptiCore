@@ -12,7 +12,7 @@ public final class ShaderSourcePreflightSelfTest {
         Path folder = Files.createTempDirectory("opticore-glsl-preflight");
         Path shaders = Files.createDirectories(folder.resolve("shaders/gbuffers"));
         Files.writeString(shaders.resolve("terrain.vsh"),
-                "#version 150\n#extension GL_ARB_explicit_attrib_location : enable\n"
+                "\uFEFF#version 150\n#extension GL_ARB_explicit_attrib_location : enable\n"
                         + "#extension GL_ARB_explicit_attrib_location : warn\n"
                         + "// void main() {}\nvoid main() { gl_Position = vec4(0.0); }\n");
         Files.writeString(shaders.resolve("terrain.fsh"),
@@ -32,7 +32,7 @@ public final class ShaderSourcePreflightSelfTest {
 
         Path zipPath = Files.createTempFile("opticore-glsl-preflight", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
-            add(zip, "shaders/test.vsh", "/* void main() {} */\nvoid main() {}");
+            add(zip, "shaders/test.vsh", "\uFEFF/* void main() {} */\nvoid main() {}");
             add(zip, "shaders/test.fsh", "#version 150\n#extension GL_ARB_gpu_shader5 : enable\n"
                     + "#extension GL_ARB_gpu_shader5 : warn\nvoid main() {}");
             add(zip, "../shaders/evil.vsh", "void main() {}");
@@ -48,7 +48,7 @@ public final class ShaderSourcePreflightSelfTest {
             }
         }
         Files.deleteIfExists(zipPath);
-        System.out.println("ShaderSourcePreflightSelfTest: 11 checks passed");
+        System.out.println("ShaderSourcePreflightSelfTest: 13 checks passed");
     }
     private static void add(ZipOutputStream zip, String name, String source) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
