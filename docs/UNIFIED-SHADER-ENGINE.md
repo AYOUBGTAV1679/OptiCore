@@ -126,3 +126,15 @@ Standalone tests cover identity, translation, multiplication by the computed inv
 Added a dependency-free inverse-transpose 3x3 normal-matrix calculation derived from the linear part of the captured model-view matrix. Translation is ignored, while singular, malformed, non-finite, or out-of-range transforms are rejected. The scene snapshot exposes the derived matrix and the GL program wrapper now supports typed column-major mat3 uploads; the common binder sends it as `normalMatrix`.
 
 Standalone regression checks cover identity, non-uniform scale, translation independence, shear, and invalid/singular inputs. This provides the matrix required for correct normal-vector transformation, but it does not yet add lighting calculations, material handling, shadow maps, or world-render integration. The normal-matrix upload is still part of the explicit binder call and does not activate shader packs automatically.
+
+
+## Alpha update — shadow camera matrix foundation
+
+Added standalone, graphics-API-independent shadow camera helpers:
+- right-handed `lookAt` view matrix construction;
+- OpenGL orthographic projection matrix construction;
+- column-major projection/view matrix multiplication.
+
+Inputs are validated for non-finite values, degenerate view directions, parallel up vectors, and invalid projection bounds. Regression tests cover expected camera transforms, multiplication, and invalid inputs, and are included in the Java 17 cache-test script.
+
+This is only the mathematical foundation. No light direction is selected, no shadow framebuffer or depth texture is rendered, no terrain/entity casters are submitted, and no shadow sampling is wired into the world pipeline. The next implementation step is a bounded shadow-pass resource contract with explicit GL-state capture/restore and a vanilla fallback before any live world-render integration.
