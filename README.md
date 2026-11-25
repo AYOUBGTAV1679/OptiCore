@@ -73,6 +73,7 @@ The static client-Mixin registration checks can be run with:
 
 ```bash
 python3 scripts/check-mixin-config.py
+python3 scripts/test-packaged-mixin.py
 python3 scripts/check-packaged-mixin.py  # after gradle build
 ```
 
