@@ -21,6 +21,14 @@ public final class ShaderIncludeResolverSelfTest {
         check(folderResult.includedFiles().contains("shaders/lib/common.glsl"), "include is tracked");
 
         Files.writeString(folder.resolve("shaders/main.fsh"),
+                "\uFEFF#version 150\\n#include \\"lib/common.glsl\\"\\nvoid main() {}\\n");
+        ShaderIncludeResolver.Result bom =
+                ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
+        check(bom.successful() && !bom.source().startsWith("\uFEFF")
+                        && bom.source().startsWith("#version 150"),
+                "UTF-8 BOM is removed before GLSL processing");
+
+        Files.writeString(folder.resolve("shaders/main.fsh"),
                 "#version 150\r\n#include \"lib/common.glsl\"\r\nvoid main() {}\r\n");
         ShaderIncludeResolver.Result crlf =
                 ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
@@ -66,7 +74,7 @@ public final class ShaderIncludeResolverSelfTest {
             for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
         }
         Files.deleteIfExists(zipPath);
-        System.out.println("ShaderIncludeResolverSelfTest: 9 checks passed");
+        System.out.println("ShaderIncludeResolverSelfTest: 10 checks passed");
     }
     private static void add(ZipOutputStream zip, String name, String source) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
