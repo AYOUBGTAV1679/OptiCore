@@ -18,13 +18,13 @@ public final class ShaderPackSelectionStoreSelfTest {
         check("OFF".equals(ShaderPackSelectionStore.load(file)), "OFF selection is restored");
         check(!ShaderPackSelectionStore.save(file, "../escape"), "path traversal selection rejected");
         check(!ShaderPackSelectionStore.save(file, "bad/name"), "slash in selection rejected");
-        check(!ShaderPackSelectionStore.save(file, "bad\\\\name"), "backslash in selection rejected");
+        check(!ShaderPackSelectionStore.save(file, "bad\\name"), "backslash in selection rejected");
         check(!ShaderPackSelectionStore.save(file, "x".repeat(129)), "oversized selection rejected");
         check(!ShaderPackSelectionStore.save(null, "Example Pack"), "null path rejected");
         check("OFF".equals(ShaderPackSelectionStore.load(null)), "null path safely defaults");
-        Files.writeString(file, "activePack=../escape\\n");
+        Files.writeString(file, "activePack=../escape\n");
         check("OFF".equals(ShaderPackSelectionStore.load(file)), "unsafe persisted value falls back to OFF");
-        Files.writeString(file, "activePack=Broken\\n".repeat(4000));
+        Files.writeString(file, "activePack=Broken\n".repeat(4000));
         check("OFF".equals(ShaderPackSelectionStore.load(file)), "oversized file falls back to OFF");
         Files.deleteIfExists(file);
         Files.deleteIfExists(directory);
