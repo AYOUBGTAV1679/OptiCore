@@ -52,6 +52,22 @@ public final class ShaderPackOptionStore {
         if (value == null) properties.remove(key);
         else properties.setProperty(key, value);
 
+        return write(file, properties);
+    }
+
+    /** Atomically removes every saved override for one pack, preserving all other packs. */
+    public static synchronized boolean clearPack(Path file, String packName) {
+        if (file == null || !validPackName(packName)) return false;
+        Properties properties = read(file);
+        String prefix = PREFIX + encode(packName) + ".";
+        properties.stringPropertyNames().stream()
+                .filter(key -> key.startsWith(prefix))
+                .toList()
+                .forEach(properties::remove);
+        return write(file, properties);
+    }
+
+    private static boolean write(Path file, Properties properties) {
         if (properties.size() > MAX_ENTRIES) return false;
         Path parent = file.toAbsolutePath().normalize().getParent();
         if (parent == null) return false;
