@@ -71,7 +71,7 @@ public final class ShaderOptionDiscoverySelfTest {
         Files.deleteIfExists(shaders);
         Files.deleteIfExists(folder);
         Files.deleteIfExists(archive);
-        System.out.println("ShaderOptionDiscoverySelfTest: 13 checks passed");
+        System.out.println("ShaderOptionDiscoverySelfTest: 12 checks passed");
     }
 
     private static void add(ZipOutputStream zip, String name, String content) throws Exception {
