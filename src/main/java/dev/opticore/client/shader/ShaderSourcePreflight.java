@@ -132,6 +132,8 @@ public final class ShaderSourcePreflight {
             }
         }
 
+        // A UTF-8 BOM is an encoding marker, not part of the GLSL token stream.
+        if (source.length() > 0 && source.charAt(0) == '\uFEFF') source.deleteCharAt(0);
         String withoutComments = stripComments(source);
         String code = maskQuotedText(withoutComments);
         Matcher main = MAIN.matcher(code);
