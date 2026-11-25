@@ -77,6 +77,8 @@ public final class FullscreenCompositePass implements AutoCloseable {
         int previousProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         int previousVao = GL11.glGetInteger(GL30.GL_VERTEX_ARRAY_BINDING);
         int previousActiveTexture = GL11.glGetInteger(GL13.GL_ACTIVE_TEXTURE);
+        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        int previousTexture1 = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         int previousTexture0 = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 
@@ -113,6 +115,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
         } finally {
             GL30.glBindVertexArray(previousVao);
             GL20.glUseProgram(previousProgram);
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, previousTexture1);
+            GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, previousTexture0);
             GL13.glActiveTexture(previousActiveTexture);
             GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDraw);
