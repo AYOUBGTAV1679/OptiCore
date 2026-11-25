@@ -50,6 +50,19 @@ public final class DirectionalShadowCameraSelfTest {
             check(close(focusClip[0], 0) && close(focusClip[1], 0) && close(focusClip[2], 0),
                     "snapped focus must remain at clip-space center for cardinal light "
                             + light[0] + "," + light[1] + "," + light[2]);
+            double depthCenter = 1.0 + (80.0 - 1.0) * 0.5;
+            float[] nearClip = projectClip(matrix,
+                    camera.centerX() + light[0] * (depthCenter - 1.0),
+                    camera.centerY() + light[1] * (depthCenter - 1.0),
+                    camera.centerZ() + light[2] * (depthCenter - 1.0));
+            float[] farClip = projectClip(matrix,
+                    camera.centerX() + light[0] * (depthCenter - 80.0),
+                    camera.centerY() + light[1] * (depthCenter - 80.0),
+                    camera.centerZ() + light[2] * (depthCenter - 80.0));
+            check(close(nearClip[2], -1.0f),
+                    "near plane must map to OpenGL -1 for cardinal light");
+            check(close(farClip[2], 1.0f),
+                    "far plane must map to OpenGL +1 for cardinal light");
         }
 
         float[] copy = first.viewMatrix();
