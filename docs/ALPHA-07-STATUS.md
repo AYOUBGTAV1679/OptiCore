@@ -36,6 +36,8 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 
 A client-only diagnostic Mixin is registered for `LevelRenderer.renderChunkLayer(...)`. It increments a counter and emits a bounded log message; it does not modify the render pipeline. CI checks the source configuration and verifies the packaged mod JAR contains the Mixin config and refmap. A prior validation run completed successful Forge builds and packaged-Mixin checks for Forge 47.0.0, 47.2.0, and 47.4.29 on commit `ef3c6028e681ce14b35296cc0606177501d10aea`. Subsequent commits add regression tests for the packaged-JAR checker; their workflow results must be checked separately. Even a successful build does not prove the injection applies in-game: a live Forge 47.2.0 launch is still required to record actual render-layer calls.
 
+The chunk-compile observer now resolves the target RenderChunk from the center cell of RenderChunkRegion's chunk grid and reads its block origin, so diagnostic snapshots carry the exact chunk X/Z and section Y rather than placeholder coordinates. It still discards copied payloads: dependency fingerprints are not yet derived from the exact block-state, lighting, and render-setting inputs, so reusable cache insertion remains disabled.
+
 Do not implement a shadow draw by replaying vanilla chunk layers from this diagnostic hook. First verify the hook at runtime, then identify a supported world-render integration point and implement a dedicated depth-only caster path with explicit opaque/cutout policy and GL-state restoration.
 
 ## Not implemented / not claimed
