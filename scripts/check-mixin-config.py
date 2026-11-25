@@ -58,5 +58,11 @@ assert "opticore$getChunks()" in capture_source and "target.getOrigin()" in capt
 assert "origin.getY() >> 4" in capture_source, (
     "Capture must preserve the target vertical section coordinate"
 )
+assert "opticore$getCenterX()" in capture_source and "opticore$getCenterZ()" in capture_source, (
+    "Capture must validate the selected RenderChunk against the region center coordinates"
+)
+assert "chunkX != regionAccessor.opticore$getCenterX()" in capture_source and (
+    "chunkZ != regionAccessor.opticore$getCenterZ()" in capture_source
+), "Capture must skip uncertain center-cell attribution"
 
 print("Mixin config checks: OK (client-only registration, diagnostics, chunk compile capture)")
