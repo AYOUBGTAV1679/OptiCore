@@ -3,6 +3,7 @@ package dev.opticore.client;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.opticore.client.shader.GlShaderProgramCache;
 import dev.opticore.client.shader.GlRenderTargetManager;
+import dev.opticore.client.shader.ShaderWorldPassPrototype;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
@@ -19,6 +20,7 @@ public final class OptiCoreResourceReloadListener implements ResourceManagerRelo
         RenderSystem.recordRenderCall(() -> {
             GlShaderProgramCache.clear();
             GlRenderTargetManager.clear();
+            ShaderWorldPassPrototype.onResourcesReloaded();
         });
     }
 
