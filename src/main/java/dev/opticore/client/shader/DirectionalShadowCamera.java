@@ -79,8 +79,9 @@ public final class DirectionalShadowCamera {
         double snappedY = centerY + rightY * shiftRight + trueUpY * shiftUp;
         double snappedZ = centerZ + rightZ * shiftRight + trueUpZ * shiftUp;
 
-        // Place the focus point just beyond the near plane, inside the depth range.
-        double distance = near + 1.0;
+        // Center the focus point in the depth interval so bounds can extend
+        // both toward and away from the light without wasting half the range.
+        double distance = near + (far - near) * 0.5;
         float[] view = ShadowCameraMatrices.lookAt(
                 snappedX + lightX * distance, snappedY + lightY * distance, snappedZ + lightZ * distance,
                 snappedX, snappedY, snappedZ, upX, upY, upZ);
@@ -98,9 +99,6 @@ public final class DirectionalShadowCamera {
 
     private static double dot(double ax, double ay, double az, double bx, double by, double bz) {
         return ax * bx + ay * by + az * bz;
-    }
-    private static double length(double x, double y, double z) {
-        return Math.hypot(Math.hypot(x, y), z);
     }
     private static void requireFinite(float[] matrix, String label) {
         for (float value : matrix) if (!Float.isFinite(value))
