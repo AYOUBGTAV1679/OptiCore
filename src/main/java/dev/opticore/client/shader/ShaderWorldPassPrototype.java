@@ -33,8 +33,11 @@ public final class ShaderWorldPassPrototype {
             GlRenderTarget target = GlRenderTargetManager.acquire(
                     "world-scene-capture", vanillaScene.width, vanillaScene.height);
             target.copySceneFrom(vanillaScene);
+            float[] projection = new float[16];
+            event.getProjectionMatrix().get(projection);
+            float[] inverseProjection = Matrix4Inverse.invert(projection);
             compositePass.render(target, vanillaScene, 0.12f,
-                    OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue());
+                    OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue(), inverseProjection);
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
