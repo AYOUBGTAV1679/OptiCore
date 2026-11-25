@@ -114,7 +114,7 @@ public final class ShaderSourcePreflight {
                 if (result.version() != null) { versioned++; versions.add(result.version()); }
                 includes += result.includes();
                 extensions.addAll(result.extensions());
-                extensionCount += result.extensions().size();
+                extensionCount += result.extensionDirectives();
             }
         }
         return new Summary(stages, missingMain, versioned, versions, includes, extensions, extensionCount, truncated);
