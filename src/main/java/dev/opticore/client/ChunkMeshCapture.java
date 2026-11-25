@@ -60,13 +60,14 @@ public final class ChunkMeshCapture {
 
     /**
      * Copies each completed layer synchronously while vanilla's RenderedBuffer
-     * is alive, then discards the copy. sectionY=0 is a diagnostic placeholder:
-     * it must never be used for cache storage or mesh reuse.
+     * is alive, then discards the copy. The caller must provide the exact target
+     * section origin; observations are diagnostic and are not cache entries.
      */
     public static void observeCompilation(
             Level level,
             int chunkX,
             int chunkZ,
+            int sectionY,
             Map<RenderType, BufferBuilder.RenderedBuffer> layers) {
         if (level == null || !level.isClientSide() || layers == null) return;
 
@@ -84,7 +85,7 @@ public final class ChunkMeshCapture {
                 }
 
                 ImmutableMeshSnapshot snapshot =
-                        RenderedBufferSnapshotCopier.copy(rendered, chunkX, 0, chunkZ);
+                        RenderedBufferSnapshotCopier.copy(rendered, chunkX, sectionY, chunkZ);
                 if (snapshot == null) {
                     SKIPPED.increment();
                     continue;
