@@ -70,7 +70,7 @@ public final class OptiCoreClientEvents {
 
         float[] modelView = new float[16];
         float[] projection = new float[16];
-        event.getPoseStack().get(modelView);
+        event.getPoseStack().last().pose().get(modelView);
         event.getProjectionMatrix().get(projection);
         net.minecraft.world.phys.Vec3 camera = event.getCamera().getPosition();
         latestSceneUniformSnapshot = new SceneUniformSnapshot(
