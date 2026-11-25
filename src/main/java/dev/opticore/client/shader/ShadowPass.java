@@ -91,7 +91,8 @@ public final class ShadowPass {
         private final int depthFunc, cullFace, program;
         private final boolean depthMask;
         private final boolean[] colorMask = new boolean[4];
-        private final float polygonFactor, polygonUnits;\n        private final double depthClearValue;
+        private final float polygonFactor, polygonUnits;
+        private final double depthClearValue;
 
         private GlState() {
             depthTest = GL11.glIsEnabled(GL11.GL_DEPTH_TEST);
@@ -102,7 +103,8 @@ public final class ShadowPass {
             depthFunc = GL11.glGetInteger(GL11.GL_DEPTH_FUNC);
             cullFace = GL11.glGetInteger(GL11.GL_CULL_FACE_MODE);
             program = GL20.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-            depthMask = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);\n            depthClearValue = GL11.glGetDouble(GL11.GL_DEPTH_CLEAR_VALUE);
+            depthMask = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+            depthClearValue = GL11.glGetDouble(GL11.GL_DEPTH_CLEAR_VALUE);
             ByteBuffer mask = org.lwjgl.BufferUtils.createByteBuffer(4);
             GL11.glGetBooleanv(GL11.GL_COLOR_WRITEMASK, mask);
             for (int i = 0; i < 4; i++) colorMask[i] = mask.get(i) != 0;
@@ -117,7 +119,8 @@ public final class ShadowPass {
 
         void restore() {
             GL11.glDepthFunc(depthFunc);
-            GL11.glDepthMask(depthMask);\n            GL11.glClearDepth(depthClearValue);
+            GL11.glDepthMask(depthMask);
+            GL11.glClearDepth(depthClearValue);
             GL11.glColorMask(colorMask[0], colorMask[1], colorMask[2], colorMask[3]);
             GL11.glCullFace(cullFace);
             GL11.glPolygonOffset(polygonFactor, polygonUnits);
