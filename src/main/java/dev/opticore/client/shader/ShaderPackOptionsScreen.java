@@ -14,6 +14,7 @@ public final class ShaderPackOptionsScreen extends Screen {
     private final Screen parent;
     private final String packName;
     private final List<String> controls;
+    private final ShaderOptionParser.Summary discoveredOptions;
     private final List<DisplayRow> rows;
     private record DisplayRow(String label, boolean heading) {}
     private final String screenDefinition;
@@ -26,6 +27,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.parent = parent;
         this.packName = packName;
         this.controls = metadata.controls();
+        this.discoveredOptions = discoveredOptions;
         this.screenDefinition = metadata.screenDefinition();
         List<DisplayRow> display = new ArrayList<>();
         if (!discoveredOptions.options().isEmpty()) {
