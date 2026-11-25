@@ -80,6 +80,9 @@ public final class ShaderPackRuntime {
             if (!applied.isEmpty()) diagnostics.add("Applied option overrides: " + String.join(", ", applied));
             java.util.Set<String> ignored = new java.util.LinkedHashSet<>(vertex.ignored());
             ignored.addAll(fragment.ignored());
+            // An option may legitimately be declared in only one stage. A miss in
+            // the other stage is not an ignored pack override if either stage applied it.
+            ignored.removeAll(applied);
             if (!ignored.isEmpty()) diagnostics.add("Ignored overrides not present or not valid for this program: "
                     + String.join(", ", ignored));
             return new Result(true, pack.name(), programId, program, diagnostics);
