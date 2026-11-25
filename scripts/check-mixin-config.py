@@ -15,7 +15,6 @@ expected_client_mixins = {
     "LevelRendererDiagnosticsMixin",
     "ChunkCompileResultsAccessor",
     "RebuildTaskRegionAccessor",
-    "RebuildTaskOuterAccessor",
     "ChunkRebuildCaptureMixin",
     "RenderChunkRegionAccessor",
 }
@@ -23,6 +22,9 @@ assert isinstance(client_mixins, list), "Client Mixin list is missing"
 assert len(client_mixins) == len(set(client_mixins)), "Duplicate client Mixin registration"
 assert expected_client_mixins.issubset(set(client_mixins)), (
     "Required diagnostics and chunk-capture Mixins must be registered"
+)
+assert "RebuildTaskOuterAccessor" not in client_mixins, (
+    "Do not depend on a compiler-generated enclosing-instance field"
 )
 
 mixin_path = root / "src/main/java/dev/opticore/mixin/LevelRendererDiagnosticsMixin.java"
@@ -50,5 +52,8 @@ compile_descriptor = (
 assert compile_descriptor in capture_source, "Chunk compile capture descriptor changed"
 assert 'at = @At("RETURN")' in capture_source, "Chunk capture must run after compile returns"
 assert "ChunkMeshCapture.observeCompilation" in capture_source, "Chunk capture bridge missing"
+assert "opticore$getCenterX()" in capture_source and "opticore$getCenterZ()" in capture_source, (
+    "Capture must use region chunk coordinates, not synthetic outer-class fields"
+)
 
 print("Mixin config checks: OK (client-only registration, diagnostics, chunk compile capture)")
