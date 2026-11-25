@@ -151,6 +151,15 @@ public final class GlShaderProgram implements AutoCloseable {
         if (location >= 0) GL20.glUniformMatrix4fv(location, false, matrix);
     }
 
+    /** Uploads one column-major 3x3 matrix from the next 9 floats in the buffer. */
+    public void setUniformMatrix3(String name, FloatBuffer matrix) {
+        if (matrix == null || matrix.remaining() < 9) {
+            throw new IllegalArgumentException("A 3x3 matrix requires at least 9 remaining floats");
+        }
+        int location = requireUniform(name);
+        if (location >= 0) GL20.glUniformMatrix3fv(location, false, matrix);
+    }
+
     private int requireUniform(String name) {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
