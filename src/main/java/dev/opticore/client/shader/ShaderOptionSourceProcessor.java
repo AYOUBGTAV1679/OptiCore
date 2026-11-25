@@ -92,6 +92,6 @@ public final class ShaderOptionSourceProcessor {
             }
             changed |= !lines[i].equals(original);
         }
-        return changed ? String.join("\\n", lines) : source;
+        return changed ? String.join("\n", lines) : source;
     }
 }
