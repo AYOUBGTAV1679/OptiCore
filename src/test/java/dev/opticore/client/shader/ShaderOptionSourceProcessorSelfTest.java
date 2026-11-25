@@ -36,6 +36,17 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(invalid.source().equals(source), "invalid overrides leave source unchanged");
         check(invalid.ignored().size() == 2, "invalid overrides reported");
 
+        Map<String, String> nullKeyOverride = new java.util.HashMap<>();
+        nullKeyOverride.put(null, "true");
+        nullKeyOverride.put("QUALITY", null);
+        ShaderOptionSourceProcessor.Result nullEntries = ShaderOptionSourceProcessor.apply(
+                source, declarations, nullKeyOverride);
+        check(nullEntries.source().equals(source), "null override entries leave source unchanged");
+        check(nullEntries.ignored().contains("<null>"),
+                "null option key is reported without throwing");
+        check(nullEntries.ignored().contains("QUALITY"),
+                "null option value is reported without throwing");
+
         String commentedNumeric = "// #define QUALITY 1 // [0 1 2]";
         ShaderOptionSourceProcessor.Result activated = ShaderOptionSourceProcessor.apply(
                 commentedNumeric, declarations, Map.of("QUALITY", "2"));
@@ -52,7 +63,7 @@ public final class ShaderOptionSourceProcessorSelfTest {
                 functionMacro, declarations, Map.of("QUALITY", "2"));
         check(macroResult.source().equals(functionMacro), "function-like macro is not rewritten");
         check(macroResult.ignored().size() == 1, "function-like macro override is reported ignored");
-        System.out.println("ShaderOptionSourceProcessorSelfTest: 11 checks passed");
+        System.out.println("ShaderOptionSourceProcessorSelfTest: 14 checks passed");
     }
 
     private static void check(boolean condition, String message) {
