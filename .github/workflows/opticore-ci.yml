@@ -45,6 +45,9 @@ jobs:
       - name: Build Forge mod
         run: gradle --no-daemon clean build -Pforge_version=${{ matrix.forge_version }}
 
+      - name: Verify packaged Mixin registration
+        run: python3 scripts/check-packaged-mixin.py
+
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
