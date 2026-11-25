@@ -41,7 +41,7 @@ public final class DirectionalShadowCamera {
             throw new IllegalArgumentException("Invalid directional shadow camera bounds");
         }
 
-        double lightLength = length(lightX, lightY, lightZ);
+        double lightLength = Math.hypot(Math.hypot(lightX, lightY), lightZ);
         if (lightLength < 1.0e-12) throw new IllegalArgumentException("Light direction is degenerate");
         lightX /= lightLength;
         lightY /= lightLength;
@@ -56,7 +56,9 @@ public final class DirectionalShadowCamera {
         double rightX = forwardY * upZ - forwardZ * upY;
         double rightY = forwardZ * upX - forwardX * upZ;
         double rightZ = forwardX * upY - forwardY * upX;
-        double rightLength = length(rightX, rightY, rightZ);
+        double rightLength = Math.hypot(Math.hypot(rightX, rightY), rightZ);
+        if (!Double.isFinite(rightLength) || rightLength < 1.0e-12)
+            throw new IllegalArgumentException("Unable to construct directional shadow camera basis");
         rightX /= rightLength; rightY /= rightLength; rightZ /= rightLength;
 
         double trueUpX = rightY * forwardZ - rightZ * forwardY;
@@ -64,6 +66,8 @@ public final class DirectionalShadowCamera {
         double trueUpZ = rightX * forwardY - rightY * forwardX;
 
         double texel = (2.0 * halfExtent) / resolution;
+        if (!Double.isFinite(texel) || texel <= 0.0)
+            throw new IllegalArgumentException("Shadow texel size is outside the supported range");
         double rightCoordinate = dot(centerX, centerY, centerZ, rightX, rightY, rightZ);
         double upCoordinate = dot(centerX, centerY, centerZ, trueUpX, trueUpY, trueUpZ);
         double snappedRight = Math.floor(rightCoordinate / texel + 0.5) * texel;
@@ -82,8 +86,13 @@ public final class DirectionalShadowCamera {
                 snappedX, snappedY, snappedZ, upX, upY, upZ);
         float[] projection = ShadowCameraMatrices.orthographic(
                 -halfExtent, halfExtent, -halfExtent, halfExtent, near, far);
-        return new Camera(view, projection,
-                ShadowCameraMatrices.multiply(projection, view),
+        float[] viewProjection = ShadowCameraMatrices.multiply(projection, view);
+        requireFinite(view, "view");
+        requireFinite(projection, "projection");
+        requireFinite(viewProjection, "view-projection");
+        if (!Double.isFinite(snappedX) || !Double.isFinite(snappedY) || !Double.isFinite(snappedZ))
+            throw new IllegalArgumentException("Snapped shadow camera position is outside the supported range");
+        return new Camera(view, projection, viewProjection,
                 snappedX, snappedY, snappedZ, texel);
     }
 
@@ -91,7 +100,11 @@ public final class DirectionalShadowCamera {
         return ax * bx + ay * by + az * bz;
     }
     private static double length(double x, double y, double z) {
-        return Math.sqrt(x * x + y * y + z * z);
+        return Math.hypot(Math.hypot(x, y), z);
+    }
+    private static void requireFinite(float[] matrix, String label) {
+        for (float value : matrix) if (!Float.isFinite(value))
+            throw new IllegalArgumentException("Directional shadow " + label + " matrix exceeds float range");
     }
     private static void finite(double... values) {
         for (double value : values) if (!Double.isFinite(value))
