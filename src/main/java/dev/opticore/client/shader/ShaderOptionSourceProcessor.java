@@ -30,13 +30,17 @@ public final class ShaderOptionSourceProcessor {
         List<String> applied = new ArrayList<>();
         List<String> ignored = new ArrayList<>();
         for (Map.Entry<String, String> entry : overrides.entrySet()) {
-            ShaderOptionParser.Option option = declarations.options().get(entry.getKey());
+            String optionId = entry.getKey();
             String value = entry.getValue();
+            // Map.of(...).get(null) throws, so reject a null key before map lookup.
+            if (optionId == null) {
+                ignored.add("<null>");
+                continue;
+            }
+            ShaderOptionParser.Option option = declarations.options().get(optionId);
             if (option == null || !option.editable() || value == null
                     || !option.values().contains(value)) {
-                // Map implementations may legally contain a null key. Keep diagnostics
-                // immutable-safe instead of passing null into List.copyOf in Result.
-                ignored.add(entry.getKey() == null ? "<null>" : entry.getKey());
+                ignored.add(optionId);
                 continue;
             }
             String updated = applyOne(result, option, value);
