@@ -65,8 +65,8 @@ public final class SceneUniformBinder {
             program.setUniform1f("sunAngleRadians", sun.sunAngleRadians());
             // Trigonometric forms avoid repeating angle conversion in pack shaders.
             // These remain celestial-angle values, not a claimed world-space light vector.
-            program.setUniform1f("sunAngleSin", (float) Math.sin(sun.sunAngleRadians()));
-            program.setUniform1f("sunAngleCos", (float) Math.cos(sun.sunAngleRadians()));
+            program.setUniform1f("sunAngleSin", sun.sunAngleSin());
+            program.setUniform1f("sunAngleCos", sun.sunAngleCos());
             program.setUniform1f("sunRainStrength", sun.rain());
             program.setUniform1f("sunThunderStrength", sun.thunder());
         }
