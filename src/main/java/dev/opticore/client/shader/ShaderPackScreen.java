@@ -145,10 +145,9 @@ public final class ShaderPackScreen extends Screen {
                 // bounded program immediately so selection validates real GLSL, rather
                 // than only saving a pack name and displaying its file inventory.
                 ShaderPackRuntime.Result result = ShaderPackRuntime.compileProgram(pack, firstProgram);
-                statusDetail = result.compiled()
-                        ? "GLSL compile/link OK: " + firstProgram
-                        : "GLSL compile failed: " + (result.diagnostics().isEmpty()
-                                ? "unknown error" : result.diagnostics().get(0));
+                statusDetail = (result.compiled() ? "GLSL compile/link OK: " : "GLSL compile failed: ")
+                        + firstProgram + (result.diagnostics().isEmpty() ? ""
+                        : " | " + String.join(" | ", result.diagnostics()));
             }
         }
         refreshPacks();
