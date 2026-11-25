@@ -28,7 +28,23 @@ public final class ShaderStageInterfaceValidatorSelfTest {
                 .compatibleByInventory(), "array size mismatch");
         check(ShaderStageInterfaceValidator.compare(null, null).compatibleByInventory(),
                 "empty summaries");
-        System.out.println("ShaderStageInterfaceValidatorSelfTest: 6 checks passed");
+
+        var duplicateVertex = ShaderGlslInterfaceScanner.inspect(
+                "out vec3 Repeated;\\nout vec2 Repeated;");
+        var duplicateFragment = ShaderGlslInterfaceScanner.inspect("in vec3 Repeated;");
+        var duplicateResult = ShaderStageInterfaceValidator.compare(duplicateVertex, duplicateFragment);
+        check(!duplicateResult.compatibleByInventory(), "duplicate vertex output rejected");
+        check(duplicateResult.mismatches().stream().anyMatch(m -> m.name().equals("Repeated")
+                && m.reason().contains("more than once")), "duplicate output diagnostic");
+
+        var duplicateInputs = ShaderGlslInterfaceScanner.inspect(
+                "in vec3 Repeated;\\nin vec2 Repeated;");
+        var duplicateInputResult = ShaderStageInterfaceValidator.compare(
+                ShaderGlslInterfaceScanner.inspect("out vec3 Repeated;"), duplicateInputs);
+        check(!duplicateInputResult.compatibleByInventory(), "duplicate fragment input rejected");
+        check(duplicateInputResult.mismatches().stream().anyMatch(m -> m.name().equals("Repeated")
+                && m.reason().contains("more than once")), "duplicate input diagnostic");
+        System.out.println("ShaderStageInterfaceValidatorSelfTest: 10 checks passed");
     }
     private static void check(boolean ok, String label) {
         if (!ok) throw new AssertionError(label);
