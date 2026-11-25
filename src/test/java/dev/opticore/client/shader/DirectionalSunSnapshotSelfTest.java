@@ -19,6 +19,10 @@ public final class DirectionalSunSnapshotSelfTest {
         System.out.println("DirectionalSunSnapshotSelfTest: OK");
     }
 
+    private static void check(boolean condition, String label) {
+        if (!condition) throw new AssertionError(label);
+    }
+
     private static void expectFailure(Runnable action, String label) {
         try {
             action.run();
