@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Shader option editor. Values are validated and persisted per pack.
- * Applying stored values to GLSL compilation is deliberately not claimed here.
+ * Shader option editor. Values are validated, persisted per pack, and applied
+ * to recognized GLSL declarations before a shader program is compiled.
  */
 public final class ShaderPackOptionsScreen extends Screen {
     private static final int OPTIONS_PER_PAGE = 5;
