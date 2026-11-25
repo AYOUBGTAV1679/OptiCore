@@ -16,7 +16,7 @@ public final class ShaderOptionDiscoverySelfTest {
         Files.writeString(shaders.resolve("common.glsl"),
                 "// #define OLD_LIGHT // Legacy\n#ifndef OLD_LIGHT\n#endif");
         Files.writeString(shaders.resolve("ignored.txt"), "#define IGNORE 1");
-        Files.writeString(shaders.resolve("shaders.properties"), "sliders=QUALITY,BLOOM\\nscreen=QUALITY BLOOM");
+        Files.writeString(shaders.resolve("shaders.properties"), "sliders=QUALITY,BLOOM\nscreen=QUALITY BLOOM");
         var directory = ShaderOptionDiscovery.inspectPath(folder, false);
         check(directory.options().containsKey("BLOOM"), "directory macro discovered");
         check(directory.options().containsKey("QUALITY"), "directory numeric option discovered");
@@ -27,7 +27,7 @@ public final class ShaderOptionDiscoverySelfTest {
         Path archive = Files.createTempFile("opticore-options", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive))) {
             add(zip, "shaders/composite.fsh", "#define SHADOWS // Shadows\n#ifdef SHADOWS\n#endif");
-            add(zip, "shaders/shaders.properties", "sliders=SHADOWS\\nscreen=SHADOWS");
+            add(zip, "shaders/shaders.properties", "sliders=SHADOWS\nscreen=SHADOWS");
             add(zip, "other/composite.fsh", "#define OUTSIDE 1");
             add(zip, "../shaders/traversal.fsh", "#define TRAVERSAL 1");
         }
