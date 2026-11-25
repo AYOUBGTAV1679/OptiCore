@@ -31,6 +31,11 @@ public final class SceneUniformBinder {
             modelViewInverse.put(scene.modelViewMatrixInverse()).flip();
             program.setUniformMatrix4("gbufferModelViewInverse", modelViewInverse);
 
+            FloatBuffer normal = stack.mallocFloat(9);
+            normal.put(scene.normalMatrix()).flip();
+            program.setUniformMatrix3("normalMatrix", normal);
+
+
             FloatBuffer projection = stack.mallocFloat(16);
             projection.put(scene.projectionMatrix()).flip();
             program.setUniformMatrix4("gbufferProjection", projection);
