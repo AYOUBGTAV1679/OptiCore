@@ -14,11 +14,12 @@ Alpha 07 began as a cache-hardening milestone. The branch now also contains expe
 - Declarative render graph with validation and a backend-agnostic executor.
 - Immutable scene and environment snapshots with matrix/uniform helpers.
 - Shadow depth target and an explicitly invoked depth-only pass primitive.
-- Directional shadow camera matrix builder with orthographic projection and texel snapping to reduce sub-texel shadow movement.
+- Directional shadow camera matrix builder with orthographic projection, texel snapping, and float-range validation.
+- Immutable capture of Minecraft's interpolated `Level#getSunAngle(partialTick)` plus world time and weather at `AFTER_LEVEL`.
 
 ## Shadow implementation boundary
 
-The directional camera builder accepts a light direction supplied by a caller. It does not currently derive the actual Minecraft sun/moon direction, track weather/time transitions, fit a camera-frustum cascade, or enumerate terrain/entity casters.
+The directional camera builder still accepts a light direction supplied by a caller. The client now captures vanilla's interpolated sun angle and weather/time values at `AFTER_LEVEL`, but does not yet convert the vanilla celestial transform into a validated world-space light vector, fit a camera-frustum cascade, or enumerate terrain/entity casters.
 
 The ShadowPass accepts a caller-provided caster renderer. It does not hook into Forge's world-render stages, render Minecraft terrain/entities, bind a complete pack-compatible shadow program, expose the depth texture to the world shader, or composite shadows into the final frame. Therefore visible in-game shadows are not implemented yet.
 
@@ -26,7 +27,7 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 
 ## Validation
 
-- The standalone regression script covers cache, shader inspection, matrix, scene snapshot, and render-graph logic.
+- The standalone regression script covers cache, shader inspection, matrix, scene snapshot, directional sun snapshot validation, and render-graph logic.
 - The shadow camera math has dependency-free tests for view/projection construction, vertical light directions, defensive copies, input validation, and sub-texel stability.
 - Forge build and test results are reported by GitHub Actions for the exact commit. A successful compile does not prove that OpenGL resources or rendered output work in a live Minecraft client.
 - No controlled FPS benchmark, shader-pack compatibility certification, or in-game shadow visual test has been completed.
