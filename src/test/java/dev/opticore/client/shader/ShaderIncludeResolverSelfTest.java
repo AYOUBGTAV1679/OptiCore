@@ -27,6 +27,13 @@ public final class ShaderIncludeResolverSelfTest {
         check(crlf.successful() && crlf.source().contains("vec3 helper()"),
                 "CRLF include directive resolves");
 
+        Files.writeString(folder.resolve("shaders/main.fsh"),
+                "#include \"shaders/lib/common.glsl\"\\nvoid main() {}\\n");
+        ShaderIncludeResolver.Result rooted =
+                ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
+        check(rooted.successful() && rooted.source().contains("vec3 helper()"),
+                "pack-root shaders include resolves");
+
         Files.writeString(shaders.resolve("common.glsl"), "#include \"nested.glsl\"\n");
         Files.writeString(shaders.resolve("nested.glsl"), "float nestedValue = 1.0;\n");
         ShaderIncludeResolver.Result nested =
@@ -59,7 +66,7 @@ public final class ShaderIncludeResolverSelfTest {
             for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
         }
         Files.deleteIfExists(zipPath);
-        System.out.println("ShaderIncludeResolverSelfTest: 8 checks passed");
+        System.out.println("ShaderIncludeResolverSelfTest: 9 checks passed");
     }
     private static void add(ZipOutputStream zip, String name, String source) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
