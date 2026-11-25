@@ -16,6 +16,11 @@ permissions:
 jobs:
   forge-build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        forge_version: ['47.0.0', '47.2.0', '47.4.29']
+    name: Forge 1.20.1 - ${{ matrix.forge_version }}
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -35,12 +40,12 @@ jobs:
         run: bash scripts/run-cache-tests.sh
 
       - name: Build Forge mod
-        run: gradle --no-daemon clean build
+        run: gradle --no-daemon clean build -Pforge_version=${{ matrix.forge_version }}
 
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
-          name: OptiCore-Forge-1.20.1
+          name: OptiCore-Forge-1.20.1-${{ matrix.forge_version }}
           path: build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
