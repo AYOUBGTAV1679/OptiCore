@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
-/** Read-only preview of option identifiers declared by a shader pack. */
+/** Read-only view of parsed shader-pack metadata and GLSL option declarations. */
 public final class ShaderPackOptionsScreen extends Screen {
     private final Screen parent;
     private final String packName;
@@ -20,13 +20,28 @@ public final class ShaderPackOptionsScreen extends Screen {
     private int scrollOffset;
 
     public ShaderPackOptionsScreen(Screen parent, String packName,
-                                   ShaderPackMetadata.Summary metadata) {
+                                   ShaderPackMetadata.Summary metadata,
+                                   ShaderOptionParser.Summary discoveredOptions) {
         super(Component.translatable("screen.opticore.shaders.options_title"));
         this.parent = parent;
         this.packName = packName;
         this.controls = metadata.controls();
         this.screenDefinition = metadata.screenDefinition();
         List<DisplayRow> display = new ArrayList<>();
+        if (!discoveredOptions.options().isEmpty()) {
+            display.add(new DisplayRow("[GLSL declarations]", true));
+            for (ShaderOptionParser.Option option : discoveredOptions.options().values().stream()
+                    .sorted(java.util.Comparator.comparing(ShaderOptionParser.Option::id)).toList()) {
+                String values = option.values().isEmpty() ? "" : " values=" + String.join("/", option.values());
+                String state = option.ambiguous() ? " [ambiguous]"
+                        : option.editable() ? " [recognized]" : " [review]";
+                display.add(new DisplayRow(option.id() + "  " + option.type().name().toLowerCase(java.util.Locale.ROOT)
+                        + "  default=" + option.defaultValue() + values + state, false));
+                if (!option.description().isBlank()) {
+                    display.add(new DisplayRow("    " + option.description(), false));
+                }
+            }
+        }
         if (!metadata.nestedScreens().isEmpty()) {
             for (Map.Entry<String, List<String>> group : metadata.nestedScreens().entrySet()) {
                 display.add(new DisplayRow("[" + group.getKey() + "]", true));
@@ -103,7 +118,7 @@ public final class ShaderPackOptionsScreen extends Screen {
             graphics.fill(trackX, thumbTop, trackX + 3, thumbTop + thumbHeight, 0xFFE0E0E0);
         }
         graphics.drawCenteredString(font,
-                Component.translatable("screen.opticore.shaders.options_count", controls.size()),
+                Component.translatable("screen.opticore.shaders.options_count", controls.size() + discoveredOptions.options().size()),
                 width / 2, height - 48, 0xAAAAAA);
     }
 
