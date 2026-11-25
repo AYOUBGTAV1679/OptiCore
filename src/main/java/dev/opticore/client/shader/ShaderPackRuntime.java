@@ -49,12 +49,28 @@ public final class ShaderPackRuntime {
             return new Result(false, pack.name(), programId, null, diagnostics);
         }
 
-        String cacheKey = pack.path().toAbsolutePath().normalize() + "::" + programId;
+        ShaderOptionParser.Summary options =
+                ShaderOptionDiscovery.inspect(pack.path(), pack.archive());
+        java.util.Map<String, String> overrides = ShaderPackRepository.optionOverrides(pack.name());
+        ShaderOptionSourceProcessor.Result vertex = ShaderOptionSourceProcessor.apply(
+                descriptor.vertex().expandedSource(), options, overrides);
+        ShaderOptionSourceProcessor.Result fragment = ShaderOptionSourceProcessor.apply(
+                descriptor.fragment().expandedSource(), options, overrides);
+        String overrideKey = Integer.toHexString(overrides.hashCode());
+        String cacheKey = pack.path().toAbsolutePath().normalize() + "::" + programId + "::" + overrideKey;
         try {
             GlShaderProgram program = GlShaderProgramCache.getOrCompile(
-                    cacheKey, descriptor.vertex().expandedSource(), descriptor.fragment().expandedSource());
-            return new Result(true, pack.name(), programId, program,
-                    List.of("GLSL compile and link succeeded on the current graphics context"));
+                    cacheKey, vertex.source(), fragment.source());
+            List<String> diagnostics = new ArrayList<>();
+            diagnostics.add("GLSL compile and link succeeded on the current graphics context");
+            java.util.Set<String> applied = new java.util.LinkedHashSet<>(vertex.applied());
+            applied.addAll(fragment.applied());
+            if (!applied.isEmpty()) diagnostics.add("Applied option overrides: " + String.join(", ", applied));
+            java.util.Set<String> ignored = new java.util.LinkedHashSet<>(vertex.ignored());
+            ignored.addAll(fragment.ignored());
+            if (!ignored.isEmpty()) diagnostics.add("Ignored overrides not present or not valid for this program: "
+                    + String.join(", ", ignored));
+            return new Result(true, pack.name(), programId, program, diagnostics);
         } catch (RuntimeException exception) {
             String message = exception.getMessage();
             return failure(pack.name(), programId,
