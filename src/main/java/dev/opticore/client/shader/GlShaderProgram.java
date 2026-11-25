@@ -137,17 +137,17 @@ public final class GlShaderProgram implements AutoCloseable {
     }
 
     public void setUniform3f(String name, float x, float y, float z) {
-        requireFinite(x, name);
-        requireFinite(y, name);
+        ShaderUniformValidator.requireFinite(x, name);
+        ShaderUniformValidator.requireFinite(y, name);
         ShaderUniformValidator.requireFinite(z, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform3f(location, x, y, z);
     }
 
     public void setUniform4f(String name, float x, float y, float z, float w) {
-        requireFinite(x, name);
-        requireFinite(y, name);
-        requireFinite(z, name);
+        ShaderUniformValidator.requireFinite(x, name);
+        ShaderUniformValidator.requireFinite(y, name);
+        ShaderUniformValidator.requireFinite(z, name);
         ShaderUniformValidator.requireFinite(w, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform4f(location, x, y, z, w);
