@@ -22,6 +22,9 @@ public final class ShaderPackCompatibilityReportSelfTest {
             write(pack.resolve("shaders/vertex_only.vsh"),
                     "#version 150\nvoid main() {}\n");
 
+            var empty = ShaderPackCompatibilityReport.inspect(null, false);
+            check(!empty.allInspectedProgramsReady(), "empty inventory is not ready");
+
             var report = ShaderPackCompatibilityReport.inspect(pack, false);
             check(report.pairedPrograms() == 2, "paired programs counted");
             check(report.inspectedPrograms() == 2, "paired programs inspected");
@@ -31,7 +34,7 @@ public final class ShaderPackCompatibilityReportSelfTest {
             check(!report.allInspectedProgramsReady(), "incomplete pack not declared ready");
             check(report.programs().stream().anyMatch(p -> p.id().equals("broken")
                     && !p.diagnostics().isEmpty()), "blocked program has diagnostics");
-            System.out.println("ShaderPackCompatibilityReportSelfTest: 7 checks passed");
+            System.out.println("ShaderPackCompatibilityReportSelfTest: 8 checks passed");
         } finally {
             try (var paths = Files.walk(pack)) {
                 paths.sorted(Comparator.reverseOrder()).forEach(path -> {
