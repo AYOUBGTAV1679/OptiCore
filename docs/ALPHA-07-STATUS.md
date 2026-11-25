@@ -41,6 +41,14 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 - Complete fog, lightmap, entity, block-entity, hand, water, reflection, and post-processing pipelines.
 - Runtime compatibility certification with third-party mods.
 
+
+## Client UI status
+
+- The main settings screen has a two-column layout with the currently implemented zoom, FPS, frame-time, cache-budget, diagnostics, scene-capture, compatibility, and shader-pack controls.
+- The shader-pack manager supports paginated discovery, selection, refresh, and opening the shaderpacks directory. It returns to the page containing the active selection when opened.
+- The shader options screen is intentionally read-only. It previews the parsed `screen` declaration and discovered option identifiers with scrolling; it does not create editable toggles/sliders or apply overrides to shader programs.
+- UI labels for the current shader option preview are localized in English and Arabic. The layouts have passed source/build checks where Actions reports success, but still require visual verification in a live Minecraft client at multiple GUI scales and window sizes.
+
 ## Next milestone
 
 Integrate a single shadow pass at a verified Forge 1.20.1 world-render stage, derive the directional light from the actual level time/weather state, and render a deliberately limited set of casters first. Then sample the resulting depth texture in a minimal world shader and verify state restoration and visual output in a real Forge client before expanding to entities, cascades, or shader-pack compatibility.
