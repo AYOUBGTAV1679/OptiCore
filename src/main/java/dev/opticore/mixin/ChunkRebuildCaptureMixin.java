@@ -3,7 +3,9 @@ package dev.opticore.mixin;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import dev.opticore.client.ChunkMeshCapture;
 import net.minecraft.client.renderer.ChunkBufferBuilderPack;
+import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,9 +16,8 @@ import java.util.Map;
 
 /**
  * Observes completed CPU-side chunk layer buffers before vanilla consumes them.
- * The region supplies horizontal chunk coordinates; section identity is not
- * available through this task's stable public surface, so observations are
- * deliberately discarded and never inserted into the reusable mesh cache.
+ * The target RenderChunk is resolved from the center of the region's chunk grid,
+ * providing the exact chunk and vertical section origin for diagnostics.
  */
 @Mixin(targets = "net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk$RebuildTask")
 public abstract class ChunkRebuildCaptureMixin {
@@ -42,13 +43,20 @@ public abstract class ChunkRebuildCaptureMixin {
         Level level = regionAccessor.opticore$getLevel();
         if (level == null || !level.isClientSide()) return;
 
+        ChunkRenderDispatcher.RenderChunk[][] chunks = regionAccessor.opticore$getChunks();
+        if (chunks == null || chunks.length == 0) return;
+        ChunkRenderDispatcher.RenderChunk[] centerRow = chunks[chunks.length / 2];
+        if (centerRow == null || centerRow.length == 0) return;
+        ChunkRenderDispatcher.RenderChunk target = centerRow[centerRow.length / 2];
+        if (target == null) return;
+
+        BlockPos origin = target.getOrigin();
+        int chunkX = origin.getX() >> 4;
+        int sectionY = origin.getY() >> 4;
+        int chunkZ = origin.getZ() >> 4;
+
         Map<net.minecraft.client.renderer.RenderType, BufferBuilder.RenderedBuffer> layers =
                 ((ChunkCompileResultsAccessor) result).opticore$getRenderedLayers();
-        ChunkMeshCapture.observeCompilation(
-                level,
-                regionAccessor.opticore$getCenterX(),
-                regionAccessor.opticore$getCenterZ(),
-                layers
-        );
+        ChunkMeshCapture.observeCompilation(level, chunkX, chunkZ, sectionY, layers);
     }
 }
