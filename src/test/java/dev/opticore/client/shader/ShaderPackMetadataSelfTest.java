@@ -33,7 +33,13 @@ public final class ShaderPackMetadataSelfTest {
                 "oversized properties rejected");
         check(!ShaderPropertiesParser.parse("bad=\\uZZZZ".getBytes(StandardCharsets.ISO_8859_1))
                 .hasProperties(), "malformed escape rejected");
-        System.out.println("ShaderPackMetadataSelfTest: 12 checks passed");
+        java.util.Set<String> sliderIds = ShaderPropertiesParser.parseSliderIds(
+                source.getBytes(StandardCharsets.ISO_8859_1));
+        check(sliderIds.equals(java.util.Set.of("shadowMapResolution", "shadowDistance")),
+                "slider identifiers are extracted without screen tokens");
+        check(ShaderPropertiesParser.parseSliderIds(new byte[256 * 1024 + 1]).isEmpty(),
+                "oversized slider metadata rejected");
+        System.out.println("ShaderPackMetadataSelfTest: 14 checks passed");
     }
 
     private static void check(boolean condition, String label) {
