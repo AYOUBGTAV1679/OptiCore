@@ -138,3 +138,10 @@ Added standalone, graphics-API-independent shadow camera helpers:
 Inputs are validated for non-finite values, degenerate view directions, parallel up vectors, and invalid projection bounds. Regression tests cover expected camera transforms, multiplication, and invalid inputs, and are included in the Java 17 cache-test script.
 
 This is only the mathematical foundation. No light direction is selected, no shadow framebuffer or depth texture is rendered, no terrain/entity casters are submitted, and no shadow sampling is wired into the world pipeline. The next implementation step is a bounded shadow-pass resource contract with explicit GL-state capture/restore and a vanilla fallback before any live world-render integration.
+
+
+## Shadow depth target resource
+
+`ShadowDepthTarget` now allocates a depth-only OpenGL texture framebuffer with nearest filtering, clamp-to-edge wrapping, comparison sampling disabled, and explicit framebuffer completeness validation. It enforces dimension/pixel limits, restores prior draw/read framebuffer and texture bindings after allocation, provides scoped framebuffer/viewport binding, and clears depth while restoring the depth-write, scissor, and clear-depth state. Closing a target while it is bound is rejected.
+
+This is resource infrastructure only: there is no light-space scene capture, caster submission, shadow filtering, or shader sampling yet. The target is not registered in the live world-render pipeline.
