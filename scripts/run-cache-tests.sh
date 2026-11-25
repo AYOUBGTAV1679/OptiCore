@@ -57,6 +57,7 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/shader/ShaderRenderGraphExecutor.java \
   src/test/java/dev/opticore/client/shader/ShaderRenderGraphExecutorSelfTest.java
 java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
+java -cp "$OUT" dev.opticore.cache.ImmutableMeshSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
 java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackOptionStoreSelfTest
