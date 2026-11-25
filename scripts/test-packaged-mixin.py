@@ -10,9 +10,11 @@ from zipfile import ZipFile
 CHECKER = Path(__file__).with_name("check-packaged-mixin.py")
 
 
-def make_jar(path: Path, manifest: str, *, config=True, refmap=True):
+def make_jar(path: Path, manifest: str, *, mod=True, config=True, refmap=True):
     with ZipFile(path, "w") as jar:
         jar.writestr("META-INF/MANIFEST.MF", manifest)
+        if mod:
+            jar.writestr("META-INF/mods.toml", 'modLoader="javafml"')
         if config:
             jar.writestr("opticore.mixins.json", "{}")
         if refmap:
@@ -41,6 +43,16 @@ class PackagedMixinCheckerTests(unittest.TestCase):
             result = self.run_checker(tmp)
             self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_ignores_non_mod_source_jar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            make_jar(Path(tmp) / "OptiCore-sources.jar",
+                     "Manifest-Version: 1.0\r\n\r\n", mod=False, config=False, refmap=False)
+            make_jar(Path(tmp) / "OptiCore.jar",
+                     "MixinConfigs: opticore.mixins.json\r\n\r\n")
+            result = self.run_checker(tmp)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("1 Forge mod JAR", result.stdout)
+
     def test_rejects_missing_refmap(self):
         with tempfile.TemporaryDirectory() as tmp:
             make_jar(Path(tmp) / "opticore.jar",
@@ -57,11 +69,18 @@ class PackagedMixinCheckerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("manifest lacks MixinConfigs", result.stderr)
 
+    def test_rejects_no_mod_jar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            make_jar(Path(tmp) / "sources.jar", "Manifest-Version: 1.0\r\n\r\n", mod=False)
+            result = self.run_checker(tmp)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("No Forge mod JAR", result.stderr)
+
     def test_rejects_empty_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = self.run_checker(tmp)
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("No mod JAR found", result.stderr)
+            self.assertIn("No JAR found", result.stderr)
 
 
 if __name__ == "__main__":
