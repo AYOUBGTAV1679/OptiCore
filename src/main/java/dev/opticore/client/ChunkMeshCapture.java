@@ -3,22 +3,17 @@ package dev.opticore.client;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import dev.opticore.cache.ImmutableMeshSnapshot;
 import net.minecraft.world.level.Level;
-import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.RenderType;
-import java.util.Map;
-import java.nio.ByteBuffer;
 
+import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Narrow integration point between a live vanilla compilation result and the
- * immutable CPU mesh cache. Call only while the RenderedBuffer is valid and
- * before vanilla releases it.
- *
- * <p>This class intentionally does not install a Mixin or discover section
- * coordinates/fingerprints. The future RebuildTask hook must supply those
- * values from the exact compile operation, then call captureAndStore.</p>
+ * immutable CPU mesh cache. Reusable storage remains disabled until exact
+ * section identity and dependency fingerprints are available from the compiler.
  */
 public final class ChunkMeshCapture {
     private static final LongAdder CAPTURED = new LongAdder();
@@ -58,32 +53,22 @@ public final class ChunkMeshCapture {
                 level, chunkX, chunkZ, sectionY,
                 neighborStateFingerprint, lightFingerprint,
                 renderSettingsFingerprint, snapshot);
-        if (stored) {
-            CAPTURED.increment();
-        } else {
-            SKIPPED.increment();
-        }
+        if (stored) CAPTURED.increment();
+        else SKIPPED.increment();
         return stored;
     }
 
-
     /**
-     * Observe and defensively copy every completed layer while vanilla's
-     * RenderedBuffers are still alive. The copies are intentionally measured
-     * and discarded for now: safe cache reuse remains disabled until the
-     * compiler's exact neighbor/light/settings dependency fingerprints exist.
+     * Copies each completed layer synchronously while vanilla's RenderedBuffer
+     * is alive, then discards the copy. sectionY=0 is a diagnostic placeholder:
+     * it must never be used for cache storage or mesh reuse.
      */
     public static void observeCompilation(
             Level level,
-            BlockPos renderChunkOrigin,
+            int chunkX,
+            int chunkZ,
             Map<RenderType, BufferBuilder.RenderedBuffer> layers) {
-        if (level == null || !level.isClientSide() || renderChunkOrigin == null || layers == null) {
-            return;
-        }
-
-        int chunkX = renderChunkOrigin.getX() >> 4;
-        int sectionY = renderChunkOrigin.getY() >> 4;
-        int chunkZ = renderChunkOrigin.getZ() >> 4;
+        if (level == null || !level.isClientSide() || layers == null) return;
 
         long compileBytes = 0L;
         for (BufferBuilder.RenderedBuffer rendered : layers.values()) {
@@ -99,7 +84,7 @@ public final class ChunkMeshCapture {
                 }
 
                 ImmutableMeshSnapshot snapshot =
-                        RenderedBufferSnapshotCopier.copy(rendered, chunkX, sectionY, chunkZ);
+                        RenderedBufferSnapshotCopier.copy(rendered, chunkX, 0, chunkZ);
                 if (snapshot == null) {
                     SKIPPED.increment();
                     continue;
@@ -113,21 +98,10 @@ public final class ChunkMeshCapture {
         }
     }
 
-    public static long observedBufferCount() {
-        return OBSERVED_BUFFERS.sum();
-    }
-
-    public static long copiedBytes() {
-        return COPIED_BYTES.sum();
-    }
-
-    public static long capturedCount() {
-        return CAPTURED.sum();
-    }
-
-    public static long skippedCount() {
-        return SKIPPED.sum();
-    }
+    public static long observedBufferCount() { return OBSERVED_BUFFERS.sum(); }
+    public static long copiedBytes() { return COPIED_BYTES.sum(); }
+    public static long capturedCount() { return CAPTURED.sum(); }
+    public static long skippedCount() { return SKIPPED.sum(); }
 
     public static void resetCounters() {
         CAPTURED.reset();
