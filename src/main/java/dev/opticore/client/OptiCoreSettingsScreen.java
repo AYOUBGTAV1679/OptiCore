@@ -7,65 +7,87 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.Locale;
+
 public class OptiCoreSettingsScreen extends Screen {
+    private static final int COLUMN_WIDTH = 147;
+    private static final int ROW_HEIGHT = 20;
+    private static final int ROW_GAP = 6;
+
     public OptiCoreSettingsScreen() {
         super(Component.translatable("screen.opticore.title"));
     }
 
     @Override
     protected void init() {
-        int center = this.width / 2;
-        int top = this.height / 4;
+        int center = width / 2;
+        int left = center - COLUMN_WIDTH - 3;
+        int right = center + 3;
+        int top = 58;
 
-        addRenderableWidget(Button.builder(toggleText("screen.opticore.zoom", OptiCoreConfig.ENABLE_ZOOM.get()), button -> {
-            OptiCoreConfig.ENABLE_ZOOM.set(!OptiCoreConfig.ENABLE_ZOOM.get());
-            button.setMessage(toggleText("screen.opticore.zoom", OptiCoreConfig.ENABLE_ZOOM.get()));
-        }).bounds(center - 105, top, 210, 20).build());
+        addToggle(left, top, "screen.opticore.zoom", OptiCoreConfig.ENABLE_ZOOM,
+                () -> OptiCoreConfig.ENABLE_ZOOM.get());
+        addToggle(right, top, "screen.opticore.fps", OptiCoreConfig.SHOW_FPS,
+                () -> OptiCoreConfig.SHOW_FPS.get());
 
-        addRenderableWidget(Button.builder(toggleText("screen.opticore.smooth_zoom", OptiCoreConfig.SMOOTH_ZOOM.get()), button -> {
-            OptiCoreConfig.SMOOTH_ZOOM.set(!OptiCoreConfig.SMOOTH_ZOOM.get());
-            button.setMessage(toggleText("screen.opticore.smooth_zoom", OptiCoreConfig.SMOOTH_ZOOM.get()));
-        }).bounds(center - 105, top + 28, 210, 20).build());
+        addToggle(left, rowY(top, 1), "screen.opticore.smooth_zoom", OptiCoreConfig.SMOOTH_ZOOM,
+                () -> OptiCoreConfig.SMOOTH_ZOOM.get());
+        addToggle(right, rowY(top, 1), "screen.opticore.frame_time", OptiCoreConfig.SHOW_FRAME_TIME,
+                () -> OptiCoreConfig.SHOW_FRAME_TIME.get(), () -> {
+                    if (!OptiCoreConfig.SHOW_FRAME_TIME.get()) FrameTimeMonitor.reset();
+                });
 
-        addRenderableWidget(Button.builder(toggleText("screen.opticore.fps", OptiCoreConfig.SHOW_FPS.get()), button -> {
-            OptiCoreConfig.SHOW_FPS.set(!OptiCoreConfig.SHOW_FPS.get());
-            button.setMessage(toggleText("screen.opticore.fps", OptiCoreConfig.SHOW_FPS.get()));
-        }).bounds(center - 105, top + 56, 210, 20).build());
-
-        addRenderableWidget(Button.builder(toggleText("screen.opticore.chunk_diagnostics", OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()), button -> {
-            OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.set(!OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get());
-            button.setMessage(toggleText("screen.opticore.chunk_diagnostics", OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()));
-        }).bounds(center - 105, top + 84, 210, 20).build());
-
-        addRenderableWidget(Button.builder(toggleText("screen.opticore.frame_time", OptiCoreConfig.SHOW_FRAME_TIME.get()), button -> {
-            OptiCoreConfig.SHOW_FRAME_TIME.set(!OptiCoreConfig.SHOW_FRAME_TIME.get());
-            if (!OptiCoreConfig.SHOW_FRAME_TIME.get()) FrameTimeMonitor.reset();
-            button.setMessage(toggleText("screen.opticore.frame_time", OptiCoreConfig.SHOW_FRAME_TIME.get()));
-        }).bounds(center - 105, top + 112, 210, 20).build());
+        addRenderableWidget(Button.builder(zoomFactorText(), button -> {
+            double current = OptiCoreConfig.ZOOM_FACTOR.get();
+            double next = current >= 0.75D ? 0.10D
+                    : Math.min(0.75D, Math.round((current + 0.05D) * 100.0D) / 100.0D);
+            OptiCoreConfig.ZOOM_FACTOR.set(next);
+            button.setMessage(zoomFactorText());
+        }).bounds(left, rowY(top, 2), COLUMN_WIDTH, ROW_HEIGHT).build());
 
         addRenderableWidget(Button.builder(cacheBudgetText(), button -> {
             int current = OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get();
-            int next = current >= 256 ? 32 : current * 2;
+            int next = current >= 512 ? 32 : Math.min(512, current * 2);
             OptiCoreConfig.RENDER_CACHE_BUDGET_MB.set(next);
             ChunkRenderCache.applyConfiguredBudget();
             button.setMessage(cacheBudgetText());
-        }).bounds(center - 105, top + 140, 210, 20).build());
+        }).bounds(right, rowY(top, 2), COLUMN_WIDTH, ROW_HEIGHT).build());
 
-        addRenderableWidget(Button.builder(Component.literal("Compatibility"), button ->
+        addToggle(left, rowY(top, 3), "screen.opticore.chunk_diagnostics",
+                OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS,
+                () -> OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get());
+        addToggle(right, rowY(top, 3), "screen.opticore.capture_scene",
+                OptiCoreConfig.CAPTURE_SCENE_UNIFORMS,
+                () -> OptiCoreConfig.CAPTURE_SCENE_UNIFORMS.get());
+
+        addRenderableWidget(Button.builder(Component.translatable("screen.opticore.compatibility"), button ->
                 minecraft.setScreen(new OptiCoreCompatibilityScreen(this)))
-                .bounds(center - 105, top + 168, 210, 20).build());
+                .bounds(left, rowY(top, 4), COLUMN_WIDTH, ROW_HEIGHT).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.open"), button ->
                 minecraft.setScreen(new ShaderPackScreen(this)))
-                .bounds(center - 105, top + 196, 210, 20).build());
+                .bounds(right, rowY(top, 4), COLUMN_WIDTH, ROW_HEIGHT).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
-                .bounds(center - 105, top + 224, 210, 20).build());
+                .bounds(center - 60, height - 28, 120, 20).build());
     }
 
-    private static Component cacheBudgetText() {
-        return Component.literal("Render cache budget: "
-                + OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get() + " MiB");
+    private void addToggle(int x, int y, String key, net.minecraftforge.common.ForgeConfigSpec.BooleanValue value,
+                           java.util.function.BooleanSupplier current) {
+        addToggle(x, y, key, value, current, () -> {});
+    }
+
+    private void addToggle(int x, int y, String key, net.minecraftforge.common.ForgeConfigSpec.BooleanValue value,
+                           java.util.function.BooleanSupplier current, Runnable afterChange) {
+        addRenderableWidget(Button.builder(toggleText(key, current.getAsBoolean()), button -> {
+            value.set(!current.getAsBoolean());
+            afterChange.run();
+            button.setMessage(toggleText(key, current.getAsBoolean()));
+        }).bounds(x, y, COLUMN_WIDTH, ROW_HEIGHT).build());
+    }
+
+    private static int rowY(int top, int row) {
+        return top + row * (ROW_HEIGHT + ROW_GAP);
     }
 
     private static Component toggleText(String key, boolean enabled) {
@@ -73,13 +95,32 @@ public class OptiCoreSettingsScreen extends Screen {
                 Component.translatable(enabled ? "screen.opticore.on" : "screen.opticore.off"));
     }
 
+    private static Component zoomFactorText() {
+        return Component.translatable("screen.opticore.zoom_factor",
+                String.format(Locale.ROOT, "%.2fx", OptiCoreConfig.ZOOM_FACTOR.get()));
+    }
+
+    private static Component cacheBudgetText() {
+        return Component.translatable("screen.opticore.cache_budget",
+                OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get());
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
+        int center = width / 2;
+        int left = center - COLUMN_WIDTH - 3;
+        int right = center + 3;
+        graphics.fill(left - 4, 38, left + COLUMN_WIDTH + 4, height - 36, 0x66000000);
+        graphics.fill(right - 4, 38, right + COLUMN_WIDTH + 4, height - 36, 0x66000000);
+        graphics.drawCenteredString(font, title, center, 14, 0xFFFFFF);
+        graphics.drawCenteredString(font, Component.translatable("screen.opticore.section.visual"),
+                left + COLUMN_WIDTH / 2, 42, 0xA9D8FF);
+        graphics.drawCenteredString(font, Component.translatable("screen.opticore.section.performance"),
+                right + COLUMN_WIDTH / 2, 42, 0xA9D8FF);
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(font, title, width / 2, height / 4 - 28, 0xFFFFFF);
         graphics.drawCenteredString(font, Component.translatable("screen.opticore.zoom_hint"),
-                width / 2, height / 4 + 250, 0xAAAAAA);
+                center, height - 46, 0xAAAAAA);
     }
 
     @Override
