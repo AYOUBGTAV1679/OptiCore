@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="opticore"
+version="0.9.0-alpha"
+displayName="OptiCore"
+description='''An independent performance and visual enhancement project for Minecraft Forge 1.20.1.'''
+
+[[dependencies.opticore]]
+modId="forge"
+mandatory=true
+versionRange="[47.0.0,48)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.opticore]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.21)"
+ordering="NONE"
+side="BOTH"

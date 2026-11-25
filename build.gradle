@@ -1,0 +1,45 @@
+plugins {
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7.+'
+    id 'eclipse'
+    id 'maven-publish'
+}
+
+group = 'dev.opticore'
+version = '0.9.0-alpha'
+archivesBaseName = 'OptiCore'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+// Override with -Pforge_version=47.x.x to build against a specific Forge 1.20.1 release.
+def forgeVersion = providers.gradleProperty('forge_version').getOrElse('47.2.0')
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.console.level', 'info'
+            mods { opticore { source sourceSets.main } }
+        }
+        client {}
+        server {}
+    }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.20.1-${forgeVersion}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+}
+
+mixin {
+    add sourceSets.main, 'opticore.refmap.json'
+    config 'opticore.mixins.json'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

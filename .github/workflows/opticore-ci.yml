@@ -1,0 +1,65 @@
+name: OptiCore CI
+
+on:
+  push:
+    branches:
+      - main
+      - development/**
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  # Push and pull_request events for the same branch share one queue slot.
+  group: opticore-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  forge-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        forge_version: ['47.0.0', '47.2.0', '47.4.29']
+    name: Forge 1.20.1 - ${{ matrix.forge_version }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.8'
+
+      - name: Run cache regression tests
+        run: bash scripts/run-cache-tests.sh
+
+      - name: Validate client Mixin registration
+        run: python3 scripts/check-mixin-config.py
+
+      - name: Test packaged Mixin checker
+        run: python3 scripts/test-packaged-mixin.py
+
+      - name: Build Forge mod
+        run: gradle --no-daemon clean build -Pforge_version=${{ matrix.forge_version }}
+
+      - name: Verify packaged Mixin registration
+        run: python3 scripts/check-packaged-mixin.py
+
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: OptiCore-Forge-1.20.1-${{ matrix.forge_version }}
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
