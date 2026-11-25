@@ -9,6 +9,10 @@ import dev.opticore.OptiCoreConfig;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Client-side cache lifecycle bridge for renderer-owned disposable artifacts.
  *
@@ -20,6 +24,8 @@ public final class ChunkRenderCache {
     private static final long MIB = 1024L * 1024L;
     private static final SmartChunkCache<CacheEntry> CACHE =
             new SmartChunkCache<>(32L * MIB);
+    private static final Map<Level, Long> WORLD_SESSIONS = new WeakHashMap<>();
+    private static final AtomicLong NEXT_WORLD_SESSION = new AtomicLong(1L);
 
     private ChunkRenderCache() {}
 
@@ -32,7 +38,8 @@ public final class ChunkRenderCache {
 
     public static RenderCacheKey key(Level level, int chunkX, int chunkZ, int sectionY) {
         if (level == null || !level.isClientSide()) return null;
-        return new RenderCacheKey(dimensionId(level.dimension()), chunkX, chunkZ, sectionY);
+        return new RenderCacheKey(dimensionId(level.dimension()), worldSession(level),
+                chunkX, chunkZ, sectionY, 0L, 0L, 0L);
     }
 
     /**
