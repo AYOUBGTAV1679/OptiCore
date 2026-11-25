@@ -22,6 +22,13 @@ public final class DirectionalShadowCameraSelfTest {
         checkFinite(vertical.viewMatrix(), "vertical-light view");
         checkFinite(vertical.projectionMatrix(), "vertical-light projection");
         check(close((float) vertical.worldUnitsPerTexel(), 0.125f), "world-units-per-texel");
+        float[] verticalView = vertical.viewMatrix();
+        float[] verticalProjection = vertical.projectionMatrix();
+        float centerViewZ = verticalView[2] * 12.0f + verticalView[6] * 80.0f
+                + verticalView[10] * -4.0f + verticalView[14];
+        float centerClipZ = verticalProjection[10] * centerViewZ + verticalProjection[14];
+        check(close(centerClipZ, 0.0f),
+                "shadow focus point must map to the center of the depth interval");
 
         float[] copy = first.viewMatrix();
         copy[0] = 999;
