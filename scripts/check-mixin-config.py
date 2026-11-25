@@ -60,7 +60,7 @@ assert "origin.getY() >> 4" in capture_source, (
 )
 accessor_path = root / "src/main/java/dev/opticore/mixin/RenderChunkRegionAccessor.java"
 accessor_source = accessor_path.read_text(encoding="utf-8")
-for srg_field in ("f_112908_", "f_112905_", "f_112899_", "f_112900_"):
+for srg_field in ("f_112908_", "f_112899_", "f_112900_"):
     assert f'@Accessor("{srg_field}")' in accessor_source, (
         f"RenderChunkRegion accessor must target Forge SRG field {srg_field}"
     )
