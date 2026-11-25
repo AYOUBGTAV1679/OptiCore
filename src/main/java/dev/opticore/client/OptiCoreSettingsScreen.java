@@ -69,6 +69,23 @@ public class OptiCoreSettingsScreen extends Screen {
                 minecraft.setScreen(new ShaderPackScreen(this)))
                 .bounds(right, rowY(top, 4), COLUMN_WIDTH, ROW_HEIGHT).build());
 
+        addToggle(left, rowY(top, 5), "screen.opticore.experimental_world_pass",
+                OptiCoreConfig.ENABLE_EXPERIMENTAL_WORLD_PASS,
+                () -> OptiCoreConfig.ENABLE_EXPERIMENTAL_WORLD_PASS.get());
+        addRenderableWidget(Button.builder(fogStrengthText(), button -> {
+            double[] levels = {0.0D, 0.10D, 0.22D, 0.40D, 0.65D, 1.0D};
+            double current = OptiCoreConfig.WORLD_FOG_STRENGTH.get();
+            int next = 0;
+            for (int i = 0; i < levels.length; i++) {
+                if (Math.abs(levels[i] - current) < 0.001D) {
+                    next = (i + 1) % levels.length;
+                    break;
+                }
+            }
+            OptiCoreConfig.WORLD_FOG_STRENGTH.set(levels[next]);
+            button.setMessage(fogStrengthText());
+        }).bounds(right, rowY(top, 5), COLUMN_WIDTH, ROW_HEIGHT).build());
+
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
                 .bounds(center - 60, height - 28, 120, 20).build());
     }
@@ -104,6 +121,11 @@ public class OptiCoreSettingsScreen extends Screen {
     private static Component cacheBudgetText() {
         return Component.translatable("screen.opticore.cache_budget",
                 OptiCoreConfig.RENDER_CACHE_BUDGET_MB.get());
+    }
+
+    private static Component fogStrengthText() {
+        return Component.translatable("screen.opticore.world_fog_strength",
+                String.format(Locale.ROOT, "%.2f", OptiCoreConfig.WORLD_FOG_STRENGTH.get()));
     }
 
     @Override
