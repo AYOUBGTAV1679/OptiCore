@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.renderer.RenderType;
 import java.util.Map;
+import java.nio.ByteBuffer;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
@@ -24,6 +25,7 @@ public final class ChunkMeshCapture {
     private static final LongAdder SKIPPED = new LongAdder();
     private static final LongAdder OBSERVED_BUFFERS = new LongAdder();
     private static final LongAdder COPIED_BYTES = new LongAdder();
+    private static final long MAX_OBSERVATION_BYTES_PER_COMPILE = 4L * 1024L * 1024L;
 
     private ChunkMeshCapture() {}
 
@@ -83,15 +85,26 @@ public final class ChunkMeshCapture {
         int sectionY = renderChunkOrigin.getY() >> 4;
         int chunkZ = renderChunkOrigin.getZ() >> 4;
 
+        long compileBytes = 0L;
         for (BufferBuilder.RenderedBuffer rendered : layers.values()) {
             if (rendered == null || rendered.isEmpty()) continue;
             try {
+                ByteBuffer vertexView = rendered.vertexBuffer().asReadOnlyBuffer();
+                ByteBuffer indexView = rendered.indexBuffer().asReadOnlyBuffer();
+                long payloadBytes = (long) vertexView.remaining() + indexView.remaining();
+                if (payloadBytes <= 0L
+                        || payloadBytes > MAX_OBSERVATION_BYTES_PER_COMPILE - compileBytes) {
+                    SKIPPED.increment();
+                    continue;
+                }
+
                 ImmutableMeshSnapshot snapshot =
                         RenderedBufferSnapshotCopier.copy(rendered, chunkX, sectionY, chunkZ);
                 if (snapshot == null) {
                     SKIPPED.increment();
                     continue;
                 }
+                compileBytes += snapshot.sizeBytes();
                 OBSERVED_BUFFERS.increment();
                 COPIED_BYTES.add(snapshot.sizeBytes());
             } catch (RuntimeException invalidBuffer) {
