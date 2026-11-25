@@ -41,12 +41,18 @@ public final class SmartChunkCacheSelfTest {
         var changedNeighbor = new RenderCacheKey("overworld", 2, 3, 4, 12L, 21L, 31L);
         var changedLight = new RenderCacheKey("overworld", 2, 3, 4, 11L, 22L, 31L);
         var changedSettings = new RenderCacheKey("overworld", 2, 3, 4, 11L, 21L, 32L);
+        var otherWorldSession = new RenderCacheKey("overworld", 902L, 2, 3, 4,
+                11L, 21L, 31L);
         check("mesh key changes when neighbor geometry dependencies change",
                 !base.equals(changedNeighbor));
         check("mesh key changes when lighting dependencies change",
                 !base.equals(changedLight));
         check("mesh key changes when render settings change",
                 !base.equals(changedSettings));
+        var sessionA = new RenderCacheKey("overworld", 901L, 2, 3, 4,
+                11L, 21L, 31L);
+        check("same dimension and coordinates in another world session cannot collide",
+                !sessionA.equals(otherWorldSession));
         check("dependency variants still invalidate as the same chunk",
                 base.inChunk("overworld", 2, 3) && changedNeighbor.inChunk("overworld", 2, 3));
     }
