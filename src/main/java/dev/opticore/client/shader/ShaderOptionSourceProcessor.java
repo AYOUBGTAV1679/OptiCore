@@ -57,9 +57,9 @@ public final class ShaderOptionSourceProcessor {
             // OptiFine-style packs may expose editable values as GLSL constants.
             // Replace only the initializer of the exact declaration and retain its suffix.
             java.util.regex.Matcher constant = java.util.regex.Pattern.compile(
-                    "^(\\\\s*const\\\\s+(?:int|float|bool)\\\\s+"
+                    "^(\\s*const\\s+(?:int|float|bool)\\s+"
                             + java.util.regex.Pattern.quote(id)
-                            + "\\\\s*=\\\\s*)([^;]+)(;.*)$").matcher(original);
+                            + "\\s*=\\s*)([^;]+)(;.*)$").matcher(original);
             if (constant.matches()) {
                 String updated = constant.group(1) + value + constant.group(3);
                 if (!updated.equals(original)) {
