@@ -5,13 +5,13 @@ import java.util.Objects;
 /**
  * Immutable identity for a derived render artifact.
  *
- * The fingerprints represent geometry dependencies sampled by a future mesh
- * producer. The legacy four-argument constructor remains for lifecycle-only
- * callers; it intentionally supplies zero fingerprints and is not sufficient
- * by itself to authorize mesh reuse.
+ * worldSession separates different client Level instances that share the same
+ * dimension identifier. The fingerprints represent geometry dependencies
+ * sampled by a future mesh producer.
  */
 public record RenderCacheKey(
         String dimension,
+        long worldSession,
         int chunkX,
         int chunkZ,
         int section,
@@ -23,9 +23,17 @@ public record RenderCacheKey(
         Objects.requireNonNull(dimension, "dimension");
     }
 
-    /** Lifecycle-only key; a mesh producer should use the full constructor. */
+    /** Compatibility constructor for lifecycle-only and isolated cache callers. */
+    public RenderCacheKey(String dimension, int chunkX, int chunkZ, int section,
+            long neighborStateFingerprint, long lightFingerprint,
+            long renderSettingsFingerprint) {
+        this(dimension, 0L, chunkX, chunkZ, section, neighborStateFingerprint,
+                lightFingerprint, renderSettingsFingerprint);
+    }
+
+    /** Lifecycle-only key; a mesh producer should use a session-aware full key. */
     public RenderCacheKey(String dimension, int chunkX, int chunkZ, int section) {
-        this(dimension, chunkX, chunkZ, section, 0L, 0L, 0L);
+        this(dimension, 0L, chunkX, chunkZ, section, 0L, 0L, 0L);
     }
 
     public boolean inChunk(String dim, int cx, int cz) {
