@@ -44,7 +44,30 @@ public final class ShaderStageInterfaceValidatorSelfTest {
         check(!duplicateInputResult.compatibleByInventory(), "duplicate fragment input rejected");
         check(duplicateInputResult.mismatches().stream().anyMatch(m -> m.name().equals("Repeated")
                 && m.reason().contains("more than once")), "duplicate input diagnostic");
-        System.out.println("ShaderStageInterfaceValidatorSelfTest: 10 checks passed");
+        var qualifiedVertex = ShaderGlslInterfaceScanner.inspect(
+                "layout(location = 0) flat out highp vec3 Qualified;");
+        var qualifiedFragment = ShaderGlslInterfaceScanner.inspect(
+                "layout(location = 0) flat in highp vec3 Qualified;");
+        check(ShaderStageInterfaceValidator.compare(qualifiedVertex, qualifiedFragment)
+                .compatibleByInventory(), "layout and interpolation qualifiers");
+
+        var commentedVertex = ShaderGlslInterfaceScanner.inspect(
+                "// out vec3 Ghost;\n/* out vec4 Hidden; */\nout vec2 Visible;");
+        var commentedFragment = ShaderGlslInterfaceScanner.inspect("in vec2 Visible;");
+        var commentedResult = ShaderStageInterfaceValidator.compare(commentedVertex, commentedFragment);
+        check(commentedResult.compatibleByInventory()
+                && commentedResult.matched().contains("Visible")
+                && !commentedResult.matched().contains("Ghost")
+                && !commentedResult.matched().contains("Hidden"),
+                "comments excluded from interface inventory");
+
+        String oversizedSource = " ".repeat(4 * 1024 * 1024 + 1);
+        var truncated = ShaderGlslInterfaceScanner.inspect(oversizedSource);
+        var truncatedResult = ShaderStageInterfaceValidator.compare(
+                truncated, ShaderGlslInterfaceScanner.inspect("in vec3 Any;"));
+        check(truncatedResult.vertexTruncated(), "oversized vertex source marked truncated");
+        check(!truncatedResult.compatibleByInventory(), "truncated inventory rejected");
+        System.out.println("ShaderStageInterfaceValidatorSelfTest: 14 checks passed");
     }
     private static void check(boolean ok, String label) {
         if (!ok) throw new AssertionError(label);
