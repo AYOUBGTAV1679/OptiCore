@@ -145,3 +145,10 @@ This is only the mathematical foundation. No light direction is selected, no sha
 `ShadowDepthTarget` now allocates a depth-only OpenGL texture framebuffer with nearest filtering, clamp-to-edge wrapping, comparison sampling disabled, and explicit framebuffer completeness validation. It enforces dimension/pixel limits, restores prior draw/read framebuffer and texture bindings after allocation, provides scoped framebuffer/viewport binding, and clears depth while restoring the depth-write, scissor, and clear-depth state. Closing a target while it is bound is rejected.
 
 This is resource infrastructure only: there is no light-space scene capture, caster submission, shadow filtering, or shader sampling yet. The target is not registered in the live world-render pipeline.
+
+
+## Guarded shadow pass executor
+
+`ShadowPass` provides an explicit, caller-driven depth-only pass. It combines the supplied light view and projection matrices, binds a `ShadowDepthTarget`, clears depth, configures depth testing/front-face culling/polygon offset, and invokes a caller-provided caster renderer. It captures and restores the modified depth, blend, cull, polygon-offset, scissor, color-write, program, and depth-clear state even when caster rendering fails.
+
+The result reports success or a diagnostic failure. A caller must treat failure as "do not use this shadow map" and preserve the normal vanilla frame. The executor does not discover the light camera, enumerate Minecraft terrain/entity casters, bind a compatible shader, sample the depth texture, or hook itself into the world render pipeline. It is a guarded primitive awaiting a verified Forge render-stage integration.
