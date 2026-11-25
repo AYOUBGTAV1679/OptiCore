@@ -50,6 +50,7 @@ public final class SceneUniformSnapshot {
     public float[] projectionMatrix() { return projectionMatrix.clone(); }
     public float[] modelViewMatrixInverse() { return Matrix4Inverse.invert(modelViewMatrix); }
     public float[] projectionMatrixInverse() { return Matrix4Inverse.invert(projectionMatrix); }
+    public float[] normalMatrix() { return Matrix3Normal.fromModelView(modelViewMatrix); }
     public double cameraX() { return cameraX; }
     public double cameraY() { return cameraY; }
     public double cameraZ() { return cameraZ; }
