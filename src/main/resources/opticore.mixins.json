@@ -9,7 +9,6 @@
     "LevelRendererDiagnosticsMixin",
     "ChunkCompileResultsAccessor",
     "RebuildTaskRegionAccessor",
-    "RebuildTaskOuterAccessor",
     "ChunkRebuildCaptureMixin",
     "RenderChunkRegionAccessor"
   ],
