@@ -137,6 +137,22 @@ public final class OptiCoreClientEvents {
         graphics.fill(width - edge, edge, width, height - edge, color);
     }
 
+    /** Draw a subtle red edge pulse only while player health is at or below 30%. */
+    private static void drawLowHealthPulse(net.minecraft.client.gui.GuiGraphics graphics, Minecraft mc) {
+        float maximum = mc.player.getMaxHealth();
+        if (maximum <= 0.0F || mc.player.getHealth() > maximum * 0.30F) return;
+        double pulse = 0.5 + 0.5 * Math.sin(System.currentTimeMillis() / 260.0);
+        int alpha = 24 + (int) (48.0 * pulse);
+        int color = (alpha << 24) | 0xD82020;
+        int width = mc.getWindow().getGuiScaledWidth();
+        int height = mc.getWindow().getGuiScaledHeight();
+        int edge = Math.max(12, Math.min(34, height / 18));
+        graphics.fill(0, 0, width, edge, color);
+        graphics.fill(0, height - edge, width, height, color);
+        graphics.fill(0, edge, edge, height - edge, color);
+        graphics.fill(width - edge, edge, width, height - edge, color);
+    }
+
     @SubscribeEvent
     public static void onHudRender(RenderGuiOverlayEvent.Post event) {
         // Draw once per frame, after the hotbar overlay.
@@ -145,9 +161,9 @@ public final class OptiCoreClientEvents {
         boolean showChunkDiagnostics = OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get();
         boolean showFrameTime = OptiCoreConfig.SHOW_FRAME_TIME.get();
         Minecraft mc = Minecraft.getInstance();
-        if (OptiCoreConfig.ENABLE_AMBIENT_PULSE.get() && mc.level != null && mc.player != null
-                && !mc.options.hideGui) {
-            drawAmbientPulse(event.getGuiGraphics(), mc);
+        if (mc.level != null && mc.player != null && !mc.options.hideGui) {
+            if (OptiCoreConfig.ENABLE_AMBIENT_PULSE.get()) drawAmbientPulse(event.getGuiGraphics(), mc);
+            if (OptiCoreConfig.ENABLE_LOW_HEALTH_PULSE.get()) drawLowHealthPulse(event.getGuiGraphics(), mc);
         }
         if (showFrameTime) {
             FrameTimeMonitor.sampleFrame();
