@@ -13,7 +13,7 @@ final class ShaderUniformValidator {
     }
 
     static void requireFinite(FloatBuffer values, int count, String name) {
-        if (values == null || count < 0 || values.remaining() < count) {
+        if (values == null || count <= 0 || values.remaining() < count) {
             throw new IllegalArgumentException("Uniform matrix '" + name + "' has insufficient values");
         }
         int start = values.position();
