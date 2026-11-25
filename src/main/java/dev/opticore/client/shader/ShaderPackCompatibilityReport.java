@@ -28,7 +28,7 @@ public final class ShaderPackCompatibilityReport {
         }
 
         public boolean allInspectedProgramsReady() {
-            return !truncated && blockedPrograms == 0 && vertexOnlyPrograms == 0
+            return pairedPrograms > 0 && !truncated && blockedPrograms == 0 && vertexOnlyPrograms == 0
                     && fragmentOnlyPrograms == 0 && inspectedPrograms == pairedPrograms;
         }
     }
