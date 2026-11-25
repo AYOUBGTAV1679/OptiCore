@@ -32,6 +32,12 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 - Forge build and test results are reported by GitHub Actions for the exact commit. A successful compile does not prove that OpenGL resources or rendered output work in a live Minecraft client.
 - No controlled FPS benchmark, shader-pack compatibility certification, or in-game shadow visual test has been completed.
 
+## Renderer Mixin verification checkpoint
+
+A client-only diagnostic Mixin is registered for `LevelRenderer.renderChunkLayer(...)`. It increments a counter and emits a bounded log message; it does not modify the render pipeline. The static registration check is part of CI. At the time of this update, the latest workflow for branch head `a92c5d2d32b0cdb46f1000ecc5591a01ecf0ee30` is queued, and no successful Forge matrix build for that exact commit has been confirmed. Even after a successful build, a live Forge 47.2.0 launch is required to prove the injection applies and to record actual render-layer calls.
+
+Do not implement a shadow draw by replaying vanilla chunk layers from this diagnostic hook. First verify the hook at runtime, then identify a supported world-render integration point and implement a dedicated depth-only caster path with explicit opaque/cutout policy and GL-state restoration.
+
 ## Not implemented / not claimed
 
 - Actual compiled chunk-mesh caching or a verified FPS gain.
