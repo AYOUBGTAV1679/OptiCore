@@ -123,8 +123,20 @@ public final class ShaderPackOptionsScreen extends Screen {
                 .bounds(center + 80, navY, 70, 20).build();
         next.active = end < visibleOptions.size();
         addRenderableWidget(next);
+        addRenderableWidget(Button.builder(Component.literal("Reset pack"),
+                ignored -> resetPackOptions()).bounds(center - 150, height - 29, 100, 20).build());
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"),
-                ignored -> onClose()).bounds(center - 60, height - 29, 120, 20).build());
+                ignored -> onClose()).bounds(center + 50, height - 29, 100, 20).build());
+    }
+
+    private void resetPackOptions() {
+        if (ShaderPackOptionStore.clearPack(storePath, packName)) {
+            values.clear();
+            saveStatus = "Pack options reset";
+        } else {
+            saveStatus = "Reset failed";
+        }
+        rebuildWidgets();
     }
 
     private String currentValue(ShaderOptionParser.Option option) {
