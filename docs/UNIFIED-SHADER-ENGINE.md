@@ -119,3 +119,10 @@ The current Forge observer samples `ClientLevel.getSkyColor(camera, partialTick)
 Added a dependency-free, column-major 4x4 inversion utility using pivoted Gauss-Jordan elimination in double precision. Singular, malformed, non-finite, or out-of-float-range matrices are rejected instead of uploading invalid values. Scene snapshots expose inverse model-view and projection matrices, and the uniform binder uploads `gbufferModelViewInverse` and `gbufferProjectionInverse` alongside the original matrices.
 
 Standalone tests cover identity, translation, multiplication by the computed inverse, malformed input, and singular matrices. This supplies matrix data only; normal matrices, shadow-camera matrices, and the full OptiFine alias set remain separate work.
+
+
+## Alpha update — normal matrix capture and upload
+
+Added a dependency-free inverse-transpose 3x3 normal-matrix calculation derived from the linear part of the captured model-view matrix. Translation is ignored, while singular, malformed, non-finite, or out-of-range transforms are rejected. The scene snapshot exposes the derived matrix and the GL program wrapper now supports typed column-major mat3 uploads; the common binder sends it as `normalMatrix`.
+
+Standalone regression checks cover identity, non-uniform scale, translation independence, shear, and invalid/singular inputs. This provides the matrix required for correct normal-vector transformation, but it does not yet add lighting calculations, material handling, shadow maps, or world-render integration. The normal-matrix upload is still part of the explicit binder call and does not activate shader packs automatically.
