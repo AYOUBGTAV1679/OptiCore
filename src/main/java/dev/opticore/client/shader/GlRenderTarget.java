@@ -18,16 +18,16 @@ public final class GlRenderTarget implements AutoCloseable {
 
     private int framebuffer;
     private int colorTexture;
-    private int depthRenderbuffer;
+    private int depthTexture;
     private int width;
     private int height;
     private boolean closed;
 
-    private GlRenderTarget(int framebuffer, int colorTexture, int depthRenderbuffer,
+    private GlRenderTarget(int framebuffer, int colorTexture, int depthTexture,
                            int width, int height) {
         this.framebuffer = framebuffer;
         this.colorTexture = colorTexture;
-        this.depthRenderbuffer = depthRenderbuffer;
+        this.depthTexture = depthTexture;
         this.width = width;
         this.height = height;
     }
@@ -52,17 +52,17 @@ public final class GlRenderTarget implements AutoCloseable {
         GlRenderTarget replacement = allocate(newWidth, newHeight);
         int oldFramebuffer = framebuffer;
         int oldColor = colorTexture;
-        int oldDepth = depthRenderbuffer;
+        int oldDepth = depthTexture;
 
         framebuffer = replacement.framebuffer;
         colorTexture = replacement.colorTexture;
-        depthRenderbuffer = replacement.depthRenderbuffer;
+        depthTexture = replacement.depthTexture;
         width = replacement.width;
         height = replacement.height;
         replacement.closed = true;
         replacement.framebuffer = 0;
         replacement.colorTexture = 0;
-        replacement.depthRenderbuffer = 0;
+        replacement.depthTexture = 0;
 
         deleteObjects(oldFramebuffer, oldColor, oldDepth);
     }
@@ -71,7 +71,7 @@ public final class GlRenderTarget implements AutoCloseable {
         int previousDrawFramebuffer = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
         int previousReadFramebuffer = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
         int previousTexture = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
-        int previousRenderbuffer = GL11.glGetInteger(GL30.GL_RENDERBUFFER_BINDING);
+        
 
         int fbo = 0;
         int texture = 0;
@@ -79,7 +79,7 @@ public final class GlRenderTarget implements AutoCloseable {
         try {
             fbo = GL30.glGenFramebuffers();
             texture = GL11.glGenTextures();
-            depth = GL30.glGenRenderbuffers();
+            depth = GL11.glGenTextures();
             if (fbo == 0 || texture == 0 || depth == 0) {
                 throw new IllegalStateException("OpenGL could not allocate framebuffer resources");
             }
@@ -92,14 +92,19 @@ public final class GlRenderTarget implements AutoCloseable {
             GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGBA8, width, height, 0,
                     GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, 0L);
 
-            GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depth);
-            GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL30.GL_DEPTH_COMPONENT24, width, height);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, depth);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT24, width, height, 0,
+                    GL11.GL_DEPTH_COMPONENT, GL11.GL_UNSIGNED_INT, 0L);
 
             GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
             GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0,
                     GL11.GL_TEXTURE_2D, texture, 0);
-            GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT,
-                    GL30.GL_RENDERBUFFER, depth);
+            GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT,
+                    GL11.GL_TEXTURE_2D, depth, 0);
 
             int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
             if (status != GL30.GL_FRAMEBUFFER_COMPLETE) {
@@ -113,7 +118,7 @@ public final class GlRenderTarget implements AutoCloseable {
         } finally {
             GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDrawFramebuffer);
             GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousReadFramebuffer);
-            GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, previousRenderbuffer);
+            
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, previousTexture);
         }
     }
@@ -195,6 +200,13 @@ public final class GlRenderTarget implements AutoCloseable {
         return colorTexture;
     }
 
+    /** Returns the sampleable depth attachment texture ID. */
+    public int depthTextureId() {
+        RenderSystem.assertOnRenderThread();
+        ensureOpen();
+        return depthTexture;
+    }
+
     public int framebufferId() {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
@@ -226,10 +238,10 @@ public final class GlRenderTarget implements AutoCloseable {
         }
     }
 
-    private static void deleteObjects(int framebuffer, int texture, int renderbuffer) {
+    private static void deleteObjects(int framebuffer, int texture, int depthTexture) {
         if (framebuffer != 0) GL30.glDeleteFramebuffers(framebuffer);
         if (texture != 0) GL11.glDeleteTextures(texture);
-        if (renderbuffer != 0) GL30.glDeleteRenderbuffers(renderbuffer);
+        if (depthTexture != 0) GL11.glDeleteTextures(depthTexture);
     }
 
     @Override
@@ -237,10 +249,10 @@ public final class GlRenderTarget implements AutoCloseable {
         RenderSystem.assertOnRenderThread();
         if (closed) return;
         ensureNotBound();
-        deleteObjects(framebuffer, colorTexture, depthRenderbuffer);
+        deleteObjects(framebuffer, colorTexture, depthTexture);
         framebuffer = 0;
         colorTexture = 0;
-        depthRenderbuffer = 0;
+        depthTexture = 0;
         closed = true;
     }
 
