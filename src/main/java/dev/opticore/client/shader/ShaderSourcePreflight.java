@@ -43,7 +43,8 @@ public final class ShaderSourcePreflight {
         }
     }
 
-    private record StageResult(boolean hasMain, String version, int includes, Set<String> extensions) {}
+    private record StageResult(boolean hasMain, String version, int includes, Set<String> extensions,
+                               int extensionDirectives) {}
 
     public static Summary inspect(Path pack, boolean archive) {
         if (pack == null) return Summary.empty();
@@ -79,7 +80,7 @@ public final class ShaderSourcePreflight {
                 if (result.version() != null) { versioned++; versions.add(result.version()); }
                 includes += result.includes();
                 extensions.addAll(result.extensions());
-                extensionCount += result.extensions().size();
+                extensionCount += result.extensionDirectives();
             }
         }
         return new Summary(stages, missingMain, versioned, versions, includes, extensions, extensionCount, truncated);
@@ -142,8 +143,13 @@ public final class ShaderSourcePreflight {
         while (includeMatcher.find()) includeCount++;
         Matcher extensionMatcher = EXTENSION.matcher(withoutComments);
         Set<String> extensions = new TreeSet<>();
-        while (extensionMatcher.find()) extensions.add(extensionMatcher.group(1));
-        return new StageResult(main.find(), versionValue, includeCount, extensions);
+        int extensionDirectiveCount = 0;
+        while (extensionMatcher.find()) {
+            extensions.add(extensionMatcher.group(1));
+            extensionDirectiveCount++;
+        }
+        return new StageResult(main.find(), versionValue, includeCount, extensions,
+                extensionDirectiveCount);
     }
 
     /** Removes line and block comments while preserving newlines and quoted strings. */
