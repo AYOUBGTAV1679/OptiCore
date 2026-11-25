@@ -47,8 +47,13 @@ public final class OptiCoreClientEvents {
      */
     @SubscribeEvent
     public static void onLevelRenderStage(RenderLevelStageEvent event) {
-        if (!OptiCoreConfig.CAPTURE_SCENE_UNIFORMS.get()
-                || event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) return;
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) return;
+        if (!OptiCoreConfig.CAPTURE_SCENE_UNIFORMS.get()) {
+            latestSceneUniformSnapshot = null;
+            latestSceneEnvironmentSnapshot = null;
+            latestDirectionalSunSnapshot = null;
+            return;
+        }
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) {
             latestSceneUniformSnapshot = null;
