@@ -39,6 +39,9 @@ jobs:
       - name: Run cache regression tests
         run: bash scripts/run-cache-tests.sh
 
+      - name: Validate client Mixin registration
+        run: python3 scripts/check-mixin-config.py
+
       - name: Build Forge mod
         run: gradle --no-daemon clean build -Pforge_version=${{ matrix.forge_version }}
 
