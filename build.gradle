@@ -11,6 +11,9 @@ archivesBaseName = 'OptiCore'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+// Override with -Pforge_version=47.x.x to build against a specific Forge 1.20.1 release.
+def forgeVersion = providers.gradleProperty('forge_version').getOrElse('47.2.0')
+
 minecraft {
     mappings channel: 'official', version: '1.20.1'
     copyIdeResources = true
@@ -28,7 +31,7 @@ minecraft {
 repositories { mavenCentral() }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.2.0'
+    minecraft "net.minecraftforge:forge:1.20.1-${forgeVersion}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
