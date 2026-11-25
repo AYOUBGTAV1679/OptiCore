@@ -13,6 +13,7 @@ public final class ShaderPackScreen extends Screen {
     private List<ShaderPackRepository.Pack> packs = List.of();
     private String selected = "OFF";
     private String statusKey = "screen.opticore.shaders.status_ready";
+    private String statusDetail = "";
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
     private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
     private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
@@ -121,11 +122,13 @@ public final class ShaderPackScreen extends Screen {
     private void choose(String name) {
         if (!ShaderPackRepository.select(name)) {
             statusKey = "screen.opticore.shaders.status_error";
+            statusDetail = "";
             refreshPacks();
             return;
         }
 
         statusKey = "screen.opticore.shaders.status_saved";
+        statusDetail = "";
         if (!"OFF".equals(name)) {
             ShaderPackRepository.Pack pack = ShaderPackRepository.discover().stream()
                     .filter(candidate -> candidate.name().equals(name))
@@ -134,15 +137,15 @@ public final class ShaderPackScreen extends Screen {
                     : ShaderProgramIndex.inspect(pack.path(), pack.archive());
             String firstProgram = programs.paired().stream().sorted().findFirst().orElse(null);
             if (pack == null) {
-                statusKey = "Selected pack could not be reopened";
+                statusDetail = "Selected pack could not be reopened";
             } else if (firstProgram == null) {
-                statusKey = "Selected pack has no paired .vsh/.fsh program";
+                statusDetail = "No paired .vsh/.fsh program found in selected pack";
             } else {
                 // Button callbacks execute on Minecraft's render thread. Compile one
                 // bounded program immediately so selection validates real GLSL, rather
                 // than only saving a pack name and displaying its file inventory.
                 ShaderPackRuntime.Result result = ShaderPackRuntime.compileProgram(pack, firstProgram);
-                statusKey = result.compiled()
+                statusDetail = result.compiled()
                         ? "GLSL compile/link OK: " + firstProgram
                         : "GLSL compile failed: " + (result.diagnostics().isEmpty()
                                 ? "unknown error" : result.diagnostics().get(0));
@@ -158,6 +161,7 @@ public final class ShaderPackScreen extends Screen {
             net.minecraft.Util.getPlatform().openFile(folder.toFile());
         } catch (Exception ignored) {
             statusKey = "screen.opticore.shaders.status_error";
+            statusDetail = "";
         }
     }
 
@@ -177,7 +181,8 @@ public final class ShaderPackScreen extends Screen {
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.count", packs.size()),
                 width / 2, height - 144, 0xAAAAAA);
-        graphics.drawCenteredString(font, Component.translatable(statusKey),
+        graphics.drawCenteredString(font, statusDetail.isBlank()
+                        ? Component.translatable(statusKey) : Component.literal(statusDetail),
                 width / 2, height - 128, 0xAAAAAA);
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.page", page + 1, pageCount()),
