@@ -37,6 +37,33 @@ public final class ShaderOptionDiscoverySelfTest {
         check(zipped.options().get("SHADOWS").slider(), "archive sliders metadata marks discovered option");
         check(!zipped.options().containsKey("TRAVERSAL"), "unsafe archive path ignored");
 
+        Path cappedFolder = Files.createTempDirectory("opticore-options-capped");
+        Path cappedShaders = Files.createDirectories(cappedFolder.resolve("shaders"));
+        for (int i = 0; i < ShaderOptionParser.MAX_FILES + 1; i++) {
+            Files.writeString(cappedShaders.resolve(String.format(java.util.Locale.ROOT,
+                    "extra-%03d.glsl", i)), "#define OPTION_" + i + " 1");
+        }
+        var capped = ShaderOptionDiscovery.inspectPath(cappedFolder, false);
+        check(capped.truncated(), "source inventory reports file-count cap");
+        check(capped.scannedFiles() == ShaderOptionParser.MAX_FILES,
+                "source inventory respects maximum source file count");
+
+        Path oversizedFolder = Files.createTempDirectory("opticore-options-oversized");
+        Path oversizedShaders = Files.createDirectories(oversizedFolder.resolve("shaders"));
+        Files.writeString(oversizedShaders.resolve("oversized.glsl"),
+                " ".repeat(ShaderOptionParser.MAX_FILE_CHARS + 1));
+        var oversized = ShaderOptionDiscovery.inspectPath(oversizedFolder, false);
+        check(oversized.truncated(), "source inventory reports oversized shader source");
+
+        try (var files = Files.list(cappedShaders)) {
+            for (Path file : files.toList()) Files.deleteIfExists(file);
+        }
+        Files.deleteIfExists(cappedShaders);
+        Files.deleteIfExists(cappedFolder);
+        Files.deleteIfExists(oversizedShaders.resolve("oversized.glsl"));
+        Files.deleteIfExists(oversizedShaders);
+        Files.deleteIfExists(oversizedFolder);
+
         Files.deleteIfExists(shaders.resolve("composite.fsh"));
         Files.deleteIfExists(shaders.resolve("common.glsl"));
         Files.deleteIfExists(shaders.resolve("ignored.txt"));
@@ -44,7 +71,7 @@ public final class ShaderOptionDiscoverySelfTest {
         Files.deleteIfExists(shaders);
         Files.deleteIfExists(folder);
         Files.deleteIfExists(archive);
-        System.out.println("ShaderOptionDiscoverySelfTest: 9 checks passed");
+        System.out.println("ShaderOptionDiscoverySelfTest: 13 checks passed");
     }
 
     private static void add(ZipOutputStream zip, String name, String content) throws Exception {
