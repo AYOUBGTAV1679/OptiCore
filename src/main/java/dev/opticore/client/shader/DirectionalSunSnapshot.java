@@ -11,6 +11,16 @@ package dev.opticore.client.shader;
 public record DirectionalSunSnapshot(float sunAngleRadians, float partialTick,
                                      long gameTime, long dayTime,
                                      float rain, float thunder) {
+    /** Sine of the captured celestial angle; this is not a world-space light vector. */
+    public float sunAngleSin() {
+        return (float) Math.sin(sunAngleRadians);
+    }
+
+    /** Cosine of the captured celestial angle; this is not a world-space light vector. */
+    public float sunAngleCos() {
+        return (float) Math.cos(sunAngleRadians);
+    }
+
     public DirectionalSunSnapshot {
         if (!Float.isFinite(sunAngleRadians) || !Float.isFinite(partialTick)
                 || !Float.isFinite(rain) || !Float.isFinite(thunder)
