@@ -22,12 +22,15 @@ public final class ShaderOptionDiscovery {
     public static ShaderOptionParser.Summary inspect(ShaderPackRepository.Pack pack) {
         if (pack == null) return ShaderOptionParser.Summary.empty();
         try {
-            List<ShaderOptionParser.Source> sources = pack.archive()
-                    ? readArchive(pack.path()) : readDirectory(pack.path());
-            return ShaderOptionParser.parse(sources, Set.of());
+            return inspectPath(pack.path(), pack.archive());
         } catch (IOException | SecurityException ignored) {
             return ShaderOptionParser.Summary.empty();
         }
+    }
+
+    static ShaderOptionParser.Summary inspectPath(Path path, boolean archive) throws IOException {
+        List<ShaderOptionParser.Source> sources = archive ? readArchive(path) : readDirectory(path);
+        return ShaderOptionParser.parse(sources, Set.of());
     }
 
     private static List<ShaderOptionParser.Source> readDirectory(Path pack) throws IOException {
