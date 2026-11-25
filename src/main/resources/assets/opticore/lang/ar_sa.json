@@ -9,8 +9,6 @@
   "screen.opticore.cache_budget": "ذاكرة الرندر: %s MiB",
   "screen.opticore.zoom_factor": "قوة التقريب: %s",
   "screen.opticore.capture_scene": "التقاط بيانات المشهد: %s",
-  "screen.opticore.ambient_pulse": "وهج محيط متحرك: %s",
-  "screen.opticore.low_health_pulse": "تحذير نبضي عند انخفاض الصحة: %s",
   "screen.opticore.smooth_zoom": "التقريب السلس: %s",
   "screen.opticore.zoom": "التقريب: %s",
   "screen.opticore.fps": "عداد FPS: %s",
