@@ -8,12 +8,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 /** Read-only access to the world, center coordinates, and chunk grid used by compilation. */
 @Mixin(RenderChunkRegion.class)
 public interface RenderChunkRegionAccessor {
-    @Accessor("f_112908_")
+    @Accessor("level")
     Level opticore$getLevel();
 
-    @Accessor("f_112899_")
+    @Accessor("centerX")
     int opticore$getCenterX();
 
-    @Accessor("f_112900_")
+    @Accessor("centerZ")
     int opticore$getCenterZ();
 }
