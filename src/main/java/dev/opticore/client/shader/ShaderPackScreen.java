@@ -16,6 +16,7 @@ public final class ShaderPackScreen extends Screen {
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
     private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
     private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
+    private ShaderOptionParser.Summary selectedOptions = ShaderOptionParser.Summary.empty();
     private int page;
     private int pageSize = 1;
     private boolean initialSelectionLocated;
@@ -55,6 +56,8 @@ public final class ShaderPackScreen extends Screen {
                 : ShaderPackInventory.inspect(selectedPack.path(), selectedPack.archive());
         selectedPrograms = selectedPack == null ? ShaderProgramIndex.Summary.empty()
                 : ShaderProgramIndex.inspect(selectedPack.path(), selectedPack.archive());
+        selectedOptions = selectedPack == null ? ShaderOptionParser.Summary.empty()
+                : ShaderOptionDiscovery.inspect(selectedPack);
 
         int center = width / 2;
         int y = 48;
@@ -88,9 +91,9 @@ public final class ShaderPackScreen extends Screen {
                 button -> { page = 0; refreshPacks(); })
                 .bounds(center - 150, actionY, 70, 20).build());
         Button optionsButton = Button.builder(Component.translatable("screen.opticore.shaders.options"),
-                button -> minecraft.setScreen(new ShaderPackOptionsScreen(this, selected, selectedMetadata)))
+                button -> minecraft.setScreen(new ShaderPackOptionsScreen(this, selected, selectedMetadata, selectedOptions)))
                 .bounds(center - 76, actionY, 70, 20).build();
-        optionsButton.active = selectedMetadata.hasProperties();
+        optionsButton.active = selectedMetadata.hasProperties() || !selectedOptions.options().isEmpty();
         addRenderableWidget(optionsButton);
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.open_folder"),
                 button -> openFolder()).bounds(center - 2, actionY, 90, 20).build());
