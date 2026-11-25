@@ -64,8 +64,7 @@ public final class ShaderPackRuntime {
                 descriptor.vertex().expandedSource(), options, overrides);
         ShaderOptionSourceProcessor.Result fragment = ShaderOptionSourceProcessor.apply(
                 descriptor.fragment().expandedSource(), options, overrides);
-        String overrideKey = Integer.toHexString(overrides.hashCode());
-        String cacheKey = pack.path().toAbsolutePath().normalize() + "::" + programId + "::" + overrideKey;
+        String cacheKey = ShaderProgramCacheKey.create(pack.path(), programId, overrides);
         try {
             GlShaderProgram program = GlShaderProgramCache.getOrCompile(
                     cacheKey, vertex.source(), fragment.source());
