@@ -162,30 +162,23 @@ public final class ShaderPackOptionsScreen extends Screen {
         return false;
     }
 
-    private static double sliderPosition(ShaderOptionParser.Option option, String selected) {
-        int index = option.values().indexOf(selected);
-        if (index < 0) index = Math.max(0, option.values().indexOf(option.defaultValue()));
-        return option.values().size() <= 1 ? 0.0
-                : (double) index / (option.values().size() - 1);
-    }
-
     private final class DiscreteOptionSlider extends AbstractSliderButton {
         private final ShaderOptionParser.Option option;
 
         private DiscreteOptionSlider(int x, int y, int width, int height,
                                      ShaderOptionParser.Option option, String selected) {
-            super(x, y, width, height, Component.empty(), sliderPosition(option, selected));
+            super(x, y, width, height, Component.empty(),
+                    ShaderOptionSliderModel.position(option.values(), selected, option.defaultValue()));
             this.option = option;
             updateMessage();
         }
 
         private double positionFor(String selected) {
-            return ShaderPackOptionsScreen.sliderPosition(option, selected);
+            return ShaderOptionSliderModel.position(option.values(), selected, option.defaultValue());
         }
 
         private String selectedValue() {
-            int index = (int) Math.round(value * (option.values().size() - 1));
-            return option.values().get(Math.max(0, Math.min(option.values().size() - 1, index)));
+            return ShaderOptionSliderModel.valueAt(option.values(), value);
         }
 
         @Override
