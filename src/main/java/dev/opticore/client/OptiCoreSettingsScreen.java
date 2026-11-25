@@ -60,12 +60,6 @@ public class OptiCoreSettingsScreen extends Screen {
                 OptiCoreConfig.CAPTURE_SCENE_UNIFORMS,
                 () -> OptiCoreConfig.CAPTURE_SCENE_UNIFORMS.get());
 
-        addToggle(left, rowY(top, 5), "screen.opticore.ambient_pulse",
-                OptiCoreConfig.ENABLE_AMBIENT_PULSE,
-                () -> OptiCoreConfig.ENABLE_AMBIENT_PULSE.get());
-        addToggle(right, rowY(top, 5), "screen.opticore.low_health_pulse",
-                OptiCoreConfig.ENABLE_LOW_HEALTH_PULSE,
-                () -> OptiCoreConfig.ENABLE_LOW_HEALTH_PULSE.get());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.compatibility"), button ->
                 minecraft.setScreen(new OptiCoreCompatibilityScreen(this)))
