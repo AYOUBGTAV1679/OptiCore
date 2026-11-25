@@ -121,6 +121,22 @@ public final class OptiCoreClientEvents {
         event.setNewFovModifier((float) (event.getFovModifier() * factor));
     }
 
+    /** Draws an opt-in animated edge glow; this is a HUD effect, not a world shader. */
+    private static void drawAmbientPulse(net.minecraft.client.gui.GuiGraphics graphics, Minecraft mc) {
+        double phase = System.currentTimeMillis() / 1100.0;
+        int red = 35 + (int) (18.0 * (0.5 + 0.5 * Math.sin(phase)));
+        int green = 125 + (int) (55.0 * (0.5 + 0.5 * Math.sin(phase + 1.1)));
+        int blue = 190 + (int) (45.0 * (0.5 + 0.5 * Math.sin(phase + 2.0)));
+        int color = (0x20 << 24) | (red << 16) | (green << 8) | blue;
+        int width = mc.getWindow().getGuiScaledWidth();
+        int height = mc.getWindow().getGuiScaledHeight();
+        int edge = Math.max(8, Math.min(22, height / 28));
+        graphics.fill(0, 0, width, edge, color);
+        graphics.fill(0, height - edge, width, height, color);
+        graphics.fill(0, edge, edge, height - edge, color);
+        graphics.fill(width - edge, edge, width, height - edge, color);
+    }
+
     @SubscribeEvent
     public static void onHudRender(RenderGuiOverlayEvent.Post event) {
         // Draw once per frame, after the hotbar overlay.
@@ -128,13 +144,17 @@ public final class OptiCoreClientEvents {
         boolean showFps = OptiCoreConfig.SHOW_FPS.get();
         boolean showChunkDiagnostics = OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get();
         boolean showFrameTime = OptiCoreConfig.SHOW_FRAME_TIME.get();
+        Minecraft mc = Minecraft.getInstance();
+        if (OptiCoreConfig.ENABLE_AMBIENT_PULSE.get() && mc.level != null && mc.player != null
+                && !mc.options.hideGui) {
+            drawAmbientPulse(event.getGuiGraphics(), mc);
+        }
         if (showFrameTime) {
             FrameTimeMonitor.sampleFrame();
         } else {
             FrameTimeMonitor.reset();
         }
         if (!showFps && !showChunkDiagnostics && !showFrameTime) return;
-        Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui) return;
         int y = 6;
         if (showFps) {
