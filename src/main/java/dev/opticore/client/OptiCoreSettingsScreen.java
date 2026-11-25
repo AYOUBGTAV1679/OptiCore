@@ -12,7 +12,7 @@ import java.util.Locale;
 public class OptiCoreSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 147;
     private static final int ROW_HEIGHT = 20;
-    private static final int ROW_GAP = 6;
+    private static final int ROW_GAP = 2;
 
     public OptiCoreSettingsScreen() {
         super(Component.translatable("screen.opticore.title"));
@@ -23,7 +23,7 @@ public class OptiCoreSettingsScreen extends Screen {
         int center = width / 2;
         int left = center - COLUMN_WIDTH - 3;
         int right = center + 3;
-        int top = 58;
+        int top = 52;
 
         addToggle(left, top, "screen.opticore.zoom", OptiCoreConfig.ENABLE_ZOOM,
                 () -> OptiCoreConfig.ENABLE_ZOOM.get());
