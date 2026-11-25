@@ -54,6 +54,20 @@ public final class ShaderOptionSourceProcessor {
         String id = option.id();
         for (int i = 0; i < lines.length; i++) {
             String original = lines[i];
+            // OptiFine-style packs may expose editable values as GLSL constants.
+            // Replace only the initializer of the exact declaration and retain its suffix.
+            java.util.regex.Matcher constant = java.util.regex.Pattern.compile(
+                    "^(\\\\s*const\\\\s+(?:int|float|bool)\\\\s+"
+                            + java.util.regex.Pattern.quote(id)
+                            + "\\\\s*=\\\\s*)([^;]+)(;.*)$").matcher(original);
+            if (constant.matches()) {
+                String updated = constant.group(1) + value + constant.group(3);
+                if (!updated.equals(original)) {
+                    lines[i] = updated;
+                    changed = true;
+                }
+                continue;
+            }
             int first = 0;
             while (first < original.length() && Character.isWhitespace(original.charAt(first))) first++;
             String indent = original.substring(0, first);
