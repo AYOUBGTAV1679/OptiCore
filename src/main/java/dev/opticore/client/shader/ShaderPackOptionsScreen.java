@@ -75,6 +75,7 @@ public final class ShaderPackOptionsScreen extends Screen {
 
     @Override
     protected void init() {
+        clampScrollOffset();
         int center = width / 2;
         int start = optionPage * OPTIONS_PER_PAGE;
         int end = Math.min(editableOptions.size(), start + OPTIONS_PER_PAGE);
@@ -147,6 +148,10 @@ public final class ShaderPackOptionsScreen extends Screen {
     }
 
     private int visibleRows() { return Math.max(1, (height - 290) / 12); }
+
+    private void clampScrollOffset() {
+        scrollOffset = Math.max(0, Math.min(scrollOffset, Math.max(0, rows.size() - visibleRows())));
+    }
 
     @Override
     public void onClose() { minecraft.setScreen(parent); }
