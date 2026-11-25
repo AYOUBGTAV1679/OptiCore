@@ -42,13 +42,13 @@ OptiCore is planned to use **one integrated shader engine**, following the OptiF
 
 ## Engineering status
 
-The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle and a Mixin config are prepared for future client-side renderer hooks, but the config contains no active injections yet. See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
+The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle is configured, and a client-only diagnostic Mixin now observes entry into `LevelRenderer.renderChunkLayer(...)` with a bounded log counter. It does not change render state or draw calls. Its target descriptor is checked by a static CI script, but successful compilation on the newest commit and application inside a live client are still pending. It is not a mesh-cache hook or a shadow-rendering implementation. See [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md). See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
 
 Performance must be evaluated against a repeatable unmodified-Forge baseline. The project's [performance validation plan](docs/PERFORMANCE-VALIDATION-PLAN.md) defines the required scenes, measurements, and pass/fail rules. No controlled benchmark has been completed yet.
 
 ## Planned work
 
-1. Add and runtime-verify a minimal client-only instrumentation hook at the chunk rebuild boundary.
+1. Build and launch the client with the current diagnostic Mixin, verify its target applies on Forge 47.2.0, and inspect observed render-layer calls.
 2. Implement owned immutable CPU mesh snapshots and safe upload reconstruction, with complete invalidation and regression tests.
 3. Measure performance against an unmodified Forge baseline on repeatable scenes and low-end hardware.
 4. Extend the shader catalog with tested compatibility parsing, then implement program compilation, the render-pass graph, and OptiFine-format support.
@@ -67,6 +67,12 @@ The Forge mod JAR is produced under `build/libs/`. The standalone cache regressi
 
 ```bash
 bash scripts/run-cache-tests.sh
+```
+
+The static client-Mixin registration checks can be run with:
+
+```bash
+python3 scripts/check-mixin-config.py
 ```
 
 ## License
