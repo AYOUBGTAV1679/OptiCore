@@ -13,6 +13,7 @@ public final class ShaderSourcePreflightSelfTest {
         Path shaders = Files.createDirectories(folder.resolve("shaders/gbuffers"));
         Files.writeString(shaders.resolve("terrain.vsh"),
                 "#version 150\n#extension GL_ARB_explicit_attrib_location : enable\n"
+                        + "#extension GL_ARB_explicit_attrib_location : warn\n"
                         + "// void main() {}\nvoid main() { gl_Position = vec4(0.0); }\n");
         Files.writeString(shaders.resolve("terrain.fsh"),
                 "#version 150\n#include \"common.glsl\"\n"
@@ -27,7 +28,7 @@ public final class ShaderSourcePreflightSelfTest {
         check(dir.versions().contains("150") && dir.versions().contains("120"), "version set");
         check(dir.includeDirectives() == 1, "include count");
         check(dir.extensions().contains("GL_ARB_explicit_attrib_location")
-                && dir.extensionDirectives() == 1, "extension directive detected");
+                && dir.extensionDirectives() == 2, "unique extensions and total directive count");
 
         Path zipPath = Files.createTempFile("opticore-glsl-preflight", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
