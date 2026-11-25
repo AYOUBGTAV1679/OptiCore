@@ -30,7 +30,34 @@ public final class ShaderOptionDiscovery {
 
     static ShaderOptionParser.Summary inspectPath(Path path, boolean archive) throws IOException {
         List<ShaderOptionParser.Source> sources = archive ? readArchive(path) : readDirectory(path);
-        return ShaderOptionParser.parse(sources, Set.of());
+        return ShaderOptionParser.parse(sources, readSliderIds(path, archive));
+    }
+
+    private static Set<String> readSliderIds(Path pack, boolean archive) {
+        try {
+            byte[] bytes;
+            if (archive) {
+                try (ZipFile zip = new ZipFile(pack.toFile())) {
+                    ZipEntry entry = zip.getEntry("shaders/shaders.properties");
+                    if (entry == null || entry.isDirectory()
+                            || entry.getSize() < 0
+                            || entry.getSize() > ShaderPropertiesParser.MAX_PROPERTIES_BYTES) return Set.of();
+                    try (InputStream input = zip.getInputStream(entry)) {
+                        bytes = input.readNBytes(ShaderPropertiesParser.MAX_PROPERTIES_BYTES + 1);
+                    }
+                }
+            } else {
+                Path file = pack.resolve("shaders/shaders.properties").normalize();
+                if (!file.startsWith(pack.normalize()) || !Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+                        || Files.size(file) > ShaderPropertiesParser.MAX_PROPERTIES_BYTES) return Set.of();
+                try (InputStream input = Files.newInputStream(file)) {
+                    bytes = input.readNBytes(ShaderPropertiesParser.MAX_PROPERTIES_BYTES + 1);
+                }
+            }
+            return ShaderPropertiesParser.parseSliderIds(bytes);
+        } catch (IOException | SecurityException ignored) {
+            return Set.of();
+        }
     }
 
     private static List<ShaderOptionParser.Source> readDirectory(Path pack) throws IOException {
