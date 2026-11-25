@@ -99,7 +99,7 @@ public final class ShaderOptionParser {
                     if (conditional.contains(id)) {
                         add(found, new Option(id, Type.BOOLEAN,
                                 commented ? "false" : "true", List.of("false", "true"),
-                                comment, false, false));
+                                comment, false, sliders != null && sliders.contains(id)));
                     }
                 } else {
                     List<String> values = parseValues(comment);
