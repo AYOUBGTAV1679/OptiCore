@@ -59,7 +59,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         if (!screenDefinition.isBlank()) {
             String declaration = screenDefinition.length() > 112
                     ? screenDefinition.substring(0, 109) + "..." : screenDefinition;
-            graphics.drawCenteredString(font, Component.literal("screen = " + declaration),
+            graphics.drawCenteredString(font, Component.translatable("screen.opticore.shaders.options_screen_definition", declaration),
                     width / 2, 65, 0xB8B8B8);
         }
 
