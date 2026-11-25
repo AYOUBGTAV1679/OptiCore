@@ -10,6 +10,10 @@ public final class DirectionalSunSnapshotSelfTest {
         check(sample.sunAngleRadians() == 1.25f, "sun angle retained");
         check(sample.partialTick() == 0.5f, "partial tick retained");
         check(sample.gameTime() == 1200L && sample.dayTime() == 600L, "world time retained");
+        check(Math.abs(sample.sunAngleSin() - (float) Math.sin(1.25f)) < 1.0e-6f,
+                "sun angle sine derived");
+        check(Math.abs(sample.sunAngleCos() - (float) Math.cos(1.25f)) < 1.0e-6f,
+                "sun angle cosine derived");
         expectFailure(() -> new DirectionalSunSnapshot(Float.NaN, 0, 0, 0, 0, 0),
                 "non-finite sun angle");
         expectFailure(() -> new DirectionalSunSnapshot(0, 1.1f, 0, 0, 0, 0),
