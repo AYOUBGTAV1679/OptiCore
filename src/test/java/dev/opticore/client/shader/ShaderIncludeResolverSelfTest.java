@@ -21,7 +21,7 @@ public final class ShaderIncludeResolverSelfTest {
         check(folderResult.includedFiles().contains("shaders/lib/common.glsl"), "include is tracked");
 
         Files.writeString(folder.resolve("shaders/main.fsh"),
-                "#version 150\\r\\n#include \\"lib/common.glsl\\"\\r\\nvoid main() {}\\r\\n");
+                "#version 150\r\n#include \"lib/common.glsl\"\r\nvoid main() {}\r\n");
         ShaderIncludeResolver.Result crlf =
                 ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
         check(crlf.successful() && crlf.source().contains("vec3 helper()"),
