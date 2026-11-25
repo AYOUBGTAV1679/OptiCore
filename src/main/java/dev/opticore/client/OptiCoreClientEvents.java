@@ -4,6 +4,7 @@ import dev.opticore.OptiCore;
 import dev.opticore.OptiCoreConfig;
 import dev.opticore.client.shader.SceneUniformSnapshot;
 import dev.opticore.client.shader.SceneEnvironmentSnapshot;
+import dev.opticore.client.shader.DirectionalSunSnapshot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class OptiCoreClientEvents {
     private static volatile SceneUniformSnapshot latestSceneUniformSnapshot;
     private static volatile SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot;
+    private static volatile DirectionalSunSnapshot latestDirectionalSunSnapshot;
 
     private OptiCoreClientEvents() {}
 
@@ -32,6 +34,11 @@ public final class OptiCoreClientEvents {
     /** Latest fog, weather, and camera light sample; null until capture is enabled. */
     public static SceneEnvironmentSnapshot latestSceneEnvironmentSnapshot() {
         return latestSceneEnvironmentSnapshot;
+    }
+
+    /** Latest vanilla celestial-angle sample; this is not yet a world-space light vector. */
+    public static DirectionalSunSnapshot latestDirectionalSunSnapshot() {
+        return latestDirectionalSunSnapshot;
     }
 
     /**
@@ -46,6 +53,7 @@ public final class OptiCoreClientEvents {
         if (mc.level == null) {
             latestSceneUniformSnapshot = null;
             latestSceneEnvironmentSnapshot = null;
+            latestDirectionalSunSnapshot = null;
             return;
         }
 
@@ -71,6 +79,11 @@ public final class OptiCoreClientEvents {
                 mc.level.getSkyDarken() / 15.0f,
                 mc.level.getBrightness(LightLayer.BLOCK, cameraBlock),
                 mc.level.getBrightness(LightLayer.SKY, cameraBlock));
+        latestDirectionalSunSnapshot = new DirectionalSunSnapshot(
+                mc.level.getSunAngle(event.getPartialTick()), event.getPartialTick(),
+                mc.level.getGameTime(), mc.level.getDayTime(),
+                mc.level.getRainLevel(event.getPartialTick()),
+                mc.level.getThunderLevel(event.getPartialTick()));
 
     }
 
