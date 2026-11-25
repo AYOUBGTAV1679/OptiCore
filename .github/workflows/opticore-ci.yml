@@ -10,6 +10,11 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  # Push and pull_request events for the same branch share one queue slot.
+  group: opticore-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
