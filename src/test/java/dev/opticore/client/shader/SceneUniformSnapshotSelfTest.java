@@ -22,6 +22,25 @@ public final class SceneUniformSnapshotSelfTest {
         check(snapshot.viewportWidth() == 1920 && snapshot.viewportHeight() == 1080,
                 "viewport dimensions");
         check(snapshot.dimension().equals("minecraft:overworld"), "dimension identifier");
+        check(snapshot.modelViewMatrixInverse()[0] == 1.0f,
+                "identity model-view inverse");
+        check(snapshot.projectionMatrixInverse()[15] == 1.0f,
+                "identity projection inverse");
+        check(snapshot.normalMatrix()[0] == 1.0f && snapshot.normalMatrix()[4] == 1.0f
+                        && snapshot.normalMatrix()[8] == 1.0f,
+                "identity normal matrix");
+
+        float[] translated = identity();
+        translated[12] = 4.0f;
+        translated[13] = -2.0f;
+        translated[14] = 7.0f;
+        SceneUniformSnapshot translatedSnapshot = new SceneUniformSnapshot(translated, identity(),
+                0, 0, 0, 0, 0, 1, 1, 0, -1, "minecraft:overworld");
+        float[] inverse = translatedSnapshot.modelViewMatrixInverse();
+        check(inverse[12] == -4.0f && inverse[13] == 2.0f && inverse[14] == -7.0f,
+                "inverse must undo camera translation");
+        check(translatedSnapshot.normalizedDayTime() == 23999L,
+                "negative day time must wrap into the Minecraft day range");
 
         expectFailure(() -> new SceneUniformSnapshot(new float[15], identity(),
                 0, 0, 0, 0, 0, 1, 1, 0, 0, "minecraft:overworld"),
