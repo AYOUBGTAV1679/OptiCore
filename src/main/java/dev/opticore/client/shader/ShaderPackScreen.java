@@ -17,6 +17,8 @@ public final class ShaderPackScreen extends Screen {
     private ShaderPackMetadata.Summary selectedMetadata = ShaderPackMetadata.Summary.empty();
     private ShaderPackInventory.Summary selectedInventory = ShaderPackInventory.Summary.empty();
     private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
+    private ShaderPackCompatibilityReport.Summary selectedCompatibility =
+            ShaderPackCompatibilityReport.inspect(null, false);
     private ShaderOptionParser.Summary selectedOptions = ShaderOptionParser.Summary.empty();
     private int page;
     private int pageSize = 1;
@@ -57,6 +59,7 @@ public final class ShaderPackScreen extends Screen {
                 : ShaderPackInventory.inspect(selectedPack.path(), selectedPack.archive());
         selectedPrograms = selectedPack == null ? ShaderProgramIndex.Summary.empty()
                 : ShaderProgramIndex.inspect(selectedPack.path(), selectedPack.archive());
+        selectedCompatibility = ShaderPackRuntime.inspectPackCompatibility(selectedPack);
         selectedOptions = selectedPack == null ? ShaderOptionParser.Summary.empty()
                 : ShaderOptionDiscovery.inspect(selectedPack.path(), selectedPack.archive());
 
@@ -133,21 +136,34 @@ public final class ShaderPackScreen extends Screen {
             ShaderPackRepository.Pack pack = ShaderPackRepository.discover().stream()
                     .filter(candidate -> candidate.name().equals(name))
                     .findFirst().orElse(null);
-            ShaderProgramIndex.Summary programs = pack == null ? ShaderProgramIndex.Summary.empty()
-                    : ShaderProgramIndex.inspect(pack.path(), pack.archive());
-            String firstProgram = programs.paired().stream().sorted().findFirst().orElse(null);
             if (pack == null) {
                 statusDetail = "Selected pack could not be reopened";
-            } else if (firstProgram == null) {
-                statusDetail = "No paired .vsh/.fsh program found in selected pack";
             } else {
-                // Button callbacks execute on Minecraft's render thread. Compile one
-                // bounded program immediately so selection validates real GLSL, rather
-                // than only saving a pack name and displaying its file inventory.
-                ShaderPackRuntime.Result result = ShaderPackRuntime.compileProgram(pack, firstProgram);
-                statusDetail = (result.compiled() ? "GLSL compile/link OK: " : "GLSL compile failed: ")
-                        + firstProgram + (result.diagnostics().isEmpty() ? ""
-                        : " | " + String.join(" | ", result.diagnostics()));
+                // Run the bounded compatibility inventory first. Prefer a pair that
+                // passed source/interface preflight, then ask the actual GL compiler
+                // to validate that one program on the render thread.
+                ShaderPackCompatibilityReport.Summary compatibility =
+                        ShaderPackRuntime.inspectPackCompatibility(pack);
+                ShaderPackCompatibilityReport.Program candidate = compatibility.programs().stream()
+                        .filter(ShaderPackCompatibilityReport.Program::readyForCompiler)
+                        .findFirst().orElse(null);
+                String summary = "Compatibility: " + compatibility.readyPrograms() + "/"
+                        + compatibility.pairedPrograms() + " pairs preflight-ready";
+                if (compatibility.truncated()) summary += " (inspection limited)";
+                if (candidate == null) {
+                    String reason = compatibility.programs().stream()
+                            .filter(program -> !program.diagnostics().isEmpty())
+                            .flatMap(program -> program.diagnostics().stream())
+                            .findFirst().orElse("No paired .vsh/.fsh program passed preflight");
+                    statusDetail = summary + " | blocked: " + reason;
+                } else {
+                    ShaderPackRuntime.Result result =
+                            ShaderPackRuntime.compileProgram(pack, candidate.id());
+                    statusDetail = summary + " | "
+                            + (result.compiled() ? "GLSL compile/link OK: " : "GLSL compile failed: ")
+                            + candidate.id() + (result.diagnostics().isEmpty() ? ""
+                            : " | " + String.join(" | ", result.diagnostics()));
+                }
             }
         }
         refreshPacks();
@@ -188,6 +204,12 @@ public final class ShaderPackScreen extends Screen {
                 width / 2, height - 56, 0xAAAAAA);
 
         if (selectedInventory.sourceFiles() > 0) {
+            graphics.drawCenteredString(font, Component.literal("Preflight: "
+                    + selectedCompatibility.readyPrograms() + "/" + selectedCompatibility.pairedPrograms()
+                    + " paired programs ready" + (selectedCompatibility.truncated() ? " (limited)" : "")),
+                    width / 2, height - 80, selectedCompatibility.blockedPrograms() == 0
+                            && selectedCompatibility.vertexOnlyPrograms() == 0
+                            && selectedCompatibility.fragmentOnlyPrograms() == 0 ? 0xA6D8A8 : 0xFFCC66);
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
                             selectedInventory.vertexFiles(), selectedInventory.fragmentFiles(),
