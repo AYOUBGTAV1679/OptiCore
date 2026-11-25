@@ -85,6 +85,8 @@ public final class ShaderIncludeResolver {
             seen.add(name);
             if (depth > 0 && !included.contains(name)) included.add(name);
             String source = new String(bytes, StandardCharsets.UTF_8);
+            // UTF-8 BOMs are not GLSL tokens and can break #version parsing/compilation.
+            if (!source.isEmpty() && source.charAt(0) == '\uFEFF') source = source.substring(1);
             StringBuilder output = new StringBuilder(source.length());
             stack.push(name);
             try {
