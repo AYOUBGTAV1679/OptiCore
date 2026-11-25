@@ -59,6 +59,11 @@ public final class FullscreenCompositePass implements AutoCloseable {
 
     private GlShaderProgram program;
     private int vao;
+    private int sceneColorLocation = -1;
+    private int sceneDepthLocation = -1;
+    private int warmthLocation = -1;
+    private int fogStrengthLocation = -1;
+    private int inverseProjectionLocation = -1;
     private boolean closed;
 
     public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
@@ -120,16 +125,15 @@ public final class FullscreenCompositePass implements AutoCloseable {
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.colorTextureId());
             GL20.glUseProgram(program.id());
-            GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneColor"), 0);
-            GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uWarmth"), warmth);
+            GL20.glUniform1i(sceneColorLocation, 0);
+            GL20.glUniform1f(warmthLocation, warmth);
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.depthTextureId());
-            GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneDepth"), 1);
-            GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uFogStrength"), fogStrength);
+            GL20.glUniform1i(sceneDepthLocation, 1);
+            GL20.glUniform1f(fogStrengthLocation, fogStrength);
             FloatBuffer inverseProjection = BufferUtils.createFloatBuffer(16);
             inverseProjection.put(inverseProjectionMatrix).flip();
-            GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(program.id(), "uInverseProjection"),
-                    false, inverseProjection);
+            GL20.glUniformMatrix4fv(inverseProjectionLocation, false, inverseProjection);
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindVertexArray(vao);
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
@@ -156,14 +160,37 @@ public final class FullscreenCompositePass implements AutoCloseable {
 
     private void ensureInitialized() {
         if (program != null && vao != 0) return;
-        program = GlShaderProgram.compileAndLink("OptiCore fullscreen composite",
+
+        GlShaderProgram compiled = GlShaderProgram.compileAndLink("OptiCore fullscreen composite",
                 VERTEX_SOURCE, FRAGMENT_SOURCE);
+        int createdVao = 0;
         try {
-            vao = GL30.glGenVertexArrays();
-            if (vao == 0) throw new IllegalStateException("OpenGL could not allocate fullscreen VAO");
+            int color = GL20.glGetUniformLocation(compiled.id(), "uSceneColor");
+            int depth = GL20.glGetUniformLocation(compiled.id(), "uSceneDepth");
+            int warmth = GL20.glGetUniformLocation(compiled.id(), "uWarmth");
+            int fog = GL20.glGetUniformLocation(compiled.id(), "uFogStrength");
+            int inverseProjection = GL20.glGetUniformLocation(compiled.id(), "uInverseProjection");
+            if (color < 0 || depth < 0 || warmth < 0 || fog < 0 || inverseProjection < 0) {
+                throw new IllegalStateException("Fullscreen composite shader is missing a required uniform");
+            }
+
+            createdVao = GL30.glGenVertexArrays();
+            if (createdVao == 0) {
+                throw new IllegalStateException("OpenGL could not allocate fullscreen VAO");
+            }
+
+            // Publish the initialized resources only after every required object
+            // and uniform has been validated successfully.
+            program = compiled;
+            vao = createdVao;
+            sceneColorLocation = color;
+            sceneDepthLocation = depth;
+            warmthLocation = warmth;
+            fogStrengthLocation = fog;
+            inverseProjectionLocation = inverseProjection;
         } catch (RuntimeException | Error failure) {
-            program.close();
-            program = null;
+            if (createdVao != 0) GL30.glDeleteVertexArrays(createdVao);
+            compiled.close();
             throw failure;
         }
     }
@@ -181,6 +208,11 @@ public final class FullscreenCompositePass implements AutoCloseable {
         vao = 0;
         if (program != null) program.close();
         program = null;
+        sceneColorLocation = -1;
+        sceneDepthLocation = -1;
+        warmthLocation = -1;
+        fogStrengthLocation = -1;
+        inverseProjectionLocation = -1;
         closed = true;
     }
 }
