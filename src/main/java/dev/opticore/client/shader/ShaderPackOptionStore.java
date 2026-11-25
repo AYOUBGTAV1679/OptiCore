@@ -54,6 +54,7 @@ public final class ShaderPackOptionStore {
 
         if (properties.size() > MAX_ENTRIES) return false;
         Path parent = file.toAbsolutePath().normalize().getParent();
+        if (parent == null) return false;
         Path temporary = null;
         try {
             Files.createDirectories(parent);
