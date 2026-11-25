@@ -12,6 +12,7 @@ public final class ShaderPackOptionsScreen extends Screen {
     private final Screen parent;
     private final String packName;
     private final List<String> controls;
+    private final String screenDefinition;
     private int scrollOffset;
 
     public ShaderPackOptionsScreen(Screen parent, String packName,
@@ -20,6 +21,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.parent = parent;
         this.packName = packName;
         this.controls = metadata.controls();
+        this.screenDefinition = metadata.screenDefinition();
     }
 
     @Override
@@ -30,9 +32,13 @@ public final class ShaderPackOptionsScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int max = Math.max(0, controls.size() - Math.max(1, (height - 110) / 18));
+        int max = Math.max(0, controls.size() - visibleRows());
         scrollOffset = (int) Math.max(0, Math.min(max, scrollOffset - Math.signum(delta) * 3));
         return true;
+    }
+
+    private int visibleRows() {
+        return Math.max(1, (height - 132) / 18);
     }
 
     @Override
@@ -50,7 +56,15 @@ public final class ShaderPackOptionsScreen extends Screen {
                 Component.translatable("screen.opticore.shaders.options_readonly"),
                 width / 2, 49, 0xE0C080);
 
-        int visible = Math.max(1, (height - 110) / 18);
+        if (!screenDefinition.isBlank()) {
+            String declaration = screenDefinition.length() > 112
+                    ? screenDefinition.substring(0, 109) + "..." : screenDefinition;
+            graphics.drawCenteredString(font, Component.literal("screen = " + declaration),
+                    width / 2, 65, 0xB8B8B8);
+        }
+
+        int visible = visibleRows();
+        int listTop = 84;
         int end = Math.min(controls.size(), scrollOffset + visible);
         if (controls.isEmpty()) {
             graphics.drawCenteredString(font,
@@ -59,8 +73,18 @@ public final class ShaderPackOptionsScreen extends Screen {
         } else {
             for (int i = scrollOffset; i < end; i++) {
                 graphics.drawCenteredString(font, Component.literal(controls.get(i)),
-                        width / 2, 70 + (i - scrollOffset) * 18, 0xFFFFFF);
+                        width / 2, listTop + (i - scrollOffset) * 18, 0xFFFFFF);
             }
+        }
+        if (controls.size() > visible) {
+            int trackTop = listTop;
+            int trackHeight = visible * 18 - 4;
+            int trackX = width / 2 + 158;
+            graphics.fill(trackX, trackTop, trackX + 3, trackTop + trackHeight, 0x66555555);
+            int thumbHeight = Math.max(12, trackHeight * visible / controls.size());
+            int maxOffset = Math.max(1, controls.size() - visible);
+            int thumbTop = trackTop + (trackHeight - thumbHeight) * scrollOffset / maxOffset;
+            graphics.fill(trackX, thumbTop, trackX + 3, thumbTop + thumbHeight, 0xFFE0E0E0);
         }
         graphics.drawCenteredString(font,
                 Component.translatable("screen.opticore.shaders.options_count", controls.size()),
