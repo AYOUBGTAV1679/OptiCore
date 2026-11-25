@@ -33,13 +33,20 @@ public final class FullscreenCompositePass implements AutoCloseable {
     private static final String FRAGMENT_SOURCE = """
             #version 150
             uniform sampler2D uSceneColor;
+            uniform sampler2D uSceneDepth;
             uniform float uWarmth;
+            uniform float uFogStrength;
             in vec2 vUv;
             out vec4 fragColor;
             void main() {
                 vec4 scene = texture(uSceneColor, vUv);
                 vec3 warmed = scene.rgb * vec3(1.0 + uWarmth, 1.0, 1.0 - uWarmth);
-                fragColor = vec4(mix(scene.rgb, warmed, 0.35), scene.a);
+                float depth = texture(uSceneDepth, vUv).r;
+                // Hardware depth is non-linear; a far-depth ramp adds atmospheric haze.
+                float farHaze = smoothstep(0.92, 0.9995, depth) * uFogStrength;
+                vec3 graded = mix(scene.rgb, warmed, 0.35);
+                vec3 fogColor = vec3(0.62, 0.70, 0.78);
+                fragColor = vec4(mix(graded, fogColor, farHaze), scene.a);
             }
             """;
 
@@ -96,6 +103,11 @@ public final class FullscreenCompositePass implements AutoCloseable {
             GL20.glUseProgram(program.id());
             GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneColor"), 0);
             GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uWarmth"), warmth);
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.depthTextureId());
+            GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneDepth"), 1);
+            GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uFogStrength"), 0.22f);
+            GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindVertexArray(vao);
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
         } finally {
