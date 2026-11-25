@@ -29,7 +29,7 @@ public abstract class LevelRendererDiagnosticsMixin {
     @Inject(
             method = "renderChunkLayer(Lnet/minecraft/client/renderer/RenderType;Lcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)V",
             at = @At("HEAD"),
-            require = 0
+            require = 1
     )
     private void opticore$observeChunkLayer(
             RenderType renderType,
