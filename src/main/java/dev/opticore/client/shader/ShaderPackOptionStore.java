@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Bounded persistent storage for future shader-pack option widgets.
- * Values are stored per pack and option identifier; this class does not
- * interpret values or apply them to a shader program.
+ * Bounded persistent storage for shader-pack option overrides.
+ * Values are stored per pack and option identifier. ShaderOptionSourceProcessor
+ * validates and applies recognized values to GLSL source before compilation.
  */
 public final class ShaderPackOptionStore {
     private static final String PREFIX = "option.";
