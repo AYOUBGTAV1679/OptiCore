@@ -33,6 +33,20 @@ public final class ShaderPropertiesParser {
         }
     }
 
+    /** Returns the exact option identifiers listed by the pack's sliders property. */
+    public static Set<String> parseSliderIds(byte[] bytes) {
+        if (bytes == null || bytes.length > MAX_PROPERTIES_BYTES) return Set.of();
+        Properties properties = new Properties();
+        try {
+            properties.load(new ByteArrayInputStream(bytes));
+            Set<String> ids = new LinkedHashSet<>();
+            addTokens(ids, properties.getProperty("sliders", "").trim());
+            return Set.copyOf(ids);
+        } catch (IOException | IllegalArgumentException ignored) {
+            return Set.of();
+        }
+    }
+
     public static Summary parse(byte[] bytes) {
         if (bytes == null || bytes.length > MAX_PROPERTIES_BYTES) return Summary.empty();
         Properties properties = new Properties();
