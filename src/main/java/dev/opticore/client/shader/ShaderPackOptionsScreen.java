@@ -169,6 +169,11 @@ public final class ShaderPackOptionsScreen extends Screen {
                     ? screenDefinition.substring(0, 97) + "..." : screenDefinition;
             graphics.drawCenteredString(font, Component.literal(declaration), width / 2, 57, 0xB8B8B8);
         }
+        if (discoveredOptions.truncated()) {
+            graphics.drawCenteredString(font,
+                    Component.literal("Warning: shader option inventory is incomplete (scan limits reached)"),
+                    width / 2, 166, 0xFFCC66);
+        }
         int pageCount = Math.max(1, (editableOptions.size() + OPTIONS_PER_PAGE - 1) / OPTIONS_PER_PAGE);
         graphics.drawCenteredString(font,
                 Component.literal("Options " + (editableOptions.isEmpty() ? 0 : optionPage + 1)
