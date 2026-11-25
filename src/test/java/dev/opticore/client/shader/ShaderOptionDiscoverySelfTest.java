@@ -1,0 +1,54 @@
+package dev.opticore.client.shader;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+public final class ShaderOptionDiscoverySelfTest {
+    private ShaderOptionDiscoverySelfTest() {}
+
+    public static void main(String[] args) throws Exception {
+        Path folder = Files.createTempDirectory("opticore-options");
+        Path shaders = Files.createDirectories(folder.resolve("shaders"));
+        Files.writeString(shaders.resolve("composite.fsh"),
+                "#define BLOOM // Bloom\n#ifdef BLOOM\n#endif\n#define QUALITY 2 // [0 1 2 3]");
+        Files.writeString(shaders.resolve("common.glsl"),
+                "// #define OLD_LIGHT // Legacy\n#ifndef OLD_LIGHT\n#endif");
+        Files.writeString(shaders.resolve("ignored.txt"), "#define IGNORE 1");
+        var directory = ShaderOptionDiscovery.inspectPath(folder, false);
+        check(directory.options().containsKey("BLOOM"), "directory macro discovered");
+        check(directory.options().containsKey("QUALITY"), "directory numeric option discovered");
+        check(directory.options().containsKey("OLD_LIGHT"), "directory include option discovered");
+        check(!directory.options().containsKey("IGNORE"), "non-shader files ignored");
+
+        Path archive = Files.createTempFile("opticore-options", ".zip");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive))) {
+            add(zip, "shaders/composite.fsh", "#define SHADOWS // Shadows\n#ifdef SHADOWS\n#endif");
+            add(zip, "other/composite.fsh", "#define OUTSIDE 1");
+            add(zip, "../shaders/traversal.fsh", "#define TRAVERSAL 1");
+        }
+        var zipped = ShaderOptionDiscovery.inspectPath(archive, true);
+        check(zipped.options().containsKey("SHADOWS"), "archive shader source discovered");
+        check(!zipped.options().containsKey("OUTSIDE"), "archive files outside shader root ignored");
+        check(!zipped.options().containsKey("TRAVERSAL"), "unsafe archive path ignored");
+
+        Files.deleteIfExists(shaders.resolve("composite.fsh"));
+        Files.deleteIfExists(shaders.resolve("common.glsl"));
+        Files.deleteIfExists(shaders.resolve("ignored.txt"));
+        Files.deleteIfExists(shaders);
+        Files.deleteIfExists(folder);
+        Files.deleteIfExists(archive);
+        System.out.println("ShaderOptionDiscoverySelfTest: 7 checks passed");
+    }
+
+    private static void add(ZipOutputStream zip, String name, String content) throws Exception {
+        zip.putNextEntry(new ZipEntry(name));
+        zip.write(content.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        zip.closeEntry();
+    }
+
+    private static void check(boolean condition, String label) {
+        if (!condition) throw new AssertionError(label);
+    }
+}
