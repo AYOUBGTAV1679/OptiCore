@@ -16,8 +16,8 @@ import java.util.Map;
 
 /**
  * Observes completed CPU-side chunk layer buffers before vanilla consumes them.
- * The target RenderChunk is resolved from the center of the region's chunk grid,
- * providing the exact chunk and vertical section origin for diagnostics.
+ * The center cell is accepted only when its origin agrees with the region's
+ * explicit center chunk coordinates; uncertain region layouts are skipped.
  */
 @Mixin(targets = "net.minecraft.client.renderer.chunk.ChunkRenderDispatcher$RenderChunk$RebuildTask")
 public abstract class ChunkRebuildCaptureMixin {
@@ -54,6 +54,13 @@ public abstract class ChunkRebuildCaptureMixin {
         int chunkX = origin.getX() >> 4;
         int sectionY = origin.getY() >> 4;
         int chunkZ = origin.getZ() >> 4;
+
+        // RenderChunkRegion stores the center chunk coordinates independently
+        // of the backing grid. Refuse to attribute buffers if they disagree.
+        if (chunkX != regionAccessor.opticore$getCenterX()
+                || chunkZ != regionAccessor.opticore$getCenterZ()) {
+            return;
+        }
 
         Map<net.minecraft.client.renderer.RenderType, BufferBuilder.RenderedBuffer> layers =
                 ((ChunkCompileResultsAccessor) result).opticore$getRenderedLayers();
