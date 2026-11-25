@@ -54,7 +54,15 @@ public final class DirectionalShadowCameraSelfTest {
 
         float[] copy = first.viewMatrix();
         copy[0] = 999;
-        check(!close(first.viewMatrix()[0], 999), "matrix accessor is defensive");
+        check(!close(first.viewMatrix()[0], 999), "view matrix accessor is defensive");
+        float[] projectionCopy = first.projectionMatrix();
+        projectionCopy[0] = 999;
+        check(!close(first.projectionMatrix()[0], 999),
+                "projection matrix accessor is defensive");
+        float[] viewProjectionCopy = first.viewProjectionMatrix();
+        viewProjectionCopy[0] = 999;
+        check(!close(first.viewProjectionMatrix()[0], 999),
+                "view-projection matrix accessor is defensive");
 
         expectFailure(() -> DirectionalShadowCamera.create(0,0,0,0,0,0,8,1,40,64),
                 "zero light direction");
