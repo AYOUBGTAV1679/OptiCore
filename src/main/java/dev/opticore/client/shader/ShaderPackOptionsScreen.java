@@ -17,7 +17,7 @@ import java.util.Map;
  * Applying stored values to GLSL compilation is deliberately not claimed here.
  */
 public final class ShaderPackOptionsScreen extends Screen {
-    private static final int OPTIONS_PER_PAGE = 7;
+    private static final int OPTIONS_PER_PAGE = 5;
     private final Screen parent;
     private final String packName;
     private final List<String> controls;
@@ -78,14 +78,14 @@ public final class ShaderPackOptionsScreen extends Screen {
         int center = width / 2;
         int start = optionPage * OPTIONS_PER_PAGE;
         int end = Math.min(editableOptions.size(), start + OPTIONS_PER_PAGE);
-        int y = 82;
+        int y = 70;
         for (int i = start; i < end; i++) {
             ShaderOptionParser.Option option = editableOptions.get(i);
             String current = currentValue(option);
             Button button = Button.builder(Component.literal(option.id() + ": " + current),
                     ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
             addRenderableWidget(button);
-            y += 23;
+            y += 21;
         }
         int navY = height - 55;
         Button previous = Button.builder(Component.literal("<"), ignored -> changeOptionPage(-1))
@@ -165,17 +165,10 @@ public final class ShaderPackOptionsScreen extends Screen {
         if (!saveStatus.isEmpty()) graphics.drawCenteredString(font, Component.literal(saveStatus),
                 width / 2, height - 82, saveStatus.equals("Save failed") ? 0xFF7777 : 0xA6D8A8);
 
-        int top = Math.max(112, height - visibleRows() * 12 - 88);
-        int end = Math.min(rows.size(), scrollOffset + visibleRows());
-        for (int i = scrollOffset; i < end; i++) {
-            DisplayRow row = rows.get(i);
-            graphics.drawCenteredString(font, Component.literal(row.label()), width / 2,
-                    top + (i - scrollOffset) * 12, row.heading() ? 0x80D8FF : 0xBBBBBB);
-        }
-        if (rows.size() > visibleRows()) {
-            graphics.drawCenteredString(font, Component.literal("Metadata list — scroll to inspect"),
-                    width / 2, height - 96, 0x777777);
-        }
+        graphics.drawCenteredString(font,
+                Component.literal("Detected declarations: " + rows.size()
+                        + "  •  Recognized overrides are applied when a shader program is compiled."),
+                width / 2, height - 96, 0x888888);
     }
 
     @Override
