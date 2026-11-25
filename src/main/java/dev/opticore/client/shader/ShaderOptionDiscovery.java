@@ -19,10 +19,10 @@ public final class ShaderOptionDiscovery {
 
     private ShaderOptionDiscovery() {}
 
-    public static ShaderOptionParser.Summary inspect(ShaderPackRepository.Pack pack) {
-        if (pack == null) return ShaderOptionParser.Summary.empty();
+    public static ShaderOptionParser.Summary inspect(Path path, boolean archive) {
+        if (path == null) return ShaderOptionParser.Summary.empty();
         try {
-            return inspectPath(pack.path(), pack.archive());
+            return inspectPath(path, archive);
         } catch (IOException | SecurityException ignored) {
             return ShaderOptionParser.Summary.empty();
         }
