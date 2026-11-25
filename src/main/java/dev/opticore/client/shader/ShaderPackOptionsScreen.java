@@ -136,6 +136,11 @@ public final class ShaderPackOptionsScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        int listTop = 185;
+        int listBottom = Math.max(listTop + 1, height - 105);
+        if (mouseX < 12 || mouseX >= width - 12 || mouseY < listTop || mouseY >= listBottom) {
+            return super.mouseScrolled(mouseX, mouseY, delta);
+        }
         int max = Math.max(0, rows.size() - visibleRows());
         scrollOffset = (int) Math.max(0, Math.min(max, scrollOffset - Math.signum(delta) * 3));
         return true;
