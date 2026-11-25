@@ -30,7 +30,7 @@ public final class ShaderStageInterfaceValidatorSelfTest {
                 "empty summaries");
 
         var duplicateVertex = ShaderGlslInterfaceScanner.inspect(
-                "out vec3 Repeated;\\nout vec2 Repeated;");
+                "out vec3 Repeated;\nout vec2 Repeated;");
         var duplicateFragment = ShaderGlslInterfaceScanner.inspect("in vec3 Repeated;");
         var duplicateResult = ShaderStageInterfaceValidator.compare(duplicateVertex, duplicateFragment);
         check(!duplicateResult.compatibleByInventory(), "duplicate vertex output rejected");
@@ -38,7 +38,7 @@ public final class ShaderStageInterfaceValidatorSelfTest {
                 && m.reason().contains("more than once")), "duplicate output diagnostic");
 
         var duplicateInputs = ShaderGlslInterfaceScanner.inspect(
-                "in vec3 Repeated;\\nin vec2 Repeated;");
+                "in vec3 Repeated;\nin vec2 Repeated;");
         var duplicateInputResult = ShaderStageInterfaceValidator.compare(
                 ShaderGlslInterfaceScanner.inspect("out vec3 Repeated;"), duplicateInputs);
         check(!duplicateInputResult.compatibleByInventory(), "duplicate fragment input rejected");
