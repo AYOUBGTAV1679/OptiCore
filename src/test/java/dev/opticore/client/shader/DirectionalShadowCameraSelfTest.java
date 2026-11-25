@@ -29,6 +29,12 @@ public final class DirectionalShadowCameraSelfTest {
         float centerClipZ = verticalProjection[10] * centerViewZ + verticalProjection[14];
         check(close(centerClipZ, 0.0f),
                 "shadow focus point must map to the center of the depth interval");
+        float nearClipZ = projectedClipZ(verticalView, verticalProjection,
+                12.0f, 79.0f, -4.0f);
+        float farClipZ = projectedClipZ(verticalView, verticalProjection,
+                12.0f, 0.0f, -4.0f);
+        check(close(nearClipZ, -1.0f), "near depth bound maps to OpenGL clip -1");
+        check(close(farClipZ, 1.0f), "far depth bound maps to OpenGL clip +1");
 
         float[] copy = first.viewMatrix();
         copy[0] = 999;
@@ -49,6 +55,11 @@ public final class DirectionalShadowCameraSelfTest {
         System.out.println("DirectionalShadowCameraSelfTest: OK");
     }
 
+    private static float projectedClipZ(float[] view, float[] projection,
+                                         float x, float y, float z) {
+        float viewZ = view[2] * x + view[6] * y + view[10] * z + view[14];
+        return projection[10] * viewZ + projection[14];
+    }
     private static boolean same(float[] a, float[] b) {
         for (int i = 0; i < 16; i++) if (!close(a[i], b[i])) return false;
         return true;
