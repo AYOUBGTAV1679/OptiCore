@@ -159,3 +159,12 @@ The result reports success or a diagnostic failure. A caller must treat failure 
 The opt-in `experimentalWorldPass` now runs at Forge 1.20.1's `RenderLevelStageEvent.Stage.AFTER_LEVEL`, after the level renderer has completed. It acquires a bounded OptiCore-owned framebuffer matching Minecraft's main render-target dimensions, with RGBA8 color and a sampleable depth texture, and uses an OpenGL framebuffer blit to copy both scene color and depth into the private target. The copy rejects mismatched dimensions, missing source depth, and self-copy; it disables scissor only for the blit and restores the previous read/draw framebuffer bindings and scissor enable state in a `finally` block.
 
 This creates a concrete scene-input path for later post-processing while leaving the vanilla main framebuffer untouched. It does not yet bind a shader-pack program, render a fullscreen triangle, or composite any effect onto the screen. The capture remains disabled by default, and its actual behavior still requires a live Forge client test (including Fabulous graphics mode and resize/resource-reload checks) before it can be treated as validated.
+
+
+## Alpha update — opt-in fullscreen world composite prototype
+
+Added an explicitly disabled-by-default Forge `AFTER_LEVEL` prototype that copies the completed vanilla scene color/depth into an independent OptiCore framebuffer, reconstructs view-space depth using the inverse projection matrix, and draws a fullscreen composite back to the vanilla target. The pass validates source/destination separation and dimensions, bounds warmth/fog inputs, and restores the framebuffer, viewport, program, VAO, texture bindings, blend/depth/cull/scissor enables, and write masks it changes.
+
+A follow-up correction makes the color-grade contribution scale with the fog-strength setting. At zero strength, the prototype no longer applies the warm tint. Commit: `4a0736f604ced85e9edcee2cc61762ee37c4194a`.
+
+This is a limited post-process experiment, not OptiFine shader-pack support. It does not render terrain or entities with pack programs, does not implement shadow casters, and does not provide water/reflection passes or OptiFine uniform compatibility. The Forge matrix build and standalone tests for this commit are still running; a live client/driver test is still required before enabling it by default.
