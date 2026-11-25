@@ -34,7 +34,9 @@ public final class ShaderOptionSourceProcessor {
             String value = entry.getValue();
             if (option == null || !option.editable() || value == null
                     || !option.values().contains(value)) {
-                ignored.add(entry.getKey());
+                // Map implementations may legally contain a null key. Keep diagnostics
+                // immutable-safe instead of passing null into List.copyOf in Result.
+                ignored.add(entry.getKey() == null ? "<null>" : entry.getKey());
                 continue;
             }
             String updated = applyOne(result, option, value);
