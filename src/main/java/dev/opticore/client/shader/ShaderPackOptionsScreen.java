@@ -86,7 +86,7 @@ public final class ShaderPackOptionsScreen extends Screen {
             String current = currentValue(option);
             if (option.slider() && option.type() == ShaderOptionParser.Type.NUMBER
                     && option.values().size() > 1) {
-                addRenderableWidget(new DiscreteOptionSlider(center - 150, y, 300, 20, option));
+                addRenderableWidget(new DiscreteOptionSlider(center - 150, y, 300, 20, option, current));
             } else {
                 Button button = Button.builder(Component.literal(option.id() + ": " + current),
                         ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
@@ -142,25 +142,25 @@ public final class ShaderPackOptionsScreen extends Screen {
         return false;
     }
 
+    private static double sliderPosition(ShaderOptionParser.Option option, String selected) {
+        int index = option.values().indexOf(selected);
+        if (index < 0) index = Math.max(0, option.values().indexOf(option.defaultValue()));
+        return option.values().size() <= 1 ? 0.0
+                : (double) index / (option.values().size() - 1);
+    }
+
     private final class DiscreteOptionSlider extends AbstractSliderButton {
         private final ShaderOptionParser.Option option;
 
         private DiscreteOptionSlider(int x, int y, int width, int height,
-                                     ShaderOptionParser.Option option) {
-            super(x, y, width, height, Component.empty(), sliderPosition(option));
+                                     ShaderOptionParser.Option option, String selected) {
+            super(x, y, width, height, Component.empty(), sliderPosition(option, selected));
             this.option = option;
             updateMessage();
         }
 
         private double positionFor(String selected) {
-            int index = option.values().indexOf(selected);
-            if (index < 0) index = Math.max(0, option.values().indexOf(option.defaultValue()));
-            return option.values().size() <= 1 ? 0.0
-                    : (double) index / (option.values().size() - 1);
-        }
-
-        private double sliderPosition(ShaderOptionParser.Option ignored) {
-            return positionFor(currentValue(option));
+            return ShaderPackOptionsScreen.sliderPosition(option, selected);
         }
 
         private String selectedValue() {
