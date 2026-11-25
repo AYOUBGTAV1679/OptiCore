@@ -10,8 +10,19 @@ config = json.loads(config_path.read_text(encoding="utf-8"))
 assert config.get("required") is False, "Mixin config must remain non-global/optional"
 assert config.get("package") == "dev.opticore.mixin", "Unexpected Mixin package"
 assert config.get("mixins") == [], "No common/server Mixin should be registered"
-assert config.get("client") == ["LevelRendererDiagnosticsMixin"], (
-    "Expected only the client renderer diagnostics Mixin"
+client_mixins = config.get("client")
+expected_client_mixins = {
+    "LevelRendererDiagnosticsMixin",
+    "ChunkCompileResultsAccessor",
+    "RebuildTaskRegionAccessor",
+    "RebuildTaskOuterAccessor",
+    "ChunkRebuildCaptureMixin",
+    "RenderChunkRegionAccessor",
+}
+assert isinstance(client_mixins, list), "Client Mixin list is missing"
+assert len(client_mixins) == len(set(client_mixins)), "Duplicate client Mixin registration"
+assert expected_client_mixins.issubset(set(client_mixins)), (
+    "Required diagnostics and chunk-capture Mixins must be registered"
 )
 
 mixin_path = root / "src/main/java/dev/opticore/mixin/LevelRendererDiagnosticsMixin.java"
@@ -30,4 +41,14 @@ assert "renderChunkLayer" in source and "VertexBuffer" not in source, (
     "Diagnostic hook must not start manipulating GPU buffers"
 )
 
-print("Mixin config checks: OK (client-only registration, descriptor, required target)")
+capture_path = root / "src/main/java/dev/opticore/mixin/ChunkRebuildCaptureMixin.java"
+capture_source = capture_path.read_text(encoding="utf-8")
+compile_descriptor = (
+    "compile(FFFLnet/minecraft/client/renderer/ChunkBufferBuilderPack;)"
+    "Lnet/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk$RebuildTask$CompileResults;"
+)
+assert compile_descriptor in capture_source, "Chunk compile capture descriptor changed"
+assert 'at = @At("RETURN")' in capture_source, "Chunk capture must run after compile returns"
+assert "ChunkMeshCapture.observeCompilation" in capture_source, "Chunk capture bridge missing"
+
+print("Mixin config checks: OK (client-only registration, diagnostics, chunk compile capture)")
