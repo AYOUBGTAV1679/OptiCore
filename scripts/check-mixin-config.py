@@ -52,7 +52,7 @@ compile_descriptor = (
 assert compile_descriptor in capture_source, "Chunk compile capture descriptor changed"
 assert 'at = @At("RETURN")' in capture_source, "Chunk capture must run after compile returns"
 assert "ChunkMeshCapture.observeCompilation" in capture_source, "Chunk capture bridge missing"
-assert "opticore$getChunks()" in capture_source and "target.getOrigin()" in capture_source, (
+assert "opticore$readChunkGrid(region)" in capture_source and "target.getOrigin()" in capture_source, (
     "Capture must resolve the exact target RenderChunk origin, not region offsets"
 )
 assert "origin.getY() >> 4" in capture_source, (
@@ -60,9 +60,9 @@ assert "origin.getY() >> 4" in capture_source, (
 )
 accessor_path = root / "src/main/java/dev/opticore/mixin/RenderChunkRegionAccessor.java"
 accessor_source = accessor_path.read_text(encoding="utf-8")
-for srg_field in ("f_112908_", "f_112899_", "f_112900_"):
-    assert f'@Accessor("{srg_field}")' in accessor_source, (
-        f"RenderChunkRegion accessor must target Forge SRG field {srg_field}"
+for mapped_field in ("level", "centerX", "centerZ"):
+    assert f'@Accessor("{mapped_field}")' in accessor_source, (
+        f"RenderChunkRegion accessor must target mapped field {mapped_field}"
     )
 
 assert "opticore$getCenterX()" in capture_source and "opticore$getCenterZ()" in capture_source, (
