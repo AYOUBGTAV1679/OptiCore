@@ -152,3 +152,12 @@ This is resource infrastructure only: there is no light-space scene capture, cas
 `ShadowPass` provides an explicit, caller-driven depth-only pass. It combines the supplied light view and projection matrices, binds a `ShadowDepthTarget`, clears depth, configures depth testing/front-face culling/polygon offset, and invokes a caller-provided caster renderer. It captures and restores the modified depth, blend, cull, polygon-offset, scissor, color-write, program, and depth-clear state even when caster rendering fails.
 
 The result reports success or a diagnostic failure. A caller must treat failure as "do not use this shadow map" and preserve the normal vanilla frame. The executor does not discover the light camera, enumerate Minecraft terrain/entity casters, bind a compatible shader, sample the depth texture, or hook itself into the world render pipeline. It is a guarded primitive awaiting a verified Forge render-stage integration.
+
+
+## Alpha update — first Forge world-stage off-screen pass prototype
+
+Added an opt-in client configuration switch, `experimentalWorldPass` (disabled by default), and connected a prototype to Forge 1.20.1's `RenderLevelStageEvent.Stage.AFTER_SOLID_BLOCKS`. When enabled in a world, the callback acquires a bounded half-resolution OptiCore framebuffer and clears it once at that world-render stage. The existing framebuffer wrapper restores the previous read/draw framebuffer, viewport, clear values, scissor state, and color/depth write masks.
+
+This is the first executable OptiCore-owned GL pass scheduled from inside the world-render lifecycle. It is intentionally isolated: it does not read Minecraft's scene color/depth, draw terrain or entities, bind shader-pack programs, or composite anything onto the visible frame. Its purpose is to verify the Forge stage callback and private render-target lifecycle without risking corruption of the vanilla frame. The pass exposes success count, last render tick, and last failure for subsequent diagnostics.
+
+The next required step is to add a safe scene-color/depth input path and a fullscreen composite pass with complete GL-state restoration. Only after a live Forge client confirms correct target contents and no rendering regressions should this be expanded into terrain/shadow passes. The prototype remains disabled by default and is not advertised as visible shader-pack rendering.
