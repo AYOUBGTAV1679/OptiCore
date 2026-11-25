@@ -27,7 +27,7 @@ public final class ShaderPackOptionStore {
     private ShaderPackOptionStore() {}
 
     public static synchronized Map<String, String> load(Path file, String packName) {
-        if (!validPackName(packName)) return Map.of();
+        if (file == null || !validPackName(packName)) return Map.of();
         Properties properties = read(file);
         String prefix = PREFIX + encode(packName) + ".";
         Map<String, String> values = new LinkedHashMap<>();
@@ -44,7 +44,7 @@ public final class ShaderPackOptionStore {
 
     public static synchronized boolean save(Path file, String packName,
                                             String optionId, String value) {
-        if (!validPackName(packName) || !validIdentifier(optionId)
+        if (file == null || !validPackName(packName) || !validIdentifier(optionId)
                 || (value != null && !validValue(value))) return false;
 
         Properties properties = read(file);
