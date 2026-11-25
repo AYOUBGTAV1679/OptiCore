@@ -18,6 +18,7 @@ public final class ShaderPackScreen extends Screen {
     private ShaderProgramIndex.Summary selectedPrograms = ShaderProgramIndex.Summary.empty();
     private int page;
     private int pageSize = 1;
+    private boolean initialSelectionLocated;
 
     public ShaderPackScreen(Screen parent) {
         super(Component.translatable("screen.opticore.shaders.title"));
@@ -34,6 +35,15 @@ public final class ShaderPackScreen extends Screen {
         packs = ShaderPackRepository.discover();
         selected = ShaderPackRepository.activePack();
         pageSize = Math.max(1, (height - 190) / 24);
+        if (!initialSelectionLocated) {
+            for (int i = 0; i < packs.size(); i++) {
+                if (packs.get(i).name().equals(selected)) {
+                    page = i / pageSize;
+                    break;
+                }
+            }
+            initialSelectionLocated = true;
+        }
         int pageCount = pageCount();
         page = Math.max(0, Math.min(page, pageCount - 1));
 
