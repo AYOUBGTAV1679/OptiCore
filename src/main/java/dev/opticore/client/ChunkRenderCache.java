@@ -52,8 +52,24 @@ public final class ChunkRenderCache {
             long neighborStateFingerprint, long lightFingerprint,
             long renderSettingsFingerprint) {
         if (level == null || !level.isClientSide()) return null;
-        return new RenderCacheKey(dimensionId(level.dimension()), chunkX, chunkZ, sectionY,
-                neighborStateFingerprint, lightFingerprint, renderSettingsFingerprint);
+        return new RenderCacheKey(dimensionId(level.dimension()), worldSession(level),
+                chunkX, chunkZ, sectionY, neighborStateFingerprint,
+                lightFingerprint, renderSettingsFingerprint);
+    }
+
+    /** Drop the identity token after this exact client Level has been unloaded. */
+    public static void forgetWorldSession(Level level) {
+        if (level == null) return;
+        synchronized (WORLD_SESSIONS) {
+            WORLD_SESSIONS.remove(level);
+        }
+    }
+
+    private static long worldSession(Level level) {
+        synchronized (WORLD_SESSIONS) {
+            return WORLD_SESSIONS.computeIfAbsent(level,
+                    ignored -> NEXT_WORLD_SESSION.getAndIncrement());
+        }
     }
 
     public static void onRenderSettingsChanged() {
