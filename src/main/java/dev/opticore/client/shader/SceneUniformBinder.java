@@ -63,6 +63,12 @@ public final class SceneUniformBinder {
             // OptiFine-compatible scalar angle; do not treat this as a world-space direction vector.
             program.setUniform1f("sunAngle", sun.sunAngleRadians());
             program.setUniform1f("sunAngleRadians", sun.sunAngleRadians());
+            // Trigonometric forms avoid repeating angle conversion in pack shaders.
+            // These remain celestial-angle values, not a claimed world-space light vector.
+            program.setUniform1f("sunAngleSin", (float) Math.sin(sun.sunAngleRadians()));
+            program.setUniform1f("sunAngleCos", (float) Math.cos(sun.sunAngleRadians()));
+            program.setUniform1f("sunRainStrength", sun.rain());
+            program.setUniform1f("sunThunderStrength", sun.thunder());
         }
 
         if (environment != null) {
