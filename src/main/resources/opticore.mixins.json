@@ -7,7 +7,9 @@
   "mixins": [],
   "client": [
     "LevelRendererDiagnosticsMixin",
-    "ChunkCompileResultsAccessor"
+    "ChunkCompileResultsAccessor",
+    "RebuildTaskRegionAccessor",
+    "RenderChunkRegionAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
