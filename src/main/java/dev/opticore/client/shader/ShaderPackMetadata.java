@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -18,13 +19,17 @@ public final class ShaderPackMetadata {
     private ShaderPackMetadata() {}
 
     public record Summary(boolean hasProperties, int propertyCount, int sliderCount,
-                          String screenDefinition, List<String> controls) {
+                          String screenDefinition, List<String> controls,
+                          Map<String, List<String>> nestedScreens) {
         public Summary {
             controls = List.copyOf(controls);
+            Map<String, List<String>> copy = new java.util.LinkedHashMap<>();
+            nestedScreens.forEach((name, entries) -> copy.put(name, List.copyOf(entries)));
+            nestedScreens = java.util.Collections.unmodifiableMap(copy);
         }
 
         public static Summary empty() {
-            return new Summary(false, 0, 0, "", List.of());
+            return new Summary(false, 0, 0, "", List.of(), Map.of());
         }
     }
 
@@ -44,7 +49,7 @@ public final class ShaderPackMetadata {
     static Summary parseProperties(byte[] bytes) {
         ShaderPropertiesParser.Summary parsed = ShaderPropertiesParser.parse(bytes);
         return new Summary(parsed.hasProperties(), parsed.propertyCount(), parsed.sliderCount(),
-                parsed.screenDefinition(), parsed.controls());
+                parsed.screenDefinition(), parsed.controls(), parsed.nestedScreens());
     }
 
     private static InputStream openProperties(ShaderPackRepository.Pack pack) throws IOException {
