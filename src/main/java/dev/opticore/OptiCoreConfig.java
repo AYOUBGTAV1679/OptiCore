@@ -12,6 +12,7 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec.BooleanValue CAPTURE_SCENE_UNIFORMS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_EXPERIMENTAL_WORLD_PASS;
     public static final ForgeConfigSpec.DoubleValue ZOOM_FACTOR;
+    public static final ForgeConfigSpec.DoubleValue WORLD_FOG_STRENGTH;
     public static final ForgeConfigSpec.IntValue RENDER_CACHE_BUDGET_MB;
 
     static {
@@ -35,6 +36,8 @@ public final class OptiCoreConfig {
                 .defineInRange("renderCacheBudgetMb", 32, 8, 512);
         ZOOM_FACTOR = builder.comment("Zoom multiplier. Lower values zoom in further.")
                 .defineInRange("zoomFactor", 0.20D, 0.05D, 0.75D);
+        WORLD_FOG_STRENGTH = builder.comment("Experimental depth-based atmospheric haze strength. Set to 0 to disable.")
+                .defineInRange("worldFogStrength", 0.22D, 0.0D, 1.0D);
         builder.pop();
         SPEC = builder.build();
     }
