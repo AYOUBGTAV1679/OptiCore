@@ -46,7 +46,7 @@ public final class ShaderPackOptionsScreen extends Screen {
                 .sorted(Comparator.comparing(ShaderOptionParser.Option::id)).toList();
         this.rows = buildRows(metadata);
         this.storePath = net.minecraft.client.Minecraft.getInstance().gameDirectory.toPath()
-                .resolve("config").resolve("opticore").resolve("shader-options.properties");
+                .resolve("config").resolve("opticore").resolve("shader-pack-options.properties");
         values.putAll(ShaderPackOptionStore.load(storePath, packName));
     }
 
