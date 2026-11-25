@@ -43,20 +43,23 @@ public final class ShaderOptionSourceProcessor {
                 ignored.add(optionId);
                 continue;
             }
-            String updated = applyOne(result, option, value);
-            if (updated.equals(result)) {
-                ignored.add(entry.getKey() + " (declaration not present in this stage)");
+            ApplyResult update = applyOne(result, option, value);
+            if (!update.found()) {
+                ignored.add(optionId + " (declaration not present in this stage)");
             } else {
-                result = updated;
-                applied.add(entry.getKey());
+                result = update.source();
+                applied.add(optionId);
             }
         }
         return new Result(result, applied, ignored);
     }
 
-    private static String applyOne(String source, ShaderOptionParser.Option option, String value) {
+    private record ApplyResult(String source, boolean found) {}
+
+    private static ApplyResult applyOne(String source, ShaderOptionParser.Option option, String value) {
         String[] lines = source.split("\\R", -1);
         boolean changed = false;
+        boolean found = false;
         String id = option.id();
         for (int i = 0; i < lines.length; i++) {
             String original = lines[i];
@@ -67,6 +70,7 @@ public final class ShaderOptionSourceProcessor {
                             + java.util.regex.Pattern.quote(id)
                             + "\\s*=\\s*)([^;]+)(;.*)$").matcher(original);
             if (constant.matches()) {
+                found = true;
                 String updated = constant.group(1) + value + constant.group(3);
                 if (!updated.equals(original)) {
                     lines[i] = updated;
@@ -92,6 +96,7 @@ public final class ShaderOptionSourceProcessor {
             // A function-like macro is a different declaration; never rewrite its name/body.
             // In GLSL, the opening parenthesis must immediately follow the macro identifier.
             if (tail.startsWith("(")) continue;
+            found = true;
             if (option.type() == ShaderOptionParser.Type.BOOLEAN) {
                 boolean enabled = Boolean.parseBoolean(value);
                 if (enabled) {
