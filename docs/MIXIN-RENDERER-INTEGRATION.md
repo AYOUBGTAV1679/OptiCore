@@ -45,3 +45,25 @@ Mixin build configuration has been compiled successfully by GitHub Actions for t
 - Forge 47.2.0 `RenderChunk`: https://mcstreetguy.github.io/ForgeJavaDocs/1.20.1-47.2.0/net/minecraft/client/renderer/chunk/ChunkRenderDispatcher.RenderChunk.html
 - Forge 47.2.0 `RebuildTask`: https://lexxie.dev/forge/1.20.1/net/minecraft/client/renderer/chunk/ChunkRenderDispatcher.RenderChunk.RebuildTask.html
 - SpongePowered Mixin on Forge: https://github.com/SpongePowered/Mixin/wiki/Mixins-on-Minecraft-Forge
+
+
+## Shadow-render hook checkpoint — Forge 47.2.0
+
+The Forge 47.2.0 LevelRenderer API documentation confirms this private method signature:
+
+`renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)`
+
+It is invoked as part of the normal world-layer drawing path, but its private visibility prevents a direct call from OptiCore. A client Mixin could observe the method boundary. The exact mapped JVM descriptor is expected to correspond to the listed parameter types, but the compiled Forge 47.2.0 client bytecode and actual invocation sequence have not yet been inspected; therefore no injection target or ordinal is being committed on documentation evidence alone.
+
+### Instrumentation acceptance criteria
+
+A first shadow-path experiment must be diagnostic-only and disabled by default:
+
+- Count entry/exit per RenderType on the render thread; do not change matrices, shaders, framebuffer, or draw calls.
+- Avoid logging every frame; expose bounded counters or periodic summaries.
+- Confirm each expected opaque/cutout layer is observed once in a normal frame and check behavior when the world is paused, unloaded, or resized.
+- Confirm the mixin applies on all supported Forge CI versions before considering a shadow draw.
+
+A later depth-only pass must not blindly replay translucent layers as opaque casters. It will need a separate caster-layer policy, light-space matrices, depth state, and complete GL-state restoration. Entity and block-entity casters remain separate work.
+
+**Status:** API signature documented; bytecode call-site inspection, active instrumentation Mixin, client launch, and shadow-map geometry are not yet implemented or verified. This note does not claim functional shadows.
