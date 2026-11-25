@@ -41,6 +41,14 @@ public final class ShaderPackRuntime {
         RenderSystem.assertOnRenderThread();
         if (pack == null) return failure("", programId, "Shader pack is missing");
 
+        // Fail early with a useful driver diagnostic instead of allowing shader
+        // compilation to fail opaquely on contexts below the GLSL 1.50 baseline.
+        GlShaderCapabilities capabilities = GlShaderCapabilities.query();
+        if (!capabilities.supportsCoreShaderPipeline()) {
+            return new Result(false, pack.name(), programId, null,
+                    List.of(capabilities.compatibilityDiagnostic()));
+        }
+
         ShaderProgramDescriptor.Descriptor descriptor =
                 ShaderProgramDescriptor.inspect(pack.path(), pack.archive(), programId);
         if (!descriptor.readyForCompiler()) {
@@ -63,6 +71,10 @@ public final class ShaderPackRuntime {
                     cacheKey, vertex.source(), fragment.source());
             List<String> diagnostics = new ArrayList<>();
             diagnostics.add("GLSL compile and link succeeded on the current graphics context");
+            diagnostics.add("Driver: " + capabilities.vendor() + " | " + capabilities.renderer());
+            diagnostics.add("OpenGL: " + capabilities.version()
+                    + " | GLSL: " + capabilities.shadingLanguageVersion()
+                    + " | texture units: " + capabilities.maxCombinedTextureUnits());
             java.util.Set<String> applied = new java.util.LinkedHashSet<>(vertex.applied());
             applied.addAll(fragment.applied());
             if (!applied.isEmpty()) diagnostics.add("Applied option overrides: " + String.join(", ", applied));
