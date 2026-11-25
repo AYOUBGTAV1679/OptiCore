@@ -20,7 +20,7 @@ public final class ShaderOptionParserSelfTest {
                 """;
         ShaderOptionParser.Summary parsed = ShaderOptionParser.parse(
                 List.of(new ShaderOptionParser.Source("composite.fsh", source)),
-                Set.of("QUALITY"));
+                Set.of("QUALITY", "BLOOM"));
         check(parsed.scannedFiles() == 1, "one shader source scanned");
         check(parsed.options().get("BLOOM").type() == ShaderOptionParser.Type.BOOLEAN,
                 "ifdef-backed boolean detected");
