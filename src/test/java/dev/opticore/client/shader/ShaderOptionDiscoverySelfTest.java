@@ -16,30 +16,35 @@ public final class ShaderOptionDiscoverySelfTest {
         Files.writeString(shaders.resolve("common.glsl"),
                 "// #define OLD_LIGHT // Legacy\n#ifndef OLD_LIGHT\n#endif");
         Files.writeString(shaders.resolve("ignored.txt"), "#define IGNORE 1");
+        Files.writeString(shaders.resolve("shaders.properties"), "sliders=QUALITY,BLOOM\\nscreen=QUALITY BLOOM");
         var directory = ShaderOptionDiscovery.inspectPath(folder, false);
         check(directory.options().containsKey("BLOOM"), "directory macro discovered");
         check(directory.options().containsKey("QUALITY"), "directory numeric option discovered");
         check(directory.options().containsKey("OLD_LIGHT"), "directory include option discovered");
         check(!directory.options().containsKey("IGNORE"), "non-shader files ignored");
+        check(directory.options().get("QUALITY").slider(), "folder sliders metadata marks discovered option");
 
         Path archive = Files.createTempFile("opticore-options", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive))) {
             add(zip, "shaders/composite.fsh", "#define SHADOWS // Shadows\n#ifdef SHADOWS\n#endif");
+            add(zip, "shaders/shaders.properties", "sliders=SHADOWS\\nscreen=SHADOWS");
             add(zip, "other/composite.fsh", "#define OUTSIDE 1");
             add(zip, "../shaders/traversal.fsh", "#define TRAVERSAL 1");
         }
         var zipped = ShaderOptionDiscovery.inspectPath(archive, true);
         check(zipped.options().containsKey("SHADOWS"), "archive shader source discovered");
         check(!zipped.options().containsKey("OUTSIDE"), "archive files outside shader root ignored");
+        check(zipped.options().get("SHADOWS").slider(), "archive sliders metadata marks discovered option");
         check(!zipped.options().containsKey("TRAVERSAL"), "unsafe archive path ignored");
 
         Files.deleteIfExists(shaders.resolve("composite.fsh"));
         Files.deleteIfExists(shaders.resolve("common.glsl"));
         Files.deleteIfExists(shaders.resolve("ignored.txt"));
+        Files.deleteIfExists(shaders.resolve("shaders.properties"));
         Files.deleteIfExists(shaders);
         Files.deleteIfExists(folder);
         Files.deleteIfExists(archive);
-        System.out.println("ShaderOptionDiscoverySelfTest: 7 checks passed");
+        System.out.println("ShaderOptionDiscoverySelfTest: 9 checks passed");
     }
 
     private static void add(ZipOutputStream zip, String name, String content) throws Exception {
