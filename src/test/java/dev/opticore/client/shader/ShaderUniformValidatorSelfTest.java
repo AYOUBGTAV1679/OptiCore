@@ -13,6 +13,8 @@ public final class ShaderUniformValidatorSelfTest {
         acceptsFiniteMatrixWithoutMovingPosition();
         rejectsNonFiniteMatrixWithoutMovingPosition();
         rejectsShortMatrix();
+        rejectsInvalidMatrixCounts();
+        ignoresValuesOutsideValidatedRange();
         System.out.println("ShaderUniformValidatorSelfTest: " + checks + " checks passed");
     }
 
@@ -44,6 +46,17 @@ public final class ShaderUniformValidatorSelfTest {
 
     private static void rejectsShortMatrix() {
         expectFailure(() -> ShaderUniformValidator.requireFinite(FloatBuffer.wrap(new float[] {1, 2}), 3, "uMatrix"));
+    }
+
+    private static void rejectsInvalidMatrixCounts() {
+        expectFailure(() -> ShaderUniformValidator.requireFinite(FloatBuffer.wrap(new float[] {1}), 0, "uMatrix"));
+        expectFailure(() -> ShaderUniformValidator.requireFinite(FloatBuffer.wrap(new float[] {1}), -1, "uMatrix"));
+    }
+
+    private static void ignoresValuesOutsideValidatedRange() {
+        FloatBuffer values = FloatBuffer.wrap(new float[] {1, Float.NaN});
+        ShaderUniformValidator.requireFinite(values, 1, "uMatrix");
+        checks++;
     }
 
     private static void expectFailure(Runnable action) {
