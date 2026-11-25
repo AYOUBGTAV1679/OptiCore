@@ -26,6 +26,8 @@ public final class ShaderOptionParserSelfTest {
                 "ifdef-backed boolean detected");
         check(parsed.options().get("BLOOM").defaultValue().equals("true"),
                 "active boolean defaults on");
+        check(parsed.options().get("BLOOM").slider(),
+                "slider metadata also applies to boolean options");
         check(parsed.options().get("OLD_LIGHT").defaultValue().equals("false"),
                 "commented boolean defaults off");
         check(parsed.options().get("QUALITY").values().equals(List.of("0", "1", "2", "3")),
@@ -48,7 +50,7 @@ public final class ShaderOptionParserSelfTest {
                 new ShaderOptionParser.Source("large.fsh", "x".repeat(ShaderOptionParser.MAX_FILE_CHARS + 1))),
                 Set.of());
         check(overflow.truncated(), "oversized shader source rejected");
-        System.out.println("ShaderOptionParserSelfTest: 12 checks passed");
+        System.out.println("ShaderOptionParserSelfTest: 13 checks passed");
     }
 
     private static void check(boolean condition, String label) {
