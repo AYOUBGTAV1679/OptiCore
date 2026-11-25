@@ -54,7 +54,7 @@ public final class FullscreenCompositePass implements AutoCloseable {
     private int vao;
     private boolean closed;
 
-    public void render(GlRenderTarget scene, RenderTarget destination, float warmth) {
+    public void render(GlRenderTarget scene, RenderTarget destination, float warmth, float fogStrength) {
         RenderSystem.assertOnRenderThread();
         if (closed) throw new IllegalStateException("Composite pass is closed");
         if (scene == null || destination == null) throw new IllegalArgumentException("Scene and destination are required");
@@ -66,6 +66,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
         }
         if (!Float.isFinite(warmth) || warmth < 0.0f || warmth > 0.25f) {
             throw new IllegalArgumentException("Warmth must be between 0 and 0.25");
+        }
+        if (!Float.isFinite(fogStrength) || fogStrength < 0.0f || fogStrength > 1.0f) {
+            throw new IllegalArgumentException("Fog strength must be between 0 and 1");
         }
 
         ensureInitialized();
@@ -108,7 +111,7 @@ public final class FullscreenCompositePass implements AutoCloseable {
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.depthTextureId());
             GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneDepth"), 1);
-            GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uFogStrength"), 0.22f);
+            GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uFogStrength"), fogStrength);
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindVertexArray(vao);
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
