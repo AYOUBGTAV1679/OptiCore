@@ -204,18 +204,15 @@ public final class ShaderPackScreen extends Screen {
                 width / 2, height - 56, 0xAAAAAA);
 
         if (selectedInventory.sourceFiles() > 0) {
-            graphics.drawCenteredString(font, Component.literal("Preflight: "
-                    + selectedCompatibility.readyPrograms() + "/" + selectedCompatibility.pairedPrograms()
-                    + " paired programs ready" + (selectedCompatibility.truncated() ? " (limited)" : "")),
-                    width / 2, height - 80, selectedCompatibility.blockedPrograms() == 0
+            graphics.drawCenteredString(font,
+                    Component.literal("Sources: " + selectedInventory.sourceFiles()
+                            + " | paired: " + selectedPrograms.pairedPrograms()
+                            + " | preflight ready: " + selectedCompatibility.readyPrograms()
+                            + "/" + selectedCompatibility.pairedPrograms()
+                            + (selectedCompatibility.truncated() ? " (limited)" : "")),
+                    width / 2, height - 96, selectedCompatibility.blockedPrograms() == 0
                             && selectedCompatibility.vertexOnlyPrograms() == 0
                             && selectedCompatibility.fragmentOnlyPrograms() == 0 ? 0xA6D8A8 : 0xFFCC66);
-            graphics.drawCenteredString(font,
-                    Component.translatable("screen.opticore.shaders.sources", selectedInventory.sourceFiles(),
-                            selectedInventory.vertexFiles(), selectedInventory.fragmentFiles(),
-                            selectedPrograms.pairedPrograms(), selectedPrograms.vertexOnly(),
-                            selectedPrograms.fragmentOnly()),
-                    width / 2, height - 96, 0xA6D8A8);
         }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
