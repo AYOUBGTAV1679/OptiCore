@@ -28,7 +28,7 @@ public final class ShaderIncludeResolverSelfTest {
                 "CRLF include directive resolves");
 
         Files.writeString(folder.resolve("shaders/main.fsh"),
-                "#include \"shaders/lib/common.glsl\"\\nvoid main() {}\\n");
+                "#include \"shaders/lib/common.glsl\"\nvoid main() {}\n");
         ShaderIncludeResolver.Result rooted =
                 ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
         check(rooted.successful() && rooted.source().contains("vec3 helper()"),
