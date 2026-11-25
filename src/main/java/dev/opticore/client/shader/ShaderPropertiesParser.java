@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -17,13 +19,17 @@ public final class ShaderPropertiesParser {
     private ShaderPropertiesParser() {}
 
     public record Summary(boolean hasProperties, int propertyCount, int sliderCount,
-                          String screenDefinition, List<String> controls) {
+                          String screenDefinition, List<String> controls,
+                          Map<String, List<String>> nestedScreens) {
         public Summary {
             controls = List.copyOf(controls);
+            Map<String, List<String>> copy = new LinkedHashMap<>();
+            nestedScreens.forEach((name, entries) -> copy.put(name, List.copyOf(entries)));
+            nestedScreens = java.util.Collections.unmodifiableMap(copy);
         }
 
         public static Summary empty() {
-            return new Summary(false, 0, 0, "", List.of());
+            return new Summary(false, 0, 0, "", List.of(), Map.of());
         }
     }
 
@@ -37,18 +43,22 @@ public final class ShaderPropertiesParser {
             Set<String> controls = new LinkedHashSet<>();
             addTokens(controls, screen);
             addTokens(controls, sliders);
-            int nestedScreens = 0;
+            Map<String, List<String>> nested = new LinkedHashMap<>();
             for (String key : properties.stringPropertyNames().stream().sorted().toList()) {
-                if (!key.startsWith("screen.") || nestedScreens >= MAX_NESTED_SCREENS) continue;
-                String declaration = properties.getProperty(key, "").trim();
-                if (!declaration.isEmpty()) {
-                    addTokens(controls, declaration);
-                    nestedScreens++;
+                if (!key.startsWith("screen.") || nested.size() >= MAX_NESTED_SCREENS) continue;
+                String name = key.substring("screen.".length()).trim();
+                if (name.isEmpty()) continue;
+                Set<String> entries = new LinkedHashSet<>();
+                addTokens(entries, properties.getProperty(key, "").trim());
+                if (!entries.isEmpty()) {
+                    List<String> declared = List.copyOf(entries);
+                    nested.put(name, declared);
+                    addTokens(controls, String.join(" ", declared));
                 }
             }
             controls.removeIf(token -> token.startsWith("[") || token.startsWith("]"));
             return new Summary(true, properties.size(), countTokens(sliders), screen,
-                    new ArrayList<>(controls));
+                    new ArrayList<>(controls), nested);
         } catch (IOException | IllegalArgumentException ignored) {
             return Summary.empty();
         }
