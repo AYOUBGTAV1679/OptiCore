@@ -83,6 +83,9 @@ public final class ShaderOptionSourceProcessor {
                     && (Character.isLetterOrDigit(body.charAt(id.length()))
                     || body.charAt(id.length()) == '_')) continue;
             String tail = body.substring(id.length());
+            // A function-like macro is a different declaration; never rewrite its name/body.
+            // In GLSL, the opening parenthesis must immediately follow the macro identifier.
+            if (tail.startsWith("(")) continue;
             if (option.type() == ShaderOptionParser.Type.BOOLEAN) {
                 boolean enabled = Boolean.parseBoolean(value);
                 if (enabled) {
