@@ -1,6 +1,7 @@
 package dev.opticore.client.shader;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -83,9 +84,14 @@ public final class ShaderPackOptionsScreen extends Screen {
         for (int i = start; i < end; i++) {
             ShaderOptionParser.Option option = editableOptions.get(i);
             String current = currentValue(option);
-            Button button = Button.builder(Component.literal(option.id() + ": " + current),
-                    ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
-            addRenderableWidget(button);
+            if (option.slider() && option.type() == ShaderOptionParser.Type.NUMBER
+                    && option.values().size() > 1) {
+                addRenderableWidget(new DiscreteOptionSlider(center - 150, y, 300, 20, option));
+            } else {
+                Button button = Button.builder(Component.literal(option.id() + ": " + current),
+                        ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
+                addRenderableWidget(button);
+            }
             y += 21;
         }
         int navY = height - 55;
@@ -113,20 +119,67 @@ public final class ShaderPackOptionsScreen extends Screen {
         String current = currentValue(option);
         int index = choices.indexOf(current);
         String next = choices.get((index + 1 + choices.size()) % choices.size());
+        setOptionValue(option, next);
+        rebuildWidgets();
+    }
+
+    private boolean setOptionValue(ShaderOptionParser.Option option, String next) {
+        if (!option.values().contains(next)) return false;
         if (next.equals(option.defaultValue())) {
             // Keep the in-memory override until persistence succeeds; otherwise the
             // label would show the default while the previous override remains on disk.
             if (ShaderPackOptionStore.save(storePath, packName, option.id(), null)) {
                 values.remove(option.id());
                 saveStatus = "Saved (default)";
-            } else saveStatus = "Save failed";
+                return true;
+            }
         } else if (ShaderPackOptionStore.save(storePath, packName, option.id(), next)) {
             values.put(option.id(), next);
             saveStatus = "Saved";
-        } else {
-            saveStatus = "Save failed";
+            return true;
         }
-        rebuildWidgets();
+        saveStatus = "Save failed";
+        return false;
+    }
+
+    private final class DiscreteOptionSlider extends AbstractSliderButton {
+        private final ShaderOptionParser.Option option;
+
+        private DiscreteOptionSlider(int x, int y, int width, int height,
+                                     ShaderOptionParser.Option option) {
+            super(x, y, width, height, Component.empty(), sliderPosition(option));
+            this.option = option;
+            updateMessage();
+        }
+
+        private double positionFor(String selected) {
+            int index = option.values().indexOf(selected);
+            if (index < 0) index = Math.max(0, option.values().indexOf(option.defaultValue()));
+            return option.values().size() <= 1 ? 0.0
+                    : (double) index / (option.values().size() - 1);
+        }
+
+        private double sliderPosition(ShaderOptionParser.Option ignored) {
+            return positionFor(currentValue(option));
+        }
+
+        private String selectedValue() {
+            int index = (int) Math.round(value * (option.values().size() - 1));
+            return option.values().get(Math.max(0, Math.min(option.values().size() - 1, index)));
+        }
+
+        @Override
+        protected void updateMessage() {
+            setMessage(Component.literal(option.id() + ": " + selectedValue()));
+        }
+
+        @Override
+        protected void applyValue() {
+            if (!setOptionValue(option, selectedValue())) {
+                value = positionFor(currentValue(option));
+                updateMessage();
+            }
+        }
     }
 
     private void changeOptionPage(int delta) {
