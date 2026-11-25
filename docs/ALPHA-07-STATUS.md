@@ -14,7 +14,7 @@ Alpha 07 began as a cache-hardening milestone. The branch now also contains expe
 - Declarative render graph with validation and a backend-agnostic executor.
 - Immutable scene and environment snapshots with matrix/uniform helpers.
 - Shadow depth target and an explicitly invoked depth-only pass primitive.
-- Directional shadow camera matrix builder with orthographic projection, texel snapping, and float-range validation.
+- Directional shadow camera matrix builder with orthographic projection, texel snapping, centered depth-range placement, and float-range validation.
 - Immutable capture of Minecraft's interpolated `Level#getSunAngle(partialTick)` plus world time and weather at `AFTER_LEVEL`.
 
 ## Shadow implementation boundary
@@ -28,7 +28,7 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 ## Validation
 
 - The standalone regression script covers cache, shader inspection, matrix, scene snapshot, directional sun snapshot validation, and render-graph logic.
-- The shadow camera math has dependency-free tests for view/projection construction, vertical light directions, defensive copies, input validation, and sub-texel stability.
+- The shadow camera math has dependency-free tests for view/projection construction, vertical light directions, defensive copies, input validation, sub-texel stability, and mapping its focus point to the center of the depth interval.
 - Forge build and test results are reported by GitHub Actions for the exact commit. A successful compile does not prove that OpenGL resources or rendered output work in a live Minecraft client.
 - No controlled FPS benchmark, shader-pack compatibility certification, or in-game shadow visual test has been completed.
 
