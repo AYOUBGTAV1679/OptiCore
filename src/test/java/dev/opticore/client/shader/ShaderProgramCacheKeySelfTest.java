@@ -35,7 +35,13 @@ public final class ShaderProgramCacheKeySelfTest {
         check(!first.equals(ShaderProgramCacheKey.create(path, "gbuffers_terrain", options,
                 "void main(){ gl_Position = vec4(1.0); }", "void main(){ discard; }")),
                 "fragment source changes invalidate the program identity");
-        System.out.println("ShaderProgramCacheKeySelfTest: 6 checks passed");
+        check(!first.equals(ShaderProgramCacheKey.create(path, "gbuffers_terrain", options,
+                "void main(){ }", "void main(){ gl_Position = vec4(1.0); }")),
+                "vertex and fragment stages are fingerprinted in distinct order");
+        check(!first.equals(ShaderProgramCacheKey.create(path, "gbuffers_terrain", options,
+                "void main(){ gl_Position = vec4(1.0); }", "void main(){ }\\n")),
+                "source whitespace changes invalidate the exact-source identity");
+        System.out.println("ShaderProgramCacheKeySelfTest: 8 checks passed");
     }
 
     private static void check(boolean condition, String label) {
