@@ -30,6 +30,8 @@ public final class ShaderOptionParserSelfTest {
                 "commented boolean defaults off");
         check(parsed.options().get("QUALITY").values().equals(List.of("0", "1", "2", "3")),
                 "numeric macro values parsed");
+        check(parsed.options().get("QUALITY").type() == ShaderOptionParser.Type.NUMBER,
+                "numeric options classified separately");
         check(parsed.options().get("QUALITY").slider(), "slider metadata applied");
         check(parsed.options().get("QUALITY").description().equals("Quality level"),
                 "option description parsed");
@@ -46,7 +48,7 @@ public final class ShaderOptionParserSelfTest {
                 new ShaderOptionParser.Source("large.fsh", "x".repeat(ShaderOptionParser.MAX_FILE_CHARS + 1))),
                 Set.of());
         check(overflow.truncated(), "oversized shader source rejected");
-        System.out.println("ShaderOptionParserSelfTest: 11 checks passed");
+        System.out.println("ShaderOptionParserSelfTest: 12 checks passed");
     }
 
     private static void check(boolean condition, String label) {
