@@ -28,7 +28,7 @@ public final class RenderedBufferSnapshotCopier {
         if (rendered.isEmpty()) return null;
 
         BufferBuilder.DrawState state = rendered.drawState();
-        if (state == null || state.sequentialIndex()) return null;
+        if (state == null || state.sequentialIndex() || state.indexOnly()) return null;
 
         VertexFormat format = state.format();
         if (format == null || format.getVertexSize() <= 0) return null;
