@@ -20,6 +20,18 @@ public final class ShaderPackRuntime {
         }
     }
 
+    /**
+     * Inspects every paired program in a pack without creating GL objects.
+     * This is a bounded source/interface preflight, not a compile or renderer-integration test.
+     */
+    public static ShaderPackCompatibilityReport.Summary inspectPackCompatibility(
+            ShaderPackRepository.Pack pack) {
+        if (pack == null) {
+            return ShaderPackCompatibilityReport.inspect(null, false);
+        }
+        return ShaderPackCompatibilityReport.inspect(pack.path(), pack.archive());
+    }
+
     /** Compiles one program from the currently selected pack. Must run on the render thread. */
     public static Result compileSelectedProgram(String programId) {
         RenderSystem.assertOnRenderThread();
