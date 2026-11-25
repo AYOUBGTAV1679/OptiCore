@@ -40,15 +40,15 @@ public final class RenderedBufferSnapshotCopier {
 
         int stride = format.getVertexSize();
         if (vertexBytes.length != state.vertexBufferSize()
+                || vertexBytes.length != (long) state.vertexCount() * stride
                 || vertexBytes.length % stride != 0) {
             return null;
         }
 
         int indexBytesPerElement = state.indexCount() == 0
                 ? 0 : state.indexType().bytes;
-        if (indexBytes.length != state.indexBufferSize()
-                || (indexBytesPerElement != 0
-                    && indexBytes.length != state.indexCount() * indexBytesPerElement)) {
+        if (indexBytesPerElement != 0
+                && indexBytes.length != (long) state.indexCount() * indexBytesPerElement) {
             return null;
         }
 
