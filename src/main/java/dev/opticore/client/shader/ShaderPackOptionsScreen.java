@@ -1,6 +1,7 @@
 package dev.opticore.client.shader;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -8,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,8 @@ public final class ShaderPackOptionsScreen extends Screen {
     private final List<String> controls;
     private final ShaderOptionParser.Summary discoveredOptions;
     private final List<ShaderOptionParser.Option> editableOptions;
+    private final List<String> screenNames;
+    private final Map<String, List<String>> nestedScreens;
     private final List<DisplayRow> rows;
     private final Path storePath;
     private final Map<String, String> values = new LinkedHashMap<>();
@@ -30,6 +35,8 @@ public final class ShaderPackOptionsScreen extends Screen {
     private final String screenDefinition;
     private int scrollOffset;
     private int optionPage;
+    /** -1 displays the root/all-options view; non-negative values select screen.<NAME>. */
+    private int activeScreenIndex = -1;
     private String saveStatus = "";
 
     public ShaderPackOptionsScreen(Screen parent, String packName,
@@ -41,6 +48,8 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.controls = metadata.controls();
         this.discoveredOptions = discoveredOptions;
         this.screenDefinition = metadata.screenDefinition();
+        this.nestedScreens = metadata.nestedScreens();
+        this.screenNames = nestedScreens.keySet().stream().sorted().toList();
         this.editableOptions = discoveredOptions.options().values().stream()
                 .filter(ShaderOptionParser.Option::editable)
                 .sorted(Comparator.comparing(ShaderOptionParser.Option::id)).toList();
@@ -77,15 +86,32 @@ public final class ShaderPackOptionsScreen extends Screen {
     protected void init() {
         clampScrollOffset();
         int center = width / 2;
+        List<ShaderOptionParser.Option> visibleOptions = visibleOptions();
+        if (!screenNames.isEmpty()) {
+            addRenderableWidget(Button.builder(Component.literal("<"), ignored -> changeScreen(-1))
+                    .bounds(center - 145, 56, 36, 18).build());
+            String screenLabel = activeScreenIndex < 0 ? "All options"
+                    : screenNames.get(activeScreenIndex);
+            addRenderableWidget(Button.builder(Component.literal(screenLabel), ignored -> {})
+                    .bounds(center - 104, 56, 208, 18).build());
+            Button nextScreen = Button.builder(Component.literal(">"), ignored -> changeScreen(1))
+                    .bounds(center + 109, 56, 36, 18).build();
+            addRenderableWidget(nextScreen);
+        }
         int start = optionPage * OPTIONS_PER_PAGE;
-        int end = Math.min(editableOptions.size(), start + OPTIONS_PER_PAGE);
-        int y = 70;
+        int end = Math.min(visibleOptions.size(), start + OPTIONS_PER_PAGE);
+        int y = screenNames.isEmpty() ? 70 : 78;
         for (int i = start; i < end; i++) {
-            ShaderOptionParser.Option option = editableOptions.get(i);
+            ShaderOptionParser.Option option = visibleOptions.get(i);
             String current = currentValue(option);
-            Button button = Button.builder(Component.literal(option.id() + ": " + current),
-                    ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
-            addRenderableWidget(button);
+            if (option.slider() && option.type() == ShaderOptionParser.Type.NUMBER
+                    && option.values().size() > 1) {
+                addRenderableWidget(new DiscreteOptionSlider(center - 150, y, 300, 20, option, current));
+            } else {
+                Button button = Button.builder(Component.literal(option.id() + ": " + current),
+                        ignored -> cycle(option)).bounds(center - 150, y, 300, 20).build();
+                addRenderableWidget(button);
+            }
             y += 21;
         }
         int navY = height - 55;
@@ -95,7 +121,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         addRenderableWidget(previous);
         Button next = Button.builder(Component.literal(">"), ignored -> changeOptionPage(1))
                 .bounds(center + 80, navY, 70, 20).build();
-        next.active = end < editableOptions.size();
+        next.active = end < visibleOptions.size();
         addRenderableWidget(next);
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"),
                 ignored -> onClose()).bounds(center - 60, height - 29, 120, 20).build());
@@ -113,24 +139,91 @@ public final class ShaderPackOptionsScreen extends Screen {
         String current = currentValue(option);
         int index = choices.indexOf(current);
         String next = choices.get((index + 1 + choices.size()) % choices.size());
+        setOptionValue(option, next);
+        rebuildWidgets();
+    }
+
+    private boolean setOptionValue(ShaderOptionParser.Option option, String next) {
+        if (!option.values().contains(next)) return false;
         if (next.equals(option.defaultValue())) {
             // Keep the in-memory override until persistence succeeds; otherwise the
             // label would show the default while the previous override remains on disk.
             if (ShaderPackOptionStore.save(storePath, packName, option.id(), null)) {
                 values.remove(option.id());
                 saveStatus = "Saved (default)";
-            } else saveStatus = "Save failed";
+                return true;
+            }
         } else if (ShaderPackOptionStore.save(storePath, packName, option.id(), next)) {
             values.put(option.id(), next);
             saveStatus = "Saved";
-        } else {
-            saveStatus = "Save failed";
+            return true;
         }
+        saveStatus = "Save failed";
+        return false;
+    }
+
+    private static double sliderPosition(ShaderOptionParser.Option option, String selected) {
+        int index = option.values().indexOf(selected);
+        if (index < 0) index = Math.max(0, option.values().indexOf(option.defaultValue()));
+        return option.values().size() <= 1 ? 0.0
+                : (double) index / (option.values().size() - 1);
+    }
+
+    private final class DiscreteOptionSlider extends AbstractSliderButton {
+        private final ShaderOptionParser.Option option;
+
+        private DiscreteOptionSlider(int x, int y, int width, int height,
+                                     ShaderOptionParser.Option option, String selected) {
+            super(x, y, width, height, Component.empty(), sliderPosition(option, selected));
+            this.option = option;
+            updateMessage();
+        }
+
+        private double positionFor(String selected) {
+            return ShaderPackOptionsScreen.sliderPosition(option, selected);
+        }
+
+        private String selectedValue() {
+            int index = (int) Math.round(value * (option.values().size() - 1));
+            return option.values().get(Math.max(0, Math.min(option.values().size() - 1, index)));
+        }
+
+        @Override
+        protected void updateMessage() {
+            setMessage(Component.literal(option.id() + ": " + selectedValue()));
+        }
+
+        @Override
+        protected void applyValue() {
+            if (!setOptionValue(option, selectedValue())) {
+                value = positionFor(currentValue(option));
+                updateMessage();
+            }
+        }
+    }
+
+    private List<ShaderOptionParser.Option> visibleOptions() {
+        if (activeScreenIndex < 0 || activeScreenIndex >= screenNames.size()) return editableOptions;
+        Set<String> identifiers = new LinkedHashSet<>();
+        List<String> declared = nestedScreens.getOrDefault(screenNames.get(activeScreenIndex), List.of());
+        for (String token : declared) {
+            String normalized = token.replaceFirst("^[!*]+", "");
+            if (normalized.matches("[A-Za-z_][A-Za-z0-9_]*")) identifiers.add(normalized);
+        }
+        return editableOptions.stream().filter(option -> identifiers.contains(option.id())).toList();
+    }
+
+    private void changeScreen(int delta) {
+        int count = screenNames.size() + 1;
+        int current = activeScreenIndex + 1;
+        activeScreenIndex = Math.floorMod(current + delta, count) - 1;
+        optionPage = 0;
         rebuildWidgets();
     }
 
     private void changeOptionPage(int delta) {
-        int pageCount = Math.max(1, (editableOptions.size() + OPTIONS_PER_PAGE - 1) / OPTIONS_PER_PAGE);
+        List<ShaderOptionParser.Option> visible = visibleOptions();
+        int pageCount = Math.max(1, (visible.size() + OPTIONS_PER_PAGE - 1) / OPTIONS_PER_PAGE);
         optionPage = Math.max(0, Math.min(pageCount - 1, optionPage + delta));
         rebuildWidgets();
     }
@@ -164,7 +257,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         graphics.drawCenteredString(font, Component.literal(packName), width / 2, 27, 0xC8E6FF);
         graphics.drawCenteredString(font, Component.literal("Editable declarations — saved locally"),
                 width / 2, 43, 0xA6D8A8);
-        if (!screenDefinition.isBlank()) {
+        if (!screenDefinition.isBlank() && screenNames.isEmpty()) {
             String declaration = screenDefinition.length() > 100
                     ? screenDefinition.substring(0, 97) + "..." : screenDefinition;
             graphics.drawCenteredString(font, Component.literal(declaration), width / 2, 57, 0xB8B8B8);
@@ -174,10 +267,11 @@ public final class ShaderPackOptionsScreen extends Screen {
                     Component.literal("Warning: shader option inventory is incomplete (scan limits reached)"),
                     width / 2, 166, 0xFFCC66);
         }
-        int pageCount = Math.max(1, (editableOptions.size() + OPTIONS_PER_PAGE - 1) / OPTIONS_PER_PAGE);
+        List<ShaderOptionParser.Option> visibleOptions = visibleOptions();
+        int pageCount = Math.max(1, (visibleOptions.size() + OPTIONS_PER_PAGE - 1) / OPTIONS_PER_PAGE);
         graphics.drawCenteredString(font,
-                Component.literal("Options " + (editableOptions.isEmpty() ? 0 : optionPage + 1)
-                        + "/" + pageCount + "  •  " + editableOptions.size() + " editable"),
+                Component.literal("Options " + (visibleOptions.isEmpty() ? 0 : optionPage + 1)
+                        + "/" + pageCount + "  •  " + visibleOptions.size() + " editable"),
                 width / 2, height - 68, 0xAAAAAA);
         if (!saveStatus.isEmpty()) graphics.drawCenteredString(font, Component.literal(saveStatus),
                 width / 2, height - 82, saveStatus.equals("Save failed") ? 0xFF7777 : 0xA6D8A8);
