@@ -37,7 +37,7 @@ Use a minimal client-only instrumentation mixin around the rebuild future to mea
 
 ## Validation status
 
-Mixin build configuration has been compiled successfully by GitHub Actions for the current PR head. Workflow run `45406256000` completed with a successful `forge-build` job, including the standalone regression suite, `gradle clean build`, and JAR artifact upload. The artifact `OptiCore-Forge-1.20.1` was present and unexpired at verification time. The configuration remains intentionally empty and has no active mixin classes. A real Forge client launch and in-game verification are still pending. No renderer behavior or FPS improvement is claimed by this foundation change.
+The earlier successful workflow run `45406256000` validated the pre-instrumentation build only; it does **not** validate the active diagnostic Mixin added later. The current branch registers `LevelRendererDiagnosticsMixin` under the client-only `client` list, and the static CI check verifies the JSON registration, expected method descriptor, injection point, `require = 1`, and diagnostic counter. GitHub Actions runs for the current head `3bcd700ffb623556a502f7702176494ae32ce0c6` were queued at the last check; a successful Forge build for that exact head has not yet been confirmed. A real Forge client launch and in-game verification are still pending. No renderer behavior, shadow rendering, or FPS improvement is claimed.
 
 ## References
 
@@ -53,7 +53,7 @@ The Forge 47.2.0 LevelRenderer API documentation confirms this private method si
 
 `renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)`
 
-It is invoked as part of the normal world-layer drawing path, but its private visibility prevents a direct call from OptiCore. A client Mixin could observe the method boundary. The exact mapped JVM descriptor is expected to correspond to the listed parameter types, but the compiled Forge 47.2.0 client bytecode and actual invocation sequence have not yet been inspected; therefore no injection target or ordinal is being committed on documentation evidence alone.
+It is invoked as part of the normal world-layer drawing path, but its private visibility prevents a direct call from OptiCore. A client Mixin could observe the method boundary. The source now declares the mapped JVM descriptor and a diagnostic injection at method HEAD. Static checks validate the source/configuration text, but only the Forge build and a live client launch can confirm that Mixin resolves and applies the target on each supported Forge version.
 
 ### Instrumentation acceptance criteria
 
