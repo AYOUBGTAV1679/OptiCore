@@ -3,14 +3,12 @@ package dev.opticore.client.shader;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -61,24 +59,14 @@ public final class ShaderPackRepository {
     }
 
     public static String activePack() {
-        return readProperties().getProperty(ACTIVE_KEY, "OFF");
+        return ShaderPackSelectionStore.load(CONFIG_FILE);
     }
 
     public static boolean select(String name) {
         if (!"OFF".equals(name) && discover().stream().noneMatch(pack -> pack.name().equals(name))) {
             return false;
         }
-        Properties properties = readProperties();
-        properties.setProperty(ACTIVE_KEY, name);
-        try {
-            Files.createDirectories(CONFIG_FILE.getParent());
-            try (var writer = Files.newBufferedWriter(CONFIG_FILE, StandardCharsets.UTF_8)) {
-                properties.store(writer, "OptiCore shader selection");
-            }
-            return true;
-        } catch (IOException exception) {
-            return false;
-        }
+        return ShaderPackSelectionStore.save(CONFIG_FILE, name);
     }
 
     /** Returns the saved, per-pack option overrides consumed by ShaderPackRuntime before compilation. */
@@ -93,15 +81,4 @@ public final class ShaderPackRepository {
         return ShaderPackOptionStore.save(optionFile, packName, optionId, value);
     }
 
-    private static Properties readProperties() {
-        Properties properties = new Properties();
-        if (Files.isRegularFile(CONFIG_FILE)) {
-            try (var reader = Files.newBufferedReader(CONFIG_FILE, StandardCharsets.UTF_8)) {
-                properties.load(reader);
-            } catch (IOException ignored) {
-                // Keep defaults when the local selection file is unreadable.
-            }
-        }
-        return properties;
-    }
 }
