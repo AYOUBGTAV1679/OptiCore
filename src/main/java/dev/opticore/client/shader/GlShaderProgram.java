@@ -78,8 +78,9 @@ public final class GlShaderProgram implements AutoCloseable {
         GL20.glShaderSource(shader, source);
         GL20.glCompileShader(shader);
         if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
+            // The caller's finally block owns shader cleanup on both success and failure.
+            // Deleting here as well would issue a second delete for the same shader name.
             String log = GL20.glGetShaderInfoLog(shader, 16_384);
-            GL20.glDeleteShader(shader);
             throw new IllegalStateException("Shader " + stage + " compilation failed [" + label + "]: " + log);
         }
         return shader;
