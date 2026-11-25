@@ -3,7 +3,6 @@ package dev.opticore.client.shader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,7 +69,7 @@ public final class ShaderPackSelectionStore {
 
     private static boolean validSelection(String value) {
         return "OFF".equals(value) || (value != null && !value.isBlank()
-                && value.length() <= 128 && !value.contains("/") && !value.contains("\\\\")
-                && !value.equals(".") && !value.equals("..") && value.indexOf('\\0') < 0);
+                && value.length() <= 128 && !value.contains("/") && !value.contains("\\")
+                && !value.equals(".") && !value.equals("..") && value.indexOf('\0') < 0);
     }
 }
