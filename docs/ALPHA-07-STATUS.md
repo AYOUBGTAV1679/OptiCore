@@ -28,7 +28,7 @@ The scene capture currently observes AFTER_LEVEL; it does not provide the correc
 ## Validation
 
 - The standalone regression script covers cache, shader inspection, matrix, scene snapshot, directional sun snapshot validation, and render-graph logic.
-- The shadow camera math has dependency-free tests for view/projection construction, vertical light directions, defensive copies, input validation, sub-texel stability, and mapping its focus point to the center of the depth interval.
+- The shadow camera math has dependency-free tests for view/projection construction, vertical light directions, defensive copies, input validation, sub-texel stability, mapping its focus point to the center of the depth interval, and mapping the near/far bounds to OpenGL clip-space Z values -1/+1.
 - Forge build and test results are reported by GitHub Actions for the exact commit. A successful compile does not prove that OpenGL resources or rendered output work in a live Minecraft client.
 - No controlled FPS benchmark, shader-pack compatibility certification, or in-game shadow visual test has been completed.
 
