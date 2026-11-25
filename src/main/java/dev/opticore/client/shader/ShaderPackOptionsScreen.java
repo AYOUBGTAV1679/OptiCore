@@ -113,8 +113,10 @@ public final class ShaderPackOptionsScreen extends Screen {
         int index = choices.indexOf(current);
         String next = choices.get((index + 1 + choices.size()) % choices.size());
         if (next.equals(option.defaultValue())) {
-            values.remove(option.id());
+            // Keep the in-memory override until persistence succeeds; otherwise the
+            // label would show the default while the previous override remains on disk.
             if (ShaderPackOptionStore.save(storePath, packName, option.id(), null)) {
+                values.remove(option.id());
                 saveStatus = "Saved (default)";
             } else saveStatus = "Save failed";
         } else if (ShaderPackOptionStore.save(storePath, packName, option.id(), next)) {
