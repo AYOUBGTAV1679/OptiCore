@@ -31,19 +31,19 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(result.source().contains("// #define BLOOM"), "active boolean disable");
         check(result.applied().size() == 3, "all valid overrides reported");
         ShaderOptionSourceProcessor.Result unchangedValid = ShaderOptionSourceProcessor.apply(
-                "#define BLOOM\\n", declarations, Map.of("BLOOM", "true"));
-        check(unchangedValid.source().equals("#define BLOOM\\n"),
+                "#define BLOOM\n", declarations, Map.of("BLOOM", "true"));
+        check(unchangedValid.source().equals("#define BLOOM\n"),
                 "already-matching boolean declaration remains unchanged");
         check(unchangedValid.applied().contains("BLOOM"),
                 "already-matching declaration is still reported as applied");
         ShaderOptionSourceProcessor.Result absentStage = ShaderOptionSourceProcessor.apply(
-                "#version 150\\nvoid main() {}\\n", declarations, Map.of("BLOOM", "false"));
-        check(absentStage.source().equals("#version 150\\nvoid main() {}\\n"),
+                "#version 150\nvoid main() {}\n", declarations, Map.of("BLOOM", "false"));
+        check(absentStage.source().equals("#version 150\nvoid main() {}\n"),
                 "override absent from this shader stage leaves source unchanged");
         check(absentStage.ignored().contains("BLOOM (declaration not present in this stage)"),
                 "override absent from this stage is reported explicitly");
         ShaderOptionSourceProcessor.Result unchangedNumeric = ShaderOptionSourceProcessor.apply(
-                "#define QUALITY 1 // [0 1 2]\\n", declarations, Map.of("QUALITY", "1"));
+                "#define QUALITY 1 // [0 1 2]\n", declarations, Map.of("QUALITY", "1"));
         check(unchangedNumeric.applied().contains("QUALITY"),
                 "already-matching numeric declaration is reported as applied");
 
