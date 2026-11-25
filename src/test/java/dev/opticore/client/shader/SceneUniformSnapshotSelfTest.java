@@ -50,6 +50,12 @@ public final class SceneUniformSnapshotSelfTest {
         expectFailure(() -> new SceneUniformSnapshot(invalid, identity(),
                 0, 0, 0, 0, 0, 1, 1, 0, 0, "minecraft:overworld"),
                 "reject non-finite matrices");
+        float[] singular = identity();
+        singular[0] = 0.0f;
+        SceneUniformSnapshot singularSnapshot = new SceneUniformSnapshot(singular, identity(),
+                0, 0, 0, 0, 0, 1, 1, 0, 0, "minecraft:overworld");
+        expectFailure(singularSnapshot::modelViewMatrixInverse,
+                "reject singular model-view inverse");
         expectFailure(() -> new SceneUniformSnapshot(identity(), identity(),
                 0, 0, 0, 1.1f, 0, 1, 1, 0, 0, "minecraft:overworld"),
                 "reject invalid partial tick");
