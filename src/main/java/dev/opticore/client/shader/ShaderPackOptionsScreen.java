@@ -27,6 +27,7 @@ public final class ShaderPackOptionsScreen extends Screen {
     private final ShaderOptionParser.Summary discoveredOptions;
     private final List<ShaderOptionParser.Option> editableOptions;
     private final List<String> screenNames;
+    private final Map<String, List<String>> nestedScreens;
     private final List<DisplayRow> rows;
     private final Path storePath;
     private final Map<String, String> values = new LinkedHashMap<>();
@@ -47,7 +48,8 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.controls = metadata.controls();
         this.discoveredOptions = discoveredOptions;
         this.screenDefinition = metadata.screenDefinition();
-        this.screenNames = metadata.nestedScreens().keySet().stream().sorted().toList();
+        this.nestedScreens = metadata.nestedScreens();
+        this.screenNames = nestedScreens.keySet().stream().sorted().toList();
         this.editableOptions = discoveredOptions.options().values().stream()
                 .filter(ShaderOptionParser.Option::editable)
                 .sorted(Comparator.comparing(ShaderOptionParser.Option::id)).toList();
@@ -203,27 +205,12 @@ public final class ShaderPackOptionsScreen extends Screen {
     private List<ShaderOptionParser.Option> visibleOptions() {
         if (activeScreenIndex < 0 || activeScreenIndex >= screenNames.size()) return editableOptions;
         Set<String> identifiers = new LinkedHashSet<>();
-        List<String> declared = discoveredScreenOptions(screenNames.get(activeScreenIndex));
+        List<String> declared = nestedScreens.getOrDefault(screenNames.get(activeScreenIndex), List.of());
         for (String token : declared) {
             String normalized = token.replaceFirst("^[!*]+", "");
             if (normalized.matches("[A-Za-z_][A-Za-z0-9_]*")) identifiers.add(normalized);
         }
         return editableOptions.stream().filter(option -> identifiers.contains(option.id())).toList();
-    }
-
-    private List<String> discoveredScreenOptions(String screen) {
-        // The metadata summary is represented by the grouped rows; recover the exact
-        // declaration from the immutable row inventory to avoid a second parser path.
-        List<String> entries = new ArrayList<>();
-        boolean inGroup = false;
-        for (DisplayRow row : rows) {
-            if (row.heading()) {
-                inGroup = row.label().equals("[" + screen + "]");
-            } else if (inGroup && !row.label().startsWith("[")) {
-                entries.add(row.label().trim());
-            }
-        }
-        return entries;
     }
 
     private void changeScreen(int delta) {
