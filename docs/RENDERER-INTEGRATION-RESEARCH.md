@@ -37,7 +37,7 @@ This confirms where CPU-side build output exists before it becomes GPU vertex bu
 3. **At `uploadChunkLayer(...)`:** too late for a general mesh cache if the only retained object is a live upload buffer; it is useful for upload instrumentation, not proof of reusable immutable mesh data.
 4. **At `RenderLevelStageEvent`:** not suitable for compile-result interception.
 
-No Mixin has been added yet. The next implementation step is to inspect the exact Forge 47.2.0 source/bytecode and identify a stable injection point with a testable ownership contract. Do not enable cache reuse until the payload can be retained independently of pooled builders and safely rejected on cancellation or invalidation.
+A diagnostic-only Mixin has since been added at the documented `LevelRenderer.renderChunkLayer(...)` method boundary. It records entry counts without changing the render path. This does not intercept chunk compilation or provide cache ownership. The next step is live-client verification of the injection on each supported Forge version; only after that should exact bytecode/call-site inspection guide any shadow-pass experiment. Do not enable cache reuse until the payload can be retained independently of pooled builders and safely rejected on cancellation or invalidation.
 
 
 ## Why the existing generic cache cannot simply hold compiled chunks
@@ -70,4 +70,4 @@ The method being private means a shadow pass cannot safely call it from ordinary
 
 **Implementation decision:** do not add a speculative injection yet. The exact method signature is documented, but the bytecode call site, local pose-stack state, and Forge patch behavior have not been inspected in the built 47.2.0 artifact. A mixin at the wrong invocation point can duplicate the visible world draw or corrupt vanilla matrices. The next safe step is bytecode/source inspection of the exact Forge 47.2.0 client artifact, followed by a disabled instrumentation-only injection whose only output is a counter proving the target layer hook fires once per expected layer. Only after that test should a depth-only caster draw be added.
 
-This checkpoint is source/API research, not a working shadow implementation. There are still no actual terrain or entity casters in the OptiCore shadow map.
+This checkpoint is source/API research, not a working shadow implementation. There are still no actual terrain or entity casters in the OptiCore shadow map. The diagnostic Mixin is present in source, but its CI build and runtime application on the latest commit remain unverified.
