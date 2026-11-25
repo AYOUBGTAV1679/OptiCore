@@ -9,8 +9,6 @@
   "screen.opticore.cache_budget": "Render Cache: %s MiB",
   "screen.opticore.zoom_factor": "Zoom Strength: %s",
   "screen.opticore.capture_scene": "Scene Capture: %s",
-  "screen.opticore.ambient_pulse": "Ambient Edge Glow: %s",
-  "screen.opticore.low_health_pulse": "Critical Health Pulse: %s",
   "screen.opticore.smooth_zoom": "Smooth Zoom: %s",
   "screen.opticore.zoom": "Zoom: %s",
   "screen.opticore.fps": "FPS Counter: %s",
