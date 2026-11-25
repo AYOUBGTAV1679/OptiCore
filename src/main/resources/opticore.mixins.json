@@ -6,7 +6,8 @@
   "refmap": "opticore.refmap.json",
   "mixins": [],
   "client": [
-    "LevelRendererDiagnosticsMixin"
+    "LevelRendererDiagnosticsMixin",
+    "ChunkCompileResultsAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
