@@ -37,6 +37,7 @@
   "screen.opticore.shaders.options_readonly": "Detected declarations only — editing is not available yet.",
   "screen.opticore.shaders.options_empty": "This pack does not declare screen or slider options.",
   "screen.opticore.shaders.options_count": "Detected controls: %s",
+  "screen.opticore.shaders.options_screen_definition": "Screen: %s",
   "screen.opticore.shaders.previous": "Previous",
   "screen.opticore.shaders.next": "Next",
   "screen.opticore.shaders.page": "Page %s / %s"
