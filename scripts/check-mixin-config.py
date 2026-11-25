@@ -52,8 +52,14 @@ compile_descriptor = (
 assert compile_descriptor in capture_source, "Chunk compile capture descriptor changed"
 assert 'at = @At("RETURN")' in capture_source, "Chunk capture must run after compile returns"
 assert "ChunkMeshCapture.observeCompilation" in capture_source, "Chunk capture bridge missing"
+assert all(alias in capture_source for alias in ('"chunks"', '"f_112905_"', '"a"')), (
+    "Chunk-grid lookup must try the supported 1.20.1 mapping aliases"
+)
+assert "field.setAccessible(true)" in capture_source and "return null" in capture_source, (
+    "Chunk-grid reflection must fail closed when no mapping alias resolves"
+)
 assert "opticore$readChunkGrid(region)" in capture_source and "target.getOrigin()" in capture_source, (
-    "Capture must resolve the exact target RenderChunk origin, not region offsets"
+    "Capture must resolve a candidate RenderChunk origin and fail closed when unavailable"
 )
 assert "origin.getY() >> 4" in capture_source, (
     "Capture must preserve the target vertical section coordinate"
