@@ -5,6 +5,7 @@ import dev.opticore.OptiCoreConfig;
 import dev.opticore.client.shader.SceneUniformSnapshot;
 import dev.opticore.client.shader.SceneEnvironmentSnapshot;
 import dev.opticore.client.shader.DirectionalSunSnapshot;
+import dev.opticore.client.shader.ShaderWorldPassPrototype;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.client.Minecraft;
@@ -45,6 +46,11 @@ public final class OptiCoreClientEvents {
      * Observe the completed level stage without changing render state or issuing GL calls.
      * Capture is opt-in and disabled by default.
      */
+    @SubscribeEvent
+    public static void onWorldRenderPassStage(RenderLevelStageEvent event) {
+        ShaderWorldPassPrototype.onWorldRenderStage(event);
+    }
+
     @SubscribeEvent
     public static void onLevelRenderStage(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL) return;
