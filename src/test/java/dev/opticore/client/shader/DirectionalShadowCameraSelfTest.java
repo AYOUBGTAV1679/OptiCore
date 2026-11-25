@@ -35,6 +35,10 @@ public final class DirectionalShadowCameraSelfTest {
                 "invalid depth range");
         expectFailure(() -> DirectionalShadowCamera.create(0,0,0,0,1,0,8,1,40,0),
                 "zero resolution");
+        expectFailure(() -> DirectionalShadowCamera.create(Double.MAX_VALUE,0,0,0,1,0,8,1,40,64),
+                "camera position outside float matrix range");
+        expectFailure(() -> DirectionalShadowCamera.create(0,0,0,Double.MAX_VALUE,Double.MAX_VALUE,
+                Double.MAX_VALUE,8,1,40,64), "unrepresentable light direction");
         System.out.println("DirectionalShadowCameraSelfTest: OK");
     }
 
