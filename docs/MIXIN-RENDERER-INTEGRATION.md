@@ -2,7 +2,7 @@
 
 ## What changed
 
-The Gradle build now configures SpongePowered MixinGradle with the Mixin 0.8.5 annotation processor, a generated reference map named `opticore.refmap.json`, and the `opticore.mixins.json` configuration. The configuration is intentionally empty at this stage: it declares no injections and therefore does not alter Minecraft renderer behavior.
+The Gradle build now configures SpongePowered MixinGradle with the Mixin 0.8.5 annotation processor, a generated reference map named `opticore.refmap.json`, and the `opticore.mixins.json` configuration. The configuration registers a client-only diagnostic Mixin, `LevelRendererDiagnosticsMixin`. It observes entry into `LevelRenderer.renderChunkLayer(...)` and periodically logs a bounded call count. It does not alter matrices, buffers, shaders, or draw calls.
 
 Forge already ships the Mixin runtime. OptiCore does not shade or bundle a second Mixin runtime into its mod JAR.
 
@@ -66,4 +66,4 @@ A first shadow-path experiment must be diagnostic-only and disabled by default:
 
 A later depth-only pass must not blindly replay translucent layers as opaque casters. It will need a separate caster-layer policy, light-space matrices, depth state, and complete GL-state restoration. Entity and block-entity casters remain separate work.
 
-**Status:** API signature documented; bytecode call-site inspection, active instrumentation Mixin, client launch, and shadow-map geometry are not yet implemented or verified. This note does not claim functional shadows.
+**Status (2026-11-25):** A diagnostic-only client Mixin is now registered and targets the documented `renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)` descriptor with `require = 1`. It increments an atomic counter and logs the first observation, then every 1000 calls. This is source-level implementation only: CI runs for commit `525a7d65ecac256b8508439ef41ed370f5a406fe` have been queued, but no successful result for that commit has been confirmed yet. The client has not been launched, so injection application and observed layer frequency remain unverified. No terrain depth pass, entity caster path, shadow map geometry, or functional shadows are implemented. Do not proceed to duplicate/replay the layer draw until the diagnostic injection is proven in a live client.
