@@ -42,5 +42,6 @@
   "screen.opticore.shaders.next": "التالي",
   "screen.opticore.shaders.page": "الصفحة %s من %s",
   "screen.opticore.experimental_world_pass": "تأثير العالم التجريبي: %s",
-  "screen.opticore.world_fog_strength": "قوة ضباب العالم: %s"
+  "screen.opticore.world_fog_strength": "قوة ضباب العالم: %s",
+  "screen.opticore.world_color_warmth": "دفء ألوان العالم: %s"
 }
