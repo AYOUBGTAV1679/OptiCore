@@ -44,6 +44,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/ShaderStageInterfaceValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderProgramDescriptor.java \
   src/test/java/dev/opticore/client/shader/ShaderProgramDescriptorSelfTest.java \
+  src/main/java/dev/opticore/client/shader/ShaderPackCompatibilityReport.java \
+  src/test/java/dev/opticore/client/shader/ShaderPackCompatibilityReportSelfTest.java \
   src/main/java/dev/opticore/client/shader/Matrix4Inverse.java \
   src/main/java/dev/opticore/client/shader/Matrix3Normal.java \
   src/main/java/dev/opticore/client/shader/ShadowCameraMatrices.java \
@@ -83,6 +85,7 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderIncludeResolverSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderGlslInterfaceScannerSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderStageInterfaceValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramDescriptorSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderPackCompatibilityReportSelfTest
 java -cp "$OUT" dev.opticore.client.shader.Matrix4InverseSelfTest
 java -cp "$OUT" dev.opticore.client.shader.Matrix3NormalSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShadowCameraMatricesSelfTest
