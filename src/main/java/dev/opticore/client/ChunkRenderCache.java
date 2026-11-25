@@ -1,6 +1,7 @@
 package dev.opticore.client;
 
 import dev.opticore.cache.CacheEntry;
+import dev.opticore.cache.ImmutableMeshSnapshot;
 import dev.opticore.cache.ChunkBoundaryInvalidation;
 import dev.opticore.cache.SmartChunkCache;
 import dev.opticore.cache.RenderCacheKey;
@@ -55,6 +56,35 @@ public final class ChunkRenderCache {
 
     public static SmartChunkCache<CacheEntry> cache() {
         return CACHE;
+    }
+
+    /**
+     * Store an immutable CPU mesh snapshot under a dependency-complete key.
+     * The caller must compute fingerprints from the same inputs used to build
+     * the snapshot. This is a storage bridge only; it does not intercept
+     * Minecraft's vanilla chunk compilation or enable mesh reuse by itself.
+     */
+    public static boolean storeMesh(Level level, int chunkX, int chunkZ, int sectionY,
+            long neighborStateFingerprint, long lightFingerprint,
+            long renderSettingsFingerprint, ImmutableMeshSnapshot mesh) {
+        if (mesh == null) return false;
+        RenderCacheKey key = meshKey(level, chunkX, chunkZ, sectionY,
+                neighborStateFingerprint, lightFingerprint, renderSettingsFingerprint);
+        return key != null && CACHE.put(key, mesh);
+    }
+
+    /**
+     * Look up a CPU mesh only when all dependency fingerprints match.
+     * No live Minecraft or GPU object is returned from this cache.
+     */
+    public static ImmutableMeshSnapshot findMesh(Level level, int chunkX, int chunkZ, int sectionY,
+            long neighborStateFingerprint, long lightFingerprint,
+            long renderSettingsFingerprint) {
+        RenderCacheKey key = meshKey(level, chunkX, chunkZ, sectionY,
+                neighborStateFingerprint, lightFingerprint, renderSettingsFingerprint);
+        if (key == null) return null;
+        CacheEntry entry = CACHE.get(key);
+        return entry instanceof ImmutableMeshSnapshot mesh ? mesh : null;
     }
 
     public static void invalidateChunk(Level level, int chunkX, int chunkZ) {
