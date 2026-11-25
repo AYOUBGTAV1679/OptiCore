@@ -28,6 +28,15 @@ public final class ShaderWorldPassPrototype {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) return;
 
+        float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
+        float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
+        // A neutral pass would only copy the full-resolution scene and issue a
+        // fullscreen draw. Skip it entirely to avoid needless GPU bandwidth.
+        if (fogStrength == 0.0f && warmth == 0.0f) {
+            lastFailure = "";
+            return;
+        }
+
         RenderTarget vanillaScene = minecraft.getMainRenderTarget();
         try {
             GlRenderTarget target = GlRenderTargetManager.acquire(
@@ -36,8 +45,7 @@ public final class ShaderWorldPassPrototype {
             float[] projection = new float[16];
             event.getProjectionMatrix().get(projection);
             float[] inverseProjection = Matrix4Inverse.invert(projection);
-            compositePass.render(target, vanillaScene, 0.12f,
-                    OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue(), inverseProjection);
+            compositePass.render(target, vanillaScene, warmth, fogStrength, inverseProjection);
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
