@@ -1,8 +1,6 @@
 package dev.opticore.cache;
 
 import java.nio.ReadOnlyBufferException;
-import java.util.Arrays;
-
 public final class ImmutableMeshSnapshotSelfTest {
     private ImmutableMeshSnapshotSelfTest() {}
 
@@ -51,7 +49,7 @@ public final class ImmutableMeshSnapshotSelfTest {
         expectFailure(() -> new ImmutableMeshSnapshot("x", 4, -1, 0, 0, 0, 0,
                 new byte[4], new byte[0]), "negative draw mode rejected");
 
-        System.out.println("ImmutableMeshSnapshotSelfTest: 14 checks passed");
+        System.out.println("ImmutableMeshSnapshotSelfTest: 16 checks passed");
     }
 
     private static void expectFailure(Runnable action, String label) {
