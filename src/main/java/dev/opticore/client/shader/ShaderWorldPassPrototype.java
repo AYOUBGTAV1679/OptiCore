@@ -8,13 +8,14 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 
 /**
  * Opt-in bridge that captures the completed vanilla level color/depth buffers
- * into an isolated OptiCore framebuffer at Forge's AFTER_LEVEL stage.
- * The capture is input infrastructure only; no visible composite is performed.
+ * into an isolated OptiCore framebuffer and applies an opt-in fullscreen GLSL pass
+ * at Forge's AFTER_LEVEL stage.
  */
 public final class ShaderWorldPassPrototype {
     private static long successfulCaptures;
     private static int lastSuccessfulRenderTick = -1;
     private static String lastFailure = "";
+    private static FullscreenCompositePass compositePass = new FullscreenCompositePass();
 
     private ShaderWorldPassPrototype() {}
 
@@ -32,6 +33,7 @@ public final class ShaderWorldPassPrototype {
             GlRenderTarget target = GlRenderTargetManager.acquire(
                     "world-scene-capture", vanillaScene.width, vanillaScene.height);
             target.copySceneFrom(vanillaScene);
+            compositePass.render(target, vanillaScene, 0.12f);
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
