@@ -52,8 +52,11 @@ compile_descriptor = (
 assert compile_descriptor in capture_source, "Chunk compile capture descriptor changed"
 assert 'at = @At("RETURN")' in capture_source, "Chunk capture must run after compile returns"
 assert "ChunkMeshCapture.observeCompilation" in capture_source, "Chunk capture bridge missing"
-assert "opticore$getCenterX()" in capture_source and "opticore$getCenterZ()" in capture_source, (
-    "Capture must use region chunk coordinates, not synthetic outer-class fields"
+assert "opticore$getChunks()" in capture_source and "target.getOrigin()" in capture_source, (
+    "Capture must resolve the exact target RenderChunk origin, not region offsets"
+)
+assert "origin.getY() >> 4" in capture_source, (
+    "Capture must preserve the target vertical section coordinate"
 )
 
 print("Mixin config checks: OK (client-only registration, diagnostics, chunk compile capture)")
