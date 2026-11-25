@@ -6,7 +6,9 @@ public final class ShadowCameraMatricesSelfTest {
     public static void main(String[] args) {
         float[] view=ShadowCameraMatrices.lookAt(0,0,1, 0,0,0, 0,1,0);
         check(close(view[0],1)&&close(view[5],1)&&close(view[10],1)&&close(view[14],-1),"lookAt view");
-        float[] hugeUpView=ShadowCameraMatrices.lookAt(0,0,1, 0,0,0, 0,1.0e300,0);\n        check(close(hugeUpView[5],1),"overflow-safe up-vector normalization");\n        float[] ortho=ShadowCameraMatrices.orthographic(-1,1,-1,1,1,11);
+        float[] hugeUpView=ShadowCameraMatrices.lookAt(0,0,1, 0,0,0, 0,1.0e300,0);
+        check(close(hugeUpView[5],1),"overflow-safe up-vector normalization");
+        float[] ortho=ShadowCameraMatrices.orthographic(-1,1,-1,1,1,11);
         check(close(ortho[0],1)&&close(ortho[5],1)&&close(ortho[10],-0.2f)&&close(ortho[14],-1.2f),"orthographic projection");
         float[] combined=ShadowCameraMatrices.multiply(ortho,view);
         check(close(combined[14],-1.0f),"projection-view multiplication");
