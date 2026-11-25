@@ -41,7 +41,13 @@ public final class ShaderOptionSourceProcessorSelfTest {
                 commentedNumeric, declarations, Map.of("QUALITY", "2"));
         check(activated.source().equals("#define QUALITY 2 // [0 1 2]"),
                 "commented numeric option is activated");
-        System.out.println("ShaderOptionSourceProcessorSelfTest: 7 checks passed");
+        String constSource = "const int QUALITY = 1; // quality setting";
+        ShaderOptionSourceProcessor.Result constOverride = ShaderOptionSourceProcessor.apply(
+                constSource, declarations, Map.of("QUALITY", "2"));
+        check(constOverride.source().equals("const int QUALITY = 2; // quality setting"),
+                "const initializer override preserves declaration suffix");
+        check(constOverride.applied().contains("QUALITY"), "const override reported as applied");
+        System.out.println("ShaderOptionSourceProcessorSelfTest: 9 checks passed");
     }
 
     private static void check(boolean condition, String message) {
