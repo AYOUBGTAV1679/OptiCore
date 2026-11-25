@@ -132,7 +132,7 @@ public final class ShaderIncludeResolver {
             }
             long size = Files.size(target);
             if (size > MAX_SOURCE_BYTES) return null;
-            return Files.readAllBytes(target);
+            try (var in = Files.newInputStream(target)) { return readBounded(in, MAX_SOURCE_BYTES); }
         }
 
         private static byte[] readBounded(java.io.InputStream in, int max) throws IOException {
@@ -149,6 +149,11 @@ public final class ShaderIncludeResolver {
         private static String resolveName(String including, String requested) {
             if (requested.isBlank() || requested.startsWith("/") || requested.indexOf('\\') >= 0
                     || requested.indexOf('\0') >= 0 || requested.matches("^[A-Za-z]:.*")) return null;
+            // Shader packs commonly use both paths relative to the including file
+            // and paths rooted at the pack's shaders/ directory.
+            if (requested.startsWith("shaders/")) {
+                return safePackPath(requested) ? requested : null;
+            }
             String parent = including.substring(0, including.lastIndexOf('/') + 1);
             String relative = parent + requested;
             if (!safePackPath(relative)) relative = "shaders/" + requested;
