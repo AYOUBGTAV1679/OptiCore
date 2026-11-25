@@ -141,7 +141,7 @@ public final class ShaderPackOptionsScreen extends Screen {
         return true;
     }
 
-    private int visibleRows() { return Math.max(1, (height - 160) / 12); }
+    private int visibleRows() { return Math.max(1, (height - 290) / 12); }
 
     @Override
     public void onClose() { minecraft.setScreen(parent); }
@@ -171,6 +171,22 @@ public final class ShaderPackOptionsScreen extends Screen {
                 Component.literal("Detected declarations: " + rows.size()
                         + "  •  Recognized overrides are applied when a shader program is compiled."),
                 width / 2, height - 96, 0x888888);
+
+        // The declaration inventory was already scrollable, but its rows were never
+        // painted. Keep it below the editable controls and above the footer, clipping
+        // the text so long inventories cannot overlap the page/status controls.
+        int listTop = 185;
+        int listBottom = Math.max(listTop + 1, height - 105);
+        graphics.enableScissor(12, listTop, Math.max(13, width - 12), listBottom);
+        int rowY = listTop + 2 - scrollOffset * 12;
+        for (DisplayRow row : rows) {
+            if (rowY >= listTop - 12 && rowY < listBottom) {
+                graphics.drawString(font, Component.literal(row.label()), 16, rowY,
+                        row.heading() ? 0xC8E6FF : 0xB8B8B8, false);
+            }
+            rowY += 12;
+        }
+        graphics.disableScissor();
     }
 
     @Override
