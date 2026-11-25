@@ -61,7 +61,7 @@ public final class ShadowCameraMatrices {
         for(double v:values) if(!Double.isFinite(v)) throw new IllegalArgumentException("Camera bounds must be finite");
     }
     private static double[] normalize(double x,double y,double z,String name) {
-        finite(x,y,z); double length=Math.sqrt(x*x+y*y+z*z);
+        finite(x,y,z); double length=Math.hypot(Math.hypot(x,y),z);
         if(!Double.isFinite(length)||length<1.0e-12) throw new IllegalArgumentException("Degenerate "+name);
         return new double[]{x/length,y/length,z/length};
     }
