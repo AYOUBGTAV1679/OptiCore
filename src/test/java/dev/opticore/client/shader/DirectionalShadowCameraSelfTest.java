@@ -36,6 +36,22 @@ public final class DirectionalShadowCameraSelfTest {
         check(close(nearClipZ, -1.0f), "near depth bound maps to OpenGL clip -1");
         check(close(farClipZ, 1.0f), "far depth bound maps to OpenGL clip +1");
 
+        // Exercise every cardinal light axis, including both vertical singularity cases.
+        double[][] cardinalLights = {
+                {1,0,0}, {-1,0,0}, {0,1,0}, {0,-1,0}, {0,0,1}, {0,0,-1}
+        };
+        for (double[] light : cardinalLights) {
+            DirectionalShadowCamera.Camera camera = DirectionalShadowCamera.create(
+                    12, 80, -4, light[0], light[1], light[2], 16, 1, 80, 256);
+            float[] matrix = camera.viewProjectionMatrix();
+            checkFinite(matrix, "cardinal-light view-projection");
+            float[] focusClip = projectClip(matrix,
+                    camera.centerX(), camera.centerY(), camera.centerZ());
+            check(close(focusClip[0], 0) && close(focusClip[1], 0) && close(focusClip[2], 0),
+                    "snapped focus must remain at clip-space center for cardinal light "
+                            + light[0] + "," + light[1] + "," + light[2]);
+        }
+
         float[] copy = first.viewMatrix();
         copy[0] = 999;
         check(!close(first.viewMatrix()[0], 999), "matrix accessor is defensive");
@@ -55,6 +71,13 @@ public final class DirectionalShadowCameraSelfTest {
         System.out.println("DirectionalShadowCameraSelfTest: OK");
     }
 
+    private static float[] projectClip(float[] matrix, double x, double y, double z) {
+        return new float[] {
+                (float)(matrix[0]*x + matrix[4]*y + matrix[8]*z + matrix[12]),
+                (float)(matrix[1]*x + matrix[5]*y + matrix[9]*z + matrix[13]),
+                (float)(matrix[2]*x + matrix[6]*y + matrix[10]*z + matrix[14])
+        };
+    }
     private static float projectedClipZ(float[] view, float[] projection,
                                          float x, float y, float z) {
         float viewZ = view[2] * x + view[6] * y + view[10] * z + view[14];
