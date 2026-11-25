@@ -124,14 +124,14 @@ public final class GlShaderProgram implements AutoCloseable {
     }
 
     public void setUniform1f(String name, float value) {
-        requireFinite(value, name);
+        ShaderUniformValidator.requireFinite(value, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform1f(location, value);
     }
 
     public void setUniform2f(String name, float x, float y) {
-        requireFinite(x, name);
-        requireFinite(y, name);
+        ShaderUniformValidator.requireFinite(x, name);
+        ShaderUniformValidator.requireFinite(y, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform2f(location, x, y);
     }
@@ -139,7 +139,7 @@ public final class GlShaderProgram implements AutoCloseable {
     public void setUniform3f(String name, float x, float y, float z) {
         requireFinite(x, name);
         requireFinite(y, name);
-        requireFinite(z, name);
+        ShaderUniformValidator.requireFinite(z, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform3f(location, x, y, z);
     }
@@ -148,7 +148,7 @@ public final class GlShaderProgram implements AutoCloseable {
         requireFinite(x, name);
         requireFinite(y, name);
         requireFinite(z, name);
-        requireFinite(w, name);
+        ShaderUniformValidator.requireFinite(w, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniform4f(location, x, y, z, w);
     }
@@ -158,7 +158,7 @@ public final class GlShaderProgram implements AutoCloseable {
         if (matrix == null || matrix.remaining() < 16) {
             throw new IllegalArgumentException("A 4x4 matrix requires at least 16 remaining floats");
         }
-        requireFinite(matrix, 16, name);
+        ShaderUniformValidator.requireFinite(matrix, 16, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniformMatrix4fv(location, false, matrix);
     }
@@ -168,24 +168,9 @@ public final class GlShaderProgram implements AutoCloseable {
         if (matrix == null || matrix.remaining() < 9) {
             throw new IllegalArgumentException("A 3x3 matrix requires at least 9 remaining floats");
         }
-        requireFinite(matrix, 9, name);
+        ShaderUniformValidator.requireFinite(matrix, 9, name);
         int location = requireUniform(name);
         if (location >= 0) GL20.glUniformMatrix3fv(location, false, matrix);
-    }
-
-    private static void requireFinite(float value, String name) {
-        if (!Float.isFinite(value)) {
-            throw new IllegalArgumentException("Uniform '" + name + "' must be finite");
-        }
-    }
-
-    private static void requireFinite(FloatBuffer values, int count, String name) {
-        int start = values.position();
-        for (int i = 0; i < count; i++) {
-            if (!Float.isFinite(values.get(start + i))) {
-                throw new IllegalArgumentException("Uniform matrix '" + name + "' contains a non-finite value");
-            }
-        }
     }
 
     private int requireUniform(String name) {
