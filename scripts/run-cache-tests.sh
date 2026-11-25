@@ -10,6 +10,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/main/java/dev/opticore/client/ZoomController.java \
   src/test/java/dev/opticore/client/FrameTimeMonitorSelfTest.java \
   src/test/java/dev/opticore/client/ZoomControllerSelfTest.java \
+  src/main/java/dev/opticore/client/shader/ShaderUniformValidator.java \
+  src/test/java/dev/opticore/client/shader/ShaderUniformValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderPackOptionStore.java \
   src/test/java/dev/opticore/client/shader/ShaderPackOptionStoreSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderPackArchiveValidator.java \
@@ -60,6 +62,7 @@ java -cp "$OUT" dev.opticore.cache.SmartChunkCacheSelfTest
 java -cp "$OUT" dev.opticore.cache.ImmutableMeshSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.FrameTimeMonitorSelfTest
 java -cp "$OUT" dev.opticore.client.ZoomControllerSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderUniformValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackOptionStoreSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackArchiveValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackMetadataSelfTest
