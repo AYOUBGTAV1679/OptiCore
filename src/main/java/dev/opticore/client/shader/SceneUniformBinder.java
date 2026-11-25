@@ -14,6 +14,31 @@ public final class SceneUniformBinder {
     }
 
     /**
+     * Binds the target program, uploads the available scene uniforms, and returns
+     * a scope that restores the previously active OpenGL program when closed.
+     *
+     * <p>Use with try-with-resources around the draw that consumes these uniforms.
+     * If an upload fails, the previous program is restored before the failure escapes.</p>
+     */
+    public static GlShaderProgram.Binding bindAndUpload(GlShaderProgram program,
+            SceneUniformSnapshot scene, SceneEnvironmentSnapshot environment,
+            DirectionalSunSnapshot sun) {
+        if (program == null) throw new NullPointerException("program");
+        GlShaderProgram.Binding binding = program.bindScoped();
+        try {
+            uploadCommon(program, scene, environment, sun);
+            return binding;
+        } catch (RuntimeException | Error failure) {
+            try {
+                binding.close();
+            } catch (RuntimeException | Error restoreFailure) {
+                failure.addSuppressed(restoreFailure);
+            }
+            throw failure;
+        }
+    }
+
+    /**
      * Uploads common OptiFine-style matrix/time names and optional environment values.
      * Missing uniforms are harmless no-ops. This is a starter mapping, not full OptiFine parity.
      */
