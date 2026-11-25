@@ -19,14 +19,15 @@ public final class ShaderPackMetadataSelfTest {
         check(summary.sliderCount() == 2, "slider count");
         check(summary.screenDefinition().contains("[BASIC]"), "screen declaration preserved");
         check(summary.controls().containsAll(List.of("shadowMapResolution", "!oldLighting",
-                "shadowDistance", "profile")), "root, nested screen and slider identifiers collected");
+                "shadowDistance", "oldLighting")), "root, nested screen and slider identifiers collected");
+        check(!summary.controls().contains("profile"), "profile pseudo-control is excluded");
         check(summary.controls().stream().filter("shadowMapResolution"::equals).count() == 1,
                 "duplicate identifier deduplicated");
         check(!ShaderPropertiesParser.parse(new byte[256 * 1024 + 1]).hasProperties(),
                 "oversized properties rejected");
         check(!ShaderPropertiesParser.parse("bad=\\uZZZZ".getBytes(StandardCharsets.ISO_8859_1))
                 .hasProperties(), "malformed escape rejected");
-        System.out.println("ShaderPackMetadataSelfTest: 8 checks passed");
+        System.out.println("ShaderPackMetadataSelfTest: 9 checks passed");
     }
 
     private static void check(boolean condition, String label) {
