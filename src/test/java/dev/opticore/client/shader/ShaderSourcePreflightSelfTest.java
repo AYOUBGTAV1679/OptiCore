@@ -33,12 +33,14 @@ public final class ShaderSourcePreflightSelfTest {
         Path zipPath = Files.createTempFile("opticore-glsl-preflight", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
             add(zip, "shaders/test.vsh", "/* void main() {} */\nvoid main() {}");
-            add(zip, "shaders/test.fsh", "#version 150\nvoid main() {}");
+            add(zip, "shaders/test.fsh", "#version 150\n#extension GL_ARB_gpu_shader5 : enable\n"
+                    + "#extension GL_ARB_gpu_shader5 : warn\nvoid main() {}");
             add(zip, "../shaders/evil.vsh", "void main() {}");
         }
         ShaderSourcePreflight.Summary archive = ShaderSourcePreflight.inspect(zipPath, true);
         check(archive.inspectedStages() == 2, "ZIP stages and unsafe path rejection");
         check(archive.stagesWithoutMain() == 0, "ZIP main detection");
+        check(archive.extensionDirectives() == 2, "ZIP counts repeated extension directives");
 
         try (var paths = Files.walk(folder)) {
             for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
@@ -46,7 +48,7 @@ public final class ShaderSourcePreflightSelfTest {
             }
         }
         Files.deleteIfExists(zipPath);
-        System.out.println("ShaderSourcePreflightSelfTest: 10 checks passed");
+        System.out.println("ShaderSourcePreflightSelfTest: 11 checks passed");
     }
     private static void add(ZipOutputStream zip, String name, String source) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
