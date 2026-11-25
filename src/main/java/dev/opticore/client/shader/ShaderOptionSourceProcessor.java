@@ -68,8 +68,8 @@ public final class ShaderOptionSourceProcessor {
                         + ")(?:\\s+[^/\\s]+)?(\\s*(?://.*)?)$");
                 Matcher m = define.matcher(line);
                 if (m.matches()) {
-                    lines[i] = m.group(1) + (m.group(2) == null ? "" : m.group(2))
-                            + m.group(3) + " " + value + m.group(4);
+                    // An overridden commented declaration becomes active.
+                    lines[i] = m.group(1) + m.group(3) + " " + value + m.group(4);
                     changed |= !lines[i].equals(line);
                     continue;
                 }
