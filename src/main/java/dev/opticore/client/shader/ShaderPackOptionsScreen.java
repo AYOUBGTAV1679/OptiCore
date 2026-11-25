@@ -6,12 +6,16 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 
 /** Read-only preview of option identifiers declared by a shader pack. */
 public final class ShaderPackOptionsScreen extends Screen {
     private final Screen parent;
     private final String packName;
     private final List<String> controls;
+    private final List<DisplayRow> rows;
+    private record DisplayRow(String label, boolean heading) {}
     private final String screenDefinition;
     private int scrollOffset;
 
@@ -22,6 +26,16 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.packName = packName;
         this.controls = metadata.controls();
         this.screenDefinition = metadata.screenDefinition();
+        List<DisplayRow> display = new ArrayList<>();
+        if (!metadata.nestedScreens().isEmpty()) {
+            for (Map.Entry<String, List<String>> group : metadata.nestedScreens().entrySet()) {
+                display.add(new DisplayRow("[" + group.getKey() + "]", true));
+                for (String option : group.getValue()) display.add(new DisplayRow("  " + option, false));
+            }
+        } else {
+            for (String option : controls) display.add(new DisplayRow(option, false));
+        }
+        this.rows = List.copyOf(display);
     }
 
     @Override
@@ -32,7 +46,7 @@ public final class ShaderPackOptionsScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int max = Math.max(0, controls.size() - visibleRows());
+        int max = Math.max(0, rows.size() - visibleRows());
         scrollOffset = (int) Math.max(0, Math.min(max, scrollOffset - Math.signum(delta) * 3));
         return true;
     }
@@ -65,24 +79,26 @@ public final class ShaderPackOptionsScreen extends Screen {
 
         int visible = visibleRows();
         int listTop = 84;
-        int end = Math.min(controls.size(), scrollOffset + visible);
-        if (controls.isEmpty()) {
+        int end = Math.min(rows.size(), scrollOffset + visible);
+        if (rows.isEmpty()) {
             graphics.drawCenteredString(font,
                     Component.translatable("screen.opticore.shaders.options_empty"),
                     width / 2, height / 2, 0xAAAAAA);
         } else {
             for (int i = scrollOffset; i < end; i++) {
-                graphics.drawCenteredString(font, Component.literal(controls.get(i)),
-                        width / 2, listTop + (i - scrollOffset) * 18, 0xFFFFFF);
+                DisplayRow row = rows.get(i);
+                graphics.drawCenteredString(font, Component.literal(row.label()),
+                        width / 2, listTop + (i - scrollOffset) * 18,
+                        row.heading() ? 0x80D8FF : 0xFFFFFF);
             }
         }
-        if (controls.size() > visible) {
+        if (rows.size() > visible) {
             int trackTop = listTop;
             int trackHeight = visible * 18 - 4;
             int trackX = width / 2 + 158;
             graphics.fill(trackX, trackTop, trackX + 3, trackTop + trackHeight, 0x66555555);
-            int thumbHeight = Math.max(12, trackHeight * visible / controls.size());
-            int maxOffset = Math.max(1, controls.size() - visible);
+            int thumbHeight = Math.max(12, trackHeight * visible / rows.size());
+            int maxOffset = Math.max(1, rows.size() - visible);
             int thumbTop = trackTop + (trackHeight - thumbHeight) * scrollOffset / maxOffset;
             graphics.fill(trackX, thumbTop, trackX + 3, thumbTop + thumbHeight, 0xFFE0E0E0);
         }
