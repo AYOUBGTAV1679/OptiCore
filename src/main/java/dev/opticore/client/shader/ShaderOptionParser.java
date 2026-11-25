@@ -105,9 +105,8 @@ public final class ShaderOptionParser {
                     List<String> values = parseValues(comment);
                     if (!values.isEmpty()) {
                         if (!values.contains(value)) values = append(values, value);
-                        add(found, new Option(id, values.size() == 2
-                                && values.contains("true") && values.contains("false")
-                                ? Type.ENUM : Type.ENUM, value, values, description(comment),
+                        add(found, new Option(id, isNumericValues(values) ? Type.NUMBER : Type.ENUM,
+                                value, values, description(comment),
                                 false, sliders != null && sliders.contains(id)));
                     }
                 }
@@ -121,7 +120,8 @@ public final class ShaderOptionParser {
                     String id = constant.group(1);
                     String value = constant.group(2).trim();
                     if (!values.contains(value)) values = append(values, value);
-                    add(found, new Option(id, Type.ENUM, value, values, description(comment),
+                    add(found, new Option(id, isNumericValues(values) ? Type.NUMBER : Type.ENUM,
+                            value, values, description(comment),
                             false, sliders != null && sliders.contains(id)));
                 }
             }
@@ -143,6 +143,11 @@ public final class ShaderOptionParser {
     private static String description(String comment) {
         Matcher matcher = VALUE_LIST.matcher(comment);
         return matcher.matches() && matcher.group(2) != null ? matcher.group(2).trim() : "";
+    }
+
+    private static boolean isNumericValues(List<String> values) {
+        return !values.isEmpty() && values.stream().allMatch(
+                value -> value.matches("[+-]?(?:\\\\d+(?:\\\\.\\\\d*)?|\\\\.\\\\d+)(?:[eE][+-]?\\\\d+)?"));
     }
 
     private static List<String> append(List<String> values, String value) {
