@@ -36,14 +36,18 @@ public final class FullscreenCompositePass implements AutoCloseable {
             uniform sampler2D uSceneDepth;
             uniform float uWarmth;
             uniform float uFogStrength;
+            uniform mat4 uInverseProjection;
             in vec2 vUv;
             out vec4 fragColor;
             void main() {
                 vec4 scene = texture(uSceneColor, vUv);
                 vec3 warmed = scene.rgb * vec3(1.0 + uWarmth, 1.0, 1.0 - uWarmth);
                 float depth = texture(uSceneDepth, vUv).r;
-                // Hardware depth is non-linear; a far-depth ramp adds atmospheric haze.
-                float farHaze = smoothstep(0.92, 0.9995, depth) * uFogStrength;
+                // Reconstruct view-space position so fog distance is linear.
+                vec4 clipPosition = vec4(vUv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+                vec4 viewPosition = uInverseProjection * clipPosition;
+                float viewDistance = abs(viewPosition.z / max(abs(viewPosition.w), 1.0e-6));
+                float farHaze = smoothstep(48.0, 192.0, viewDistance) * uFogStrength;
                 vec3 graded = mix(scene.rgb, warmed, 0.35);
                 vec3 fogColor = vec3(0.62, 0.70, 0.78);
                 fragColor = vec4(mix(graded, fogColor, farHaze), scene.a);
@@ -54,7 +58,8 @@ public final class FullscreenCompositePass implements AutoCloseable {
     private int vao;
     private boolean closed;
 
-    public void render(GlRenderTarget scene, RenderTarget destination, float warmth, float fogStrength) {
+    public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
+            float fogStrength, float[] inverseProjectionMatrix) {
         RenderSystem.assertOnRenderThread();
         if (closed) throw new IllegalStateException("Composite pass is closed");
         if (scene == null || destination == null) throw new IllegalArgumentException("Scene and destination are required");
@@ -69,6 +74,12 @@ public final class FullscreenCompositePass implements AutoCloseable {
         }
         if (!Float.isFinite(fogStrength) || fogStrength < 0.0f || fogStrength > 1.0f) {
             throw new IllegalArgumentException("Fog strength must be between 0 and 1");
+        }
+        if (inverseProjectionMatrix == null || inverseProjectionMatrix.length != 16) {
+            throw new IllegalArgumentException("Inverse projection matrix must contain 16 values");
+        }
+        for (float value : inverseProjectionMatrix) {
+            if (!Float.isFinite(value)) throw new IllegalArgumentException("Inverse projection matrix must be finite");
         }
 
         ensureInitialized();
@@ -112,6 +123,10 @@ public final class FullscreenCompositePass implements AutoCloseable {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.depthTextureId());
             GL20.glUniform1i(GL20.glGetUniformLocation(program.id(), "uSceneDepth"), 1);
             GL20.glUniform1f(GL20.glGetUniformLocation(program.id(), "uFogStrength"), fogStrength);
+            FloatBuffer inverseProjection = BufferUtils.createFloatBuffer(16);
+            inverseProjection.put(inverseProjectionMatrix).flip();
+            GL20.glUniformMatrix4fv(GL20.glGetUniformLocation(program.id(), "uInverseProjection"),
+                    false, inverseProjection);
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindVertexArray(vao);
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
