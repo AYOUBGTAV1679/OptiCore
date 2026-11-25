@@ -91,6 +91,8 @@ public final class ShaderIncludeResolver {
                 String[] lines = source.split("(?<=\\n)", -1);
                 for (String line : lines) {
                     String body = line.endsWith("\n") ? line.substring(0, line.length() - 1) : line;
+                    // split() retains the carriage return in CRLF files; ignore it for directive matching.
+                    if (body.endsWith("\r")) body = body.substring(0, body.length() - 1);
                     Matcher matcher = INCLUDE.matcher(body);
                     if (!matcher.matches()) { output.append(line); continue; }
                     String target = resolveName(name, matcher.group(1));
