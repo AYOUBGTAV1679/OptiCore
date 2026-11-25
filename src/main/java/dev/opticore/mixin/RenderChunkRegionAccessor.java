@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-/** Read-only access to the world and render-chunk grid used by compilation. */
+/** Read-only access to the world, center coordinates, and chunk grid used by compilation. */
 @Mixin(RenderChunkRegion.class)
 public interface RenderChunkRegionAccessor {
     @Accessor("level")
@@ -14,4 +14,10 @@ public interface RenderChunkRegionAccessor {
 
     @Accessor("chunks")
     ChunkRenderDispatcher.RenderChunk[][] opticore$getChunks();
+
+    @Accessor("centerX")
+    int opticore$getCenterX();
+
+    @Accessor("centerZ")
+    int opticore$getCenterZ();
 }
