@@ -16,6 +16,8 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/ShaderPackArchiveValidatorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderPropertiesParser.java \
   src/main/java/dev/opticore/client/shader/ShaderOptionParser.java \
+  src/main/java/dev/opticore/client/shader/ShaderOptionSourceProcessor.java \
+  src/test/java/dev/opticore/client/shader/ShaderOptionSourceProcessorSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderOptionDiscovery.java \
   src/test/java/dev/opticore/client/shader/ShaderOptionParserSelfTest.java \
   src/test/java/dev/opticore/client/shader/ShaderOptionDiscoverySelfTest.java \
@@ -59,6 +61,7 @@ java -cp "$OUT" dev.opticore.client.shader.ShaderPackOptionStoreSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackArchiveValidatorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackMetadataSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderOptionParserSelfTest
+java -cp "$OUT" dev.opticore.client.shader.ShaderOptionSourceProcessorSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderOptionDiscoverySelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderPackInventorySelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderProgramIndexSelfTest
