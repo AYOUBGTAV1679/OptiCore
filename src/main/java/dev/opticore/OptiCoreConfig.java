@@ -29,7 +29,7 @@ public final class OptiCoreConfig {
                 .define("showFrameTime", false);
         CAPTURE_SCENE_UNIFORMS = builder.comment("Capture read-only scene matrices and camera/time data at AFTER_LEVEL for shader integration diagnostics.")
                 .define("captureSceneUniforms", false);
-        ENABLE_EXPERIMENTAL_WORLD_PASS = builder.comment("Run the isolated OptiCore off-screen pass probe after solid world geometry. This does not alter the visible frame.")
+        ENABLE_EXPERIMENTAL_WORLD_PASS = builder.comment("Capture vanilla scene color and depth into an isolated OptiCore framebuffer after the level render. No visible composite is applied yet.")
                 .define("experimentalWorldPass", false);
         RENDER_CACHE_BUDGET_MB = builder.comment("CPU-side render artifact cache budget in MiB.")
                 .defineInRange("renderCacheBudgetMb", 32, 8, 512);
