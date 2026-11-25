@@ -147,7 +147,7 @@ public final class ShaderOptionParser {
 
     private static boolean isNumericValues(List<String> values) {
         return !values.isEmpty() && values.stream().allMatch(
-                value -> value.matches("[+-]?(?:\\\\d+(?:\\\\.\\\\d*)?|\\\\.\\\\d+)(?:[eE][+-]?\\\\d+)?"));
+                value -> value.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?"));
     }
 
     private static List<String> append(List<String> values, String value) {
