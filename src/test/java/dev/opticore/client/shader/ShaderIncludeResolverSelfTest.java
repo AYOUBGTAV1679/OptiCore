@@ -21,7 +21,7 @@ public final class ShaderIncludeResolverSelfTest {
         check(folderResult.includedFiles().contains("shaders/lib/common.glsl"), "include is tracked");
 
         Files.writeString(folder.resolve("shaders/main.fsh"),
-                "\uFEFF#version 150\\n#include \\"lib/common.glsl\\"\\nvoid main() {}\\n");
+                "\uFEFF#version 150\n#include \"lib/common.glsl\"\nvoid main() {}\n");
         ShaderIncludeResolver.Result bom =
                 ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
         check(bom.successful() && !bom.source().startsWith("\uFEFF")
