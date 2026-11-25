@@ -40,5 +40,7 @@
   "screen.opticore.shaders.options_screen_definition": "تعريف الشاشة: %s",
   "screen.opticore.shaders.previous": "السابق",
   "screen.opticore.shaders.next": "التالي",
-  "screen.opticore.shaders.page": "الصفحة %s من %s"
+  "screen.opticore.shaders.page": "الصفحة %s من %s",
+  "screen.opticore.experimental_world_pass": "تأثير العالم التجريبي: %s",
+  "screen.opticore.world_fog_strength": "قوة ضباب العالم: %s"
 }
