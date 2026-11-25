@@ -81,13 +81,13 @@ public final class ShaderPackRepository {
         }
     }
 
-    /** Returns saved option overrides for one pack; values are not applied to shaders yet. */
+    /** Returns the saved, per-pack option overrides consumed by ShaderPackRuntime before compilation. */
     public static java.util.Map<String, String> optionOverrides(String packName) {
         Path optionFile = CONFIG_FILE.getParent().resolve("shader-pack-options.properties");
         return ShaderPackOptionStore.load(optionFile, packName);
     }
 
-    /** Persists a raw option override for later shader-option UI integration. */
+    /** Persists a validated option override for the selected pack's next compilation. */
     public static boolean saveOptionOverride(String packName, String optionId, String value) {
         Path optionFile = CONFIG_FILE.getParent().resolve("shader-pack-options.properties");
         return ShaderPackOptionStore.save(optionFile, packName, optionId, value);
