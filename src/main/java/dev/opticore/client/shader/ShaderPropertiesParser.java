@@ -11,6 +11,8 @@ import java.util.Set;
 /** Bounded, Minecraft-independent lexical inspection of shader-pack property declarations. */
 public final class ShaderPropertiesParser {
     public static final int MAX_PROPERTIES_BYTES = 256 * 1024;
+    private static final int MAX_CONTROLS = 512;
+    private static final int MAX_NESTED_SCREENS = 64;
 
     private ShaderPropertiesParser() {}
 
@@ -35,6 +37,15 @@ public final class ShaderPropertiesParser {
             Set<String> controls = new LinkedHashSet<>();
             addTokens(controls, screen);
             addTokens(controls, sliders);
+            int nestedScreens = 0;
+            for (String key : properties.stringPropertyNames().stream().sorted().toList()) {
+                if (!key.startsWith("screen.") || nestedScreens >= MAX_NESTED_SCREENS) continue;
+                String declaration = properties.getProperty(key, "").trim();
+                if (!declaration.isEmpty()) {
+                    addTokens(controls, declaration);
+                    nestedScreens++;
+                }
+            }
             controls.removeIf(token -> token.startsWith("[") || token.startsWith("]"));
             return new Summary(true, properties.size(), countTokens(sliders), screen,
                     new ArrayList<>(controls));
@@ -57,6 +68,7 @@ public final class ShaderPropertiesParser {
             String normalized = token.trim();
             if (normalized.isEmpty() || normalized.startsWith("[") || normalized.startsWith("]")) continue;
             if (normalized.equals("<empty>") || normalized.equals("profile")) continue;
+            if (output.size() >= MAX_CONTROLS) return;
             output.add(normalized);
         }
     }
