@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
+import java.lang.reflect.Field;
 
 /**
  * Observes completed CPU-side chunk layer buffers before vanilla consumes them.
@@ -43,7 +44,7 @@ public abstract class ChunkRebuildCaptureMixin {
         Level level = regionAccessor.opticore$getLevel();
         if (level == null || !level.isClientSide()) return;
 
-        ChunkRenderDispatcher.RenderChunk[][] chunks = regionAccessor.opticore$getChunks();
+        ChunkRenderDispatcher.RenderChunk[][] chunks = opticore$readChunkGrid(region);
         if (chunks == null || chunks.length == 0) return;
         ChunkRenderDispatcher.RenderChunk[] centerRow = chunks[chunks.length / 2];
         if (centerRow == null || centerRow.length == 0) return;
@@ -66,4 +67,24 @@ public abstract class ChunkRebuildCaptureMixin {
                 ((ChunkCompileResultsAccessor) result).opticore$getRenderedLayers();
         ChunkMeshCapture.observeCompilation(level, chunkX, chunkZ, sectionY, layers);
     }
+    /**
+     * Forge 1.20.1 exposes this protected grid in source, but the Mixin
+     * annotation processor cannot resolve its field mapping consistently.
+     * Resolve only this diagnostic field at runtime using known mapping aliases.
+     */
+    private static ChunkRenderDispatcher.RenderChunk[][] opticore$readChunkGrid(
+            RenderChunkRegion region) {
+        for (String name : new String[]{"chunks", "f_112905_", "a"}) {
+            try {
+                Field field = RenderChunkRegion.class.getDeclaredField(name);
+                field.setAccessible(true);
+                Object value = field.get(region);
+                if (value instanceof ChunkRenderDispatcher.RenderChunk[][] grid) return grid;
+            } catch (ReflectiveOperationException | RuntimeException ignored) {
+                // Fail closed if this Minecraft/Forge mapping is unexpected.
+            }
+        }
+        return null;
+    }
+
 }
