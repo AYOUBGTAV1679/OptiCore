@@ -49,7 +49,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
                 vec4 viewPosition = uInverseProjection * clipPosition;
                 float viewDistance = abs(viewPosition.z / max(abs(viewPosition.w), 1.0e-6));
                 float farHaze = smoothstep(48.0, 192.0, viewDistance) * uFogStrength;
-                vec3 graded = mix(scene.rgb, warmed, 0.35);
+                // A zero fog setting is a true visual bypass: it must not leave
+                // the independent warm color grade applied to the scene.
+                vec3 graded = mix(scene.rgb, warmed, 0.35 * uFogStrength);
                 vec3 fogColor = vec3(0.62, 0.70, 0.78);
                 fragColor = vec4(mix(graded, fogColor, farHaze), scene.a);
             }
