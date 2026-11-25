@@ -10,7 +10,7 @@ public final class SceneUniformBinder {
 
     /** Compatibility overload for callers that have only matrix and time data. */
     public static void uploadCommon(GlShaderProgram program, SceneUniformSnapshot scene) {
-        uploadCommon(program, scene, null);
+        uploadCommon(program, scene, null, null);
     }
 
     /**
@@ -19,6 +19,12 @@ public final class SceneUniformBinder {
      */
     public static void uploadCommon(GlShaderProgram program, SceneUniformSnapshot scene,
             SceneEnvironmentSnapshot environment) {
+        uploadCommon(program, scene, environment, null);
+    }
+
+    /** Uploads scene, environment, and optional interpolated celestial sun-angle uniforms. */
+    public static void uploadCommon(GlShaderProgram program, SceneUniformSnapshot scene,
+            SceneEnvironmentSnapshot environment, DirectionalSunSnapshot sun) {
         if (program == null) throw new NullPointerException("program");
         if (scene == null) throw new NullPointerException("scene");
 
@@ -52,6 +58,12 @@ public final class SceneUniformBinder {
         program.setUniform1f("frameTimeCounter", (float) (scene.timeSeconds() % 3600.0d));
         program.setUniform1i("worldTime", (int) scene.normalizedDayTime());
         program.setUniform1i("worldDay", (int) Math.floorDiv(scene.dayTime(), 24000L));
+
+        if (sun != null) {
+            // OptiFine-compatible scalar angle; do not treat this as a world-space direction vector.
+            program.setUniform1f("sunAngle", sun.sunAngleRadians());
+            program.setUniform1f("sunAngleRadians", sun.sunAngleRadians());
+        }
 
         if (environment != null) {
             program.setUniform3f("skyColor", environment.skyRed(),
