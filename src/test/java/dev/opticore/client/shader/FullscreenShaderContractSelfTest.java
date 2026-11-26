@@ -2,6 +2,9 @@ package dev.opticore.client.shader;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public final class FullscreenShaderContractSelfTest {
     private static final String VERTEX = """
@@ -61,7 +64,19 @@ public final class FullscreenShaderContractSelfTest {
                 ShaderPackCompatibilityReport.inspect(demo.getParent(), false);
         check(demoReport.readyPrograms() == 1 && demoReport.allInspectedProgramsReady(),
                 "checked-in demo pack passes bounded source preflight");
-        System.out.println("FullscreenShaderContractSelfTest: 11 checks passed");
+        ShaderOptionParser.Summary demoOptions = ShaderOptionParser.parse(
+                List.of(new ShaderOptionParser.Source("final.fsh", demoFragment)), Set.of());
+        check(demoOptions.options().size() == 3
+                        && demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::editable),
+                "demo pack exposes three safe editable options");
+        ShaderOptionSourceProcessor.Result overridden = ShaderOptionSourceProcessor.apply(
+                demoFragment, demoOptions, Map.of("WARMTH_SCALE", "2.0", "FOG_NEAR", "72.0"));
+        check(overridden.source().contains("#define WARMTH_SCALE 2.0")
+                        && overridden.source().contains("#define FOG_NEAR 72.0"),
+                "demo option overrides are applied to GLSL source");
+        check(FullscreenShaderContract.validate(demoVertex, overridden.source()).supported(),
+                "option-adjusted demo source still satisfies fullscreen contract");
+        System.out.println("FullscreenShaderContractSelfTest: 14 checks passed");
     }
 
     private static void check(boolean condition, String label) {
