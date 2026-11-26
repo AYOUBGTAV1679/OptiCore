@@ -125,7 +125,12 @@ public final class ShaderIncludeResolver {
             }
             Path root = pack.resolve("shaders").normalize();
             Path target = pack.resolve(name).normalize();
-            if (!target.startsWith(root) || !Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS)) return null;
+            if (!Files.isDirectory(pack, LinkOption.NOFOLLOW_LINKS)
+                    || Files.isSymbolicLink(pack)
+                    || !Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)
+                    || Files.isSymbolicLink(root)
+                    || !target.startsWith(root)
+                    || !Files.isRegularFile(target, LinkOption.NOFOLLOW_LINKS)) return null;
             Path current = root;
             Path relative = root.relativize(target);
             for (Path part : relative) {
