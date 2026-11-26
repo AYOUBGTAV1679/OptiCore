@@ -45,5 +45,10 @@
   "screen.opticore.world_fog_strength": "World Fog Strength: %s",
   "screen.opticore.world_color_warmth": "World Color Warmth: %s",
   "screen.opticore.world_fog_start": "Fog Start Distance: %s",
-  "screen.opticore.world_fog_end": "Fog End Distance: %s"
+  "screen.opticore.world_fog_end": "Fog End Distance: %s",
+  "screen.opticore.color.open": "World Color Grading",
+  "screen.opticore.color.title": "World Color Grading",
+  "screen.opticore.color.exposure": "Exposure: %s",
+  "screen.opticore.color.contrast": "Contrast: %s",
+  "screen.opticore.color.saturation": "Saturation: %s"
 }
