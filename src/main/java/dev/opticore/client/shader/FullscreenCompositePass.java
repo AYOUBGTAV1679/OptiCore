@@ -161,6 +161,15 @@ public final class FullscreenCompositePass implements AutoCloseable {
     private void ensureInitialized() {
         if (program != null && vao != 0) return;
 
+        // This contract is intentionally scoped to this exact fullscreen composite
+        // path. It is not a general validator for arbitrary shader-pack programs.
+        FullscreenShaderContract.Result contract = FullscreenShaderContract.validate(
+                VERTEX_SOURCE, FRAGMENT_SOURCE);
+        if (!contract.supported()) {
+            throw new IllegalStateException("Fullscreen composite shader violates its interface contract: "
+                    + String.join("; ", contract.diagnostics()));
+        }
+
         GlShaderProgram compiled = GlShaderProgram.compileAndLink("OptiCore fullscreen composite",
                 VERTEX_SOURCE, FRAGMENT_SOURCE);
         int createdVao = 0;
