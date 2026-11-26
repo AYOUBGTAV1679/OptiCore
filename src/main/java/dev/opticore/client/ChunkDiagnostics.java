@@ -25,7 +25,9 @@ public final class ChunkDiagnostics {
         }
         latest = new Snapshot(dispatcher.getToBatchCount(), dispatcher.getToUpload(),
                 dispatcher.getFreeBufferCount(), dispatcher.getStats(), ChunkRenderCache.cache().stats(),
-                ChunkRenderCache.cache().currentBytes(), ChunkRenderCache.cache().maxBytes());
+                ChunkRenderCache.cache().currentBytes(), ChunkRenderCache.cache().maxBytes(),
+                ChunkMeshCapture.observedBufferCount(), ChunkMeshCapture.copiedBytes(),
+                ChunkMeshCapture.skippedCount());
     }
 
     public static Snapshot snapshot() {
@@ -34,7 +36,7 @@ public final class ChunkDiagnostics {
 
     public static final class Snapshot {
         private static final Snapshot EMPTY = new Snapshot(0, 0, 0, "Unavailable",
-                new dev.opticore.cache.SmartChunkCache.Stats(0, 0, 0, 0, 0, 0), 0, 0);
+                new dev.opticore.cache.SmartChunkCache.Stats(0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0);
         public final int queuedBuilds;
         public final int pendingUploads;
         public final int freeBuffers;
@@ -42,9 +44,13 @@ public final class ChunkDiagnostics {
         public final dev.opticore.cache.SmartChunkCache.Stats cacheStats;
         public final long cacheBytes;
         public final long cacheBudgetBytes;
+        public final long observedMeshBuffers;
+        public final long copiedMeshBytes;
+        public final long skippedMeshBuffers;
 
         private Snapshot(int queuedBuilds, int pendingUploads, int freeBuffers, String dispatcherStats,
-                         dev.opticore.cache.SmartChunkCache.Stats cacheStats, long cacheBytes, long cacheBudgetBytes) {
+                         dev.opticore.cache.SmartChunkCache.Stats cacheStats, long cacheBytes, long cacheBudgetBytes,
+                         long observedMeshBuffers, long copiedMeshBytes, long skippedMeshBuffers) {
             this.queuedBuilds = queuedBuilds;
             this.pendingUploads = pendingUploads;
             this.freeBuffers = freeBuffers;
@@ -52,6 +58,9 @@ public final class ChunkDiagnostics {
             this.cacheStats = cacheStats;
             this.cacheBytes = cacheBytes;
             this.cacheBudgetBytes = cacheBudgetBytes;
+            this.observedMeshBuffers = observedMeshBuffers;
+            this.copiedMeshBytes = copiedMeshBytes;
+            this.skippedMeshBuffers = skippedMeshBuffers;
         }
     }
 }
