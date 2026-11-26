@@ -61,6 +61,23 @@ public final class ShaderIncludeResolverSelfTest {
                 ShaderIncludeResolver.resolve(folder, false, "shaders/main.fsh");
         check(!traversal.successful(), "path traversal is rejected");
 
+        Path outside = Files.createTempDirectory("opticore-include-outside");
+        Files.writeString(outside.resolve("escape.glsl"), "float escaped = 1.0;\\n");
+        Path linkedPack = Files.createTempDirectory("opticore-include-linked");
+        try {
+            Files.createSymbolicLink(linkedPack.resolve("shaders"), outside);
+            ShaderIncludeResolver.Result linkedRoot = ShaderIncludeResolver.resolve(
+                    linkedPack, false, "shaders/escape.glsl");
+            check(!linkedRoot.successful(), "symlinked shaders root is rejected");
+        } catch (UnsupportedOperationException | java.io.IOException | SecurityException ignored) {
+            // Some platforms do not grant symlink creation to the test process.
+        } finally {
+            Files.deleteIfExists(linkedPack.resolve("shaders"));
+            Files.deleteIfExists(linkedPack);
+            Files.deleteIfExists(outside.resolve("escape.glsl"));
+            Files.deleteIfExists(outside);
+        }
+
         Path zipPath = Files.createTempFile("opticore-include", ".zip");
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipPath))) {
             add(zip, "shaders/main.fsh", "#include \"lib/common.glsl\"\nvoid main() {}\n");
@@ -74,7 +91,7 @@ public final class ShaderIncludeResolverSelfTest {
             for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
         }
         Files.deleteIfExists(zipPath);
-        System.out.println("ShaderIncludeResolverSelfTest: 10 checks passed");
+        System.out.println("ShaderIncludeResolverSelfTest: 11 checks passed");
     }
     private static void add(ZipOutputStream zip, String name, String source) throws Exception {
         zip.putNextEntry(new ZipEntry(name));
