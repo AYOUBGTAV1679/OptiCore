@@ -86,9 +86,24 @@ public final class ShaderWorldPassPrototype {
                         float[] projection = new float[16];
                         event.getProjectionMatrix().get(projection);
                         float[] inverseProjection = Matrix4Inverse.invert(projection);
-                        compositePass.render(capturedScene[0], vanillaScene, warmth,
-                                exposure, contrast, saturation, fogStrength,
-                                fogColor, fogStart, fogEnd, inverseProjection, selectedPackProgram);
+                        try {
+                            compositePass.render(capturedScene[0], vanillaScene, warmth,
+                                    exposure, contrast, saturation, fogStrength,
+                                    fogColor, fogStart, fogEnd, inverseProjection, selectedPackProgram);
+                        } catch (RuntimeException packFailure) {
+                            // A pack may compile and link yet still fail while drawing on a
+                            // particular driver. Retry with the built-in pass before giving
+                            // up on this frame; the outer handler still restores the scene if
+                            // the fallback itself fails.
+                            if (selectedPackProgram == null) throw packFailure;
+                            String reason = packFailure.getMessage();
+                            packDiagnostic = "Shader pack draw failed; built-in composite used: "
+                                    + (reason == null || reason.isBlank()
+                                    ? packFailure.getClass().getSimpleName() : reason);
+                            compositePass.render(capturedScene[0], vanillaScene, warmth,
+                                    exposure, contrast, saturation, fogStrength,
+                                    fogColor, fogStart, fogEnd, inverseProjection, null);
+                        }
                     });
 
             ShaderRenderGraphExecutor.ExecutionResult execution =
