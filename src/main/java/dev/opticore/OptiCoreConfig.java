@@ -16,6 +16,9 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec.DoubleValue WORLD_FOG_START;
     public static final ForgeConfigSpec.DoubleValue WORLD_FOG_END;
     public static final ForgeConfigSpec.DoubleValue WORLD_COLOR_WARMTH;
+    public static final ForgeConfigSpec.DoubleValue WORLD_EXPOSURE;
+    public static final ForgeConfigSpec.DoubleValue WORLD_CONTRAST;
+    public static final ForgeConfigSpec.DoubleValue WORLD_SATURATION;
     public static final ForgeConfigSpec.IntValue RENDER_CACHE_BUDGET_MB;
 
     static {
@@ -47,6 +50,12 @@ public final class OptiCoreConfig {
                 .defineInRange("worldFogEnd", 192.0D, 2.0D, 4096.0D);
         WORLD_COLOR_WARMTH = builder.comment("Experimental world color warmth. Set to 0 for neutral colors.")
                 .defineInRange("worldColorWarmth", 0.12D, 0.0D, 0.25D);
+        WORLD_EXPOSURE = builder.comment("Experimental fullscreen world exposure multiplier.")
+                .defineInRange("worldExposure", 1.0D, 0.5D, 1.5D);
+        WORLD_CONTRAST = builder.comment("Experimental fullscreen world contrast multiplier.")
+                .defineInRange("worldContrast", 1.0D, 0.5D, 1.5D);
+        WORLD_SATURATION = builder.comment("Experimental fullscreen world saturation multiplier.")
+                .defineInRange("worldSaturation", 1.0D, 0.0D, 2.0D);
         builder.pop();
         SPEC = builder.build();
     }
