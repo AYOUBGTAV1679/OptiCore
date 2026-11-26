@@ -68,6 +68,16 @@ public final class FullscreenCompositePass implements AutoCloseable {
 
     public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
             float fogStrength, float[] inverseProjectionMatrix) {
+        render(scene, destination, warmth, fogStrength, inverseProjectionMatrix, null);
+    }
+
+    /**
+     * Uses a precompiled pack program only when its source has passed the strict
+     * fullscreen contract. A null program selects OptiCore's built-in fallback.
+     * Program ownership remains with ShaderPackRuntime's bounded GL cache.
+     */
+    public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
+            float fogStrength, float[] inverseProjectionMatrix, GlShaderProgram packProgram) {
         RenderSystem.assertOnRenderThread();
         if (closed) throw new IllegalStateException("Composite pass is closed");
         if (scene == null || destination == null) throw new IllegalArgumentException("Scene and destination are required");
@@ -90,7 +100,23 @@ public final class FullscreenCompositePass implements AutoCloseable {
             if (!Float.isFinite(value)) throw new IllegalArgumentException("Inverse projection matrix must be finite");
         }
 
-        ensureInitialized();
+        if (packProgram == null) ensureInitialized();
+        GlShaderProgram activeProgram = packProgram == null ? program : packProgram;
+        int activeSceneColorLocation = packProgram == null ? sceneColorLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uSceneColor");
+        int activeSceneDepthLocation = packProgram == null ? sceneDepthLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uSceneDepth");
+        int activeWarmthLocation = packProgram == null ? warmthLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uWarmth");
+        int activeFogStrengthLocation = packProgram == null ? fogStrengthLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uFogStrength");
+        int activeInverseProjectionLocation = packProgram == null ? inverseProjectionLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uInverseProjection");
+        if (activeSceneColorLocation < 0 || activeSceneDepthLocation < 0
+                || activeWarmthLocation < 0 || activeFogStrengthLocation < 0
+                || activeInverseProjectionLocation < 0) {
+            throw new IllegalStateException("Fullscreen shader program lost a required uniform");
+        }
 
         int previousDraw = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
         int previousRead = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
@@ -124,16 +150,16 @@ public final class FullscreenCompositePass implements AutoCloseable {
 
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.colorTextureId());
-            GL20.glUseProgram(program.id());
-            GL20.glUniform1i(sceneColorLocation, 0);
-            GL20.glUniform1f(warmthLocation, warmth);
+            GL20.glUseProgram(activeProgram.id());
+            GL20.glUniform1i(activeSceneColorLocation, 0);
+            GL20.glUniform1f(activeWarmthLocation, warmth);
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, scene.depthTextureId());
-            GL20.glUniform1i(sceneDepthLocation, 1);
-            GL20.glUniform1f(fogStrengthLocation, fogStrength);
+            GL20.glUniform1i(activeSceneDepthLocation, 1);
+            GL20.glUniform1f(activeFogStrengthLocation, fogStrength);
             FloatBuffer inverseProjection = BufferUtils.createFloatBuffer(16);
             inverseProjection.put(inverseProjectionMatrix).flip();
-            GL20.glUniformMatrix4fv(inverseProjectionLocation, false, inverseProjection);
+            GL20.glUniformMatrix4fv(activeInverseProjectionLocation, false, inverseProjection);
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL30.glBindVertexArray(vao);
             GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, 3);
