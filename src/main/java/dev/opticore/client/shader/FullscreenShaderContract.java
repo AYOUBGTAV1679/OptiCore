@@ -24,7 +24,7 @@ public final class FullscreenShaderContract {
             Map.entry("uExposure", "float"),
             Map.entry("uContrast", "float"),
             Map.entry("uSaturation", "float"),
-            Map.entry("uInverseProjection", "mat4"))
+            Map.entry("uInverseProjection", "mat4"));
 
     private FullscreenShaderContract() {}
 
