@@ -45,6 +45,17 @@ public final class ShaderWorldPassPrototype {
 
         float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
+        net.minecraft.world.phys.Vec3 skyColor = minecraft.level.getSkyColor(
+                event.getCamera().getPosition(), event.getPartialTick());
+        float rain = minecraft.level.getRainLevel(event.getPartialTick());
+        float thunder = minecraft.level.getThunderLevel(event.getPartialTick());
+        float overcast = Math.max(rain, thunder * 0.9f);
+        // Blend biome sky color toward a muted overcast tone as weather builds.
+        float[] fogColor = {
+                mix((float) skyColor.x, 0.56f, overcast),
+                mix((float) skyColor.y, 0.59f, overcast),
+                mix((float) skyColor.z, 0.63f, overcast)
+        };
         refreshSelectedPackProgram();
 
         // Skip the built-in neutral composite to avoid a full-resolution copy,
@@ -149,6 +160,10 @@ public final class ShaderWorldPassPrototype {
                     + (message == null || message.isBlank()
                     ? failure.getClass().getSimpleName() : message);
         }
+    }
+
+    private static float mix(float from, float to, float amount) {
+        return from + (to - from) * Math.max(0.0f, Math.min(1.0f, amount));
     }
 
     public static long successfulCaptures() { return successfulCaptures; }
