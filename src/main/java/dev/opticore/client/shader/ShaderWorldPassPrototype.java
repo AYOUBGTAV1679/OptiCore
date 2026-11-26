@@ -44,6 +44,9 @@ public final class ShaderWorldPassPrototype {
         if (minecraft.level == null) return;
 
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
+        float exposure = OptiCoreConfig.WORLD_EXPOSURE.get().floatValue();
+        float contrast = OptiCoreConfig.WORLD_CONTRAST.get().floatValue();
+        float saturation = OptiCoreConfig.WORLD_SATURATION.get().floatValue();
         AtmosphericFogRange configuredRange = AtmosphericFogRange.fromConfig(
                 OptiCoreConfig.WORLD_FOG_START.get(), OptiCoreConfig.WORLD_FOG_END.get());
         net.minecraft.world.phys.Vec3 skyColor = minecraft.level.getSkyColor(
@@ -63,7 +66,8 @@ public final class ShaderWorldPassPrototype {
         // Skip the built-in neutral composite to avoid a full-resolution copy,
         // but never suppress a selected pack program: it may implement effects
         // that do not use OptiCore's built-in warmth/fog controls.
-        if (fogStrength == 0.0f && warmth == 0.0f && selectedPackProgram == null) {
+        if (fogStrength == 0.0f && warmth == 0.0f && exposure == 1.0f
+                && contrast == 1.0f && saturation == 1.0f && selectedPackProgram == null) {
             lastFailure = packDiagnostic;
             return;
         }
@@ -82,7 +86,8 @@ public final class ShaderWorldPassPrototype {
                         float[] projection = new float[16];
                         event.getProjectionMatrix().get(projection);
                         float[] inverseProjection = Matrix4Inverse.invert(projection);
-                        compositePass.render(capturedScene[0], vanillaScene, warmth, fogStrength,
+                        compositePass.render(capturedScene[0], vanillaScene, warmth,
+                                exposure, contrast, saturation, fogStrength,
                                 fogColor, fogStart, fogEnd, inverseProjection, selectedPackProgram);
                     });
 
