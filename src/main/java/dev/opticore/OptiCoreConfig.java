@@ -13,6 +13,8 @@ public final class OptiCoreConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_EXPERIMENTAL_WORLD_PASS;
     public static final ForgeConfigSpec.DoubleValue ZOOM_FACTOR;
     public static final ForgeConfigSpec.DoubleValue WORLD_FOG_STRENGTH;
+    public static final ForgeConfigSpec.DoubleValue WORLD_FOG_START;
+    public static final ForgeConfigSpec.DoubleValue WORLD_FOG_END;
     public static final ForgeConfigSpec.DoubleValue WORLD_COLOR_WARMTH;
     public static final ForgeConfigSpec.IntValue RENDER_CACHE_BUDGET_MB;
 
@@ -39,6 +41,10 @@ public final class OptiCoreConfig {
                 .defineInRange("zoomFactor", 0.20D, 0.05D, 0.75D);
         WORLD_FOG_STRENGTH = builder.comment("Experimental depth-based atmospheric haze strength. Set to 0 to disable.")
                 .defineInRange("worldFogStrength", 0.22D, 0.0D, 1.0D);
+        WORLD_FOG_START = builder.comment("View-space distance where atmospheric haze begins.")
+                .defineInRange("worldFogStart", 48.0D, 1.0D, 2048.0D);
+        WORLD_FOG_END = builder.comment("View-space distance where atmospheric haze reaches full strength. Must be greater than worldFogStart.")
+                .defineInRange("worldFogEnd", 192.0D, 2.0D, 4096.0D);
         WORLD_COLOR_WARMTH = builder.comment("Experimental world color warmth. Set to 0 for neutral colors.")
                 .defineInRange("worldColorWarmth", 0.12D, 0.0D, 0.25D);
         builder.pop();
