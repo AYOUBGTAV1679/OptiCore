@@ -182,9 +182,12 @@ public final class ShaderPackRuntime {
                 {GL20.GL_FLOAT_VEC3, GL20.glGetUniformLocation(program.id(), "uFogColor")},
                 {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uFogStart")},
                 {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uFogEnd")},
+                {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uExposure")},
+                {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uContrast")},
+                {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uSaturation")},
                 {GL20.GL_FLOAT_MAT4, GL20.glGetUniformLocation(program.id(), "uInverseProjection")}
         };
-        String[] names = {"uSceneColor", "uSceneDepth", "uWarmth", "uFogStrength", "uFogColor", "uFogStart", "uFogEnd", "uInverseProjection"};
+        String[] names = {"uSceneColor", "uSceneDepth", "uWarmth", "uFogStrength", "uFogColor", "uFogStart", "uFogEnd", "uExposure", "uContrast", "uSaturation", "uInverseProjection"};
         for (int i = 0; i < required.length; i++) {
             if (required[i][1] < 0) errors.add(names[i] + " is inactive or missing after GL link");
         }
