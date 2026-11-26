@@ -16,6 +16,8 @@ public final class ShaderWorldPassPrototype {
     private static int lastSuccessfulRenderTick = -1;
     private static String lastFailure = "";
     private static FullscreenCompositePass compositePass = new FullscreenCompositePass();
+    private static String loadedPackName;
+    private static GlShaderProgram selectedPackProgram;
 
     private ShaderWorldPassPrototype() {}
 
@@ -37,6 +39,8 @@ public final class ShaderWorldPassPrototype {
             return;
         }
 
+        refreshSelectedPackProgram();
+
         RenderTarget vanillaScene = minecraft.getMainRenderTarget();
         GlRenderTarget capturedScene = null;
         boolean sceneCaptured = false;
@@ -48,7 +52,8 @@ public final class ShaderWorldPassPrototype {
             float[] projection = new float[16];
             event.getProjectionMatrix().get(projection);
             float[] inverseProjection = Matrix4Inverse.invert(projection);
-            compositePass.render(capturedScene, vanillaScene, warmth, fogStrength, inverseProjection);
+            compositePass.render(capturedScene, vanillaScene, warmth, fogStrength,
+                    inverseProjection, selectedPackProgram);
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
@@ -76,6 +81,32 @@ public final class ShaderWorldPassPrototype {
         RenderSystem.assertOnRenderThread();
         compositePass.close();
         compositePass = new FullscreenCompositePass();
+        loadedPackName = null;
+        selectedPackProgram = null;
+    }
+
+    /** Invalidates the selected-pack program after selection or option changes. */
+    public static void invalidateShaderPackProgram() {
+        RenderSystem.assertOnRenderThread();
+        loadedPackName = null;
+        selectedPackProgram = null;
+    }
+
+    private static void refreshSelectedPackProgram() {
+        String selected = ShaderPackRepository.activePack();
+        if (selected.equals(loadedPackName)) return;
+        loadedPackName = selected;
+        selectedPackProgram = null;
+        if ("OFF".equalsIgnoreCase(selected)) return;
+
+        ShaderPackRuntime.Result result = ShaderPackRuntime.compileSelectedFullscreenProgram();
+        if (result.compiled()) {
+            selectedPackProgram = result.program();
+            lastFailure = "";
+        } else {
+            lastFailure = "Shader pack '" + selected + "' is not usable by the fullscreen world pass: "
+                    + String.join("; ", result.diagnostics());
+        }
     }
 
     public static long successfulCaptures() { return successfulCaptures; }
