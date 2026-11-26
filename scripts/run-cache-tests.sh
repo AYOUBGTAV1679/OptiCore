@@ -64,6 +64,9 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/SceneEnvironmentSnapshotSelfTest.java \
   src/main/java/dev/opticore/client/shader/AtmosphericFogColor.java \
   src/test/java/dev/opticore/client/shader/AtmosphericFogColorSelfTest.java \
+  src/main/java/dev/opticore/client/shader/AtmosphericFogRange.java \
+  src/main/java/dev/opticore/client/shader/AtmosphericFogProfile.java \
+  src/test/java/dev/opticore/client/shader/AtmosphericFogProfileSelfTest.java \
   src/test/java/dev/opticore/client/shader/SceneUniformSnapshotSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderRenderGraph.java \
   src/test/java/dev/opticore/client/shader/ShaderRenderGraphSelfTest.java \
@@ -100,5 +103,6 @@ java -cp "$OUT" dev.opticore.client.shader.DirectionalSunSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneUniformSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.SceneEnvironmentSnapshotSelfTest
 java -cp "$OUT" dev.opticore.client.shader.AtmosphericFogColorSelfTest
+java -cp "$OUT" dev.opticore.client.shader.AtmosphericFogProfileSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphSelfTest
 java -cp "$OUT" dev.opticore.client.shader.ShaderRenderGraphExecutorSelfTest
