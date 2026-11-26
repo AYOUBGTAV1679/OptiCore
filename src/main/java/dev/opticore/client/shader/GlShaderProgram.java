@@ -75,15 +75,20 @@ public final class GlShaderProgram implements AutoCloseable {
         if (shader == 0) {
             throw new IllegalStateException("OpenGL could not allocate " + stage + " shader [" + label + "]");
         }
-        GL20.glShaderSource(shader, source);
-        GL20.glCompileShader(shader);
-        if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
-            // The caller's finally block owns shader cleanup on both success and failure.
-            // Deleting here as well would issue a second delete for the same shader name.
-            String log = GL20.glGetShaderInfoLog(shader, 16_384);
-            throw new IllegalStateException("Shader " + stage + " compilation failed [" + label + "]: " + log);
+        try {
+            GL20.glShaderSource(shader, source);
+            GL20.glCompileShader(shader);
+            if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL20.GL_FALSE) {
+                String log = GL20.glGetShaderInfoLog(shader, 16_384);
+                throw new IllegalStateException("Shader " + stage + " compilation failed [" + label + "]: " + log);
+            }
+            return shader;
+        } catch (RuntimeException | Error failure) {
+            // The caller cannot clean up this shader when compilation fails because
+            // this method never returns its object name.
+            GL20.glDeleteShader(shader);
+            throw failure;
         }
-        return shader;
     }
 
     private static void validateSource(String label, String source, String stage) {
