@@ -17,8 +17,15 @@ public final class ShaderOptionSourceProcessorSelfTest {
         ShaderOptionParser.Option bloom = new ShaderOptionParser.Option(
                 "BLOOM", ShaderOptionParser.Type.BOOLEAN, "true", List.of("false", "true"),
                 "bloom", false, false);
+        ShaderOptionParser.Option filterMode = new ShaderOptionParser.Option(
+                "FILTER_MODE", ShaderOptionParser.Type.ENUM, "nearest",
+                List.of("nearest", "linear", "cubic"), "filter mode", false, false);
+        ShaderOptionParser.Option simpleToggle = new ShaderOptionParser.Option(
+                "SIMPLE_TOGGLE", ShaderOptionParser.Type.BOOLEAN, "true",
+                List.of("true", "false"), "simple toggle", false, false);
         ShaderOptionParser.Summary declarations = new ShaderOptionParser.Summary(
-                Map.of("QUALITY", quality, "SHADOWS", shadows, "BLOOM", bloom), false, 1);
+                Map.of("QUALITY", quality, "SHADOWS", shadows, "BLOOM", bloom,
+                        "FILTER_MODE", filterMode, "SIMPLE_TOGGLE", simpleToggle), false, 1);
 
         String source = "#version 150\n"
                 + "#define QUALITY 1 // [0 1 2]\n"
@@ -30,6 +37,17 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(result.source().contains("#define SHADOWS"), "commented boolean enable");
         check(result.source().contains("// #define BLOOM"), "active boolean disable");
         check(result.applied().size() == 3, "all valid overrides reported");
+        String inlineDeclarations = "#define SIMPLE_TOGGLE // [true false] Simple toggle\\n"
+                + "#define FILTER_MODE // [nearest linear cubic] Filter mode\\n";
+        ShaderOptionSourceProcessor.Result inlineApplied = ShaderOptionSourceProcessor.apply(
+                inlineDeclarations, declarations,
+                Map.of("SIMPLE_TOGGLE", "false", "FILTER_MODE", "cubic"));
+        check(inlineApplied.source().contains("// #define SIMPLE_TOGGLE"),
+                "inline boolean declaration can be disabled");
+        check(inlineApplied.source().contains("#define FILTER_MODE cubic // [nearest linear cubic] Filter mode"),
+                "inline enum declaration receives selected value");
+        check(inlineApplied.applied().size() == 2,
+                "inline boolean and enum overrides are reported as applied");
         ShaderOptionSourceProcessor.Result unchangedValid = ShaderOptionSourceProcessor.apply(
                 "#define BLOOM\n", declarations, Map.of("BLOOM", "true"));
         check(unchangedValid.source().equals("#define BLOOM\n"),
@@ -79,7 +97,7 @@ public final class ShaderOptionSourceProcessorSelfTest {
                 functionMacro, declarations, Map.of("QUALITY", "2"));
         check(macroResult.source().equals(functionMacro), "function-like macro is not rewritten");
         check(macroResult.ignored().size() == 1, "function-like macro override is reported ignored");
-        System.out.println("ShaderOptionSourceProcessorSelfTest: 19 checks passed");
+        System.out.println("ShaderOptionSourceProcessorSelfTest: 22 checks passed");
     }
 
     private static void check(boolean condition, String message) {
