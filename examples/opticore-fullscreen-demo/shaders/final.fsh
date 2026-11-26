@@ -14,6 +14,9 @@ uniform float uFogStrength;
 uniform vec3 uFogColor;
 uniform float uFogStart;
 uniform float uFogEnd;
+uniform float uExposure;
+uniform float uContrast;
+uniform float uSaturation;
 uniform mat4 uInverseProjection;
 
 in vec2 vUv;
@@ -27,6 +30,10 @@ void main() {
     vec3 contrasted = (exposed - vec3(0.5)) * CONTRAST_SCALE + vec3(0.5);
     float luminance = dot(contrasted, vec3(0.2126, 0.7152, 0.0722));
     vec3 graded = mix(vec3(luminance), contrasted, SATURATION_SCALE);
+    vec3 globalExposed = graded * uExposure;
+    vec3 globalContrasted = (globalExposed - vec3(0.5)) * uContrast + vec3(0.5);
+    float globalLuminance = dot(globalContrasted, vec3(0.2126, 0.7152, 0.0722));
+    vec3 globallyGraded = mix(vec3(globalLuminance), globalContrasted, uSaturation);
 
     float depth = texture(uSceneDepth, vUv).r;
     vec4 clipPosition = vec4(vUv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
@@ -36,5 +43,5 @@ void main() {
     float fogFar = max(fogNear + 1.0, uFogEnd + FOG_FAR - 192.0);
     float haze = smoothstep(fogNear, fogFar, viewDistance) * uFogStrength;
 
-    fragColor = vec4(mix(graded, uFogColor, haze), scene.a);
+    fragColor = vec4(mix(globallyGraded, uFogColor, haze), scene.a);
 }
