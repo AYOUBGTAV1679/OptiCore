@@ -45,6 +45,8 @@ public final class ShaderWorldPassPrototype {
 
         float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
+        float fogStart = OptiCoreConfig.WORLD_FOG_START.get().floatValue();
+        float fogEnd = Math.max(fogStart + 0.01f, OptiCoreConfig.WORLD_FOG_END.get().floatValue());
         net.minecraft.world.phys.Vec3 skyColor = minecraft.level.getSkyColor(
                 event.getCamera().getPosition(), event.getPartialTick());
         float rain = minecraft.level.getRainLevel(event.getPartialTick());
@@ -77,7 +79,7 @@ public final class ShaderWorldPassPrototype {
                         event.getProjectionMatrix().get(projection);
                         float[] inverseProjection = Matrix4Inverse.invert(projection);
                         compositePass.render(capturedScene[0], vanillaScene, warmth, fogStrength,
-                                fogColor, inverseProjection, selectedPackProgram);
+                                fogColor, fogStart, fogEnd, inverseProjection, selectedPackProgram);
                     });
 
             ShaderRenderGraphExecutor.ExecutionResult execution =
