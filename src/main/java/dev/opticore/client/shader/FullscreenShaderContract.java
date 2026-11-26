@@ -18,6 +18,7 @@ public final class FullscreenShaderContract {
             "uSceneDepth", "sampler2D",
             "uWarmth", "float",
             "uFogStrength", "float",
+            "uFogColor", "vec3",
             "uInverseProjection", "mat4");
 
     private FullscreenShaderContract() {}
