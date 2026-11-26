@@ -26,6 +26,6 @@ The demo uses `gl_VertexID` to generate a fullscreen triangle and declares exact
 - `uFogStart` and `uFogEnd` float view-space distances from OptiCore settings
 - `uInverseProjection` mat4 for depth reconstruction
 
-OptiCore compiles and links the selected program on the render thread and verifies the linked uniform types before using it. The demo also exposes three editable numeric sliders: `WARMTH_SCALE`, `FOG_NEAR`, and `FOG_FAR`. Their persisted values are substituted into shader source before compile/link.
+OptiCore compiles and links the selected program on the render thread and verifies the linked uniform types before using it. The demo also exposes four editable numeric sliders: `WARMTH_SCALE`, `EXPOSURE_SCALE`, `FOG_NEAR`, and `FOG_FAR`. Exposure scales scene brightness before the atmospheric fog blend. Their persisted values are substituted into shader source before compile/link.
 
 The demo does not test terrain/entity shading, shadows, reflections, or multi-pass OptiFine compatibility.
