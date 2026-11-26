@@ -6,12 +6,24 @@ import dev.opticore.OptiCoreConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
- * Opt-in bridge that captures the completed vanilla level color/depth buffers
- * into an isolated OptiCore framebuffer and applies an opt-in fullscreen GLSL pass
- * at Forge's AFTER_LEVEL stage.
+ * Opt-in bridge that executes the scene capture and fullscreen composite through
+ * OptiCore's validated render graph at Forge's AFTER_LEVEL stage.
  */
 public final class ShaderWorldPassPrototype {
+    private static final ShaderRenderGraph WORLD_GRAPH = ShaderRenderGraph.builder()
+            .externalResource("vanillaScene")
+            .addPass("capture", Set.of("vanillaScene"),
+                    Set.of("sceneColor", "sceneDepth"), Set.of(),
+                    ShaderRenderGraph.DepthMode.READ_ONLY)
+            .addPass("composite", Set.of("sceneColor", "sceneDepth"),
+                    Set.of("compositedScene"), Set.of("capture"),
+                    ShaderRenderGraph.DepthMode.READ_WRITE)
+            .build();
+
     private static long successfulCaptures;
     private static int lastSuccessfulRenderTick = -1;
     private static String lastFailure = "";
@@ -40,20 +52,32 @@ public final class ShaderWorldPassPrototype {
         }
 
         refreshSelectedPackProgram();
-
         RenderTarget vanillaScene = minecraft.getMainRenderTarget();
-        GlRenderTarget capturedScene = null;
-        boolean sceneCaptured = false;
+        GlRenderTarget[] capturedScene = new GlRenderTarget[1];
+        boolean[] sceneCaptured = {false};
         try {
-            capturedScene = GlRenderTargetManager.acquire(
-                    "world-scene-capture", vanillaScene.width, vanillaScene.height);
-            capturedScene.copySceneFrom(vanillaScene);
-            sceneCaptured = true;
-            float[] projection = new float[16];
-            event.getProjectionMatrix().get(projection);
-            float[] inverseProjection = Matrix4Inverse.invert(projection);
-            compositePass.render(capturedScene, vanillaScene, warmth, fogStrength,
-                    inverseProjection, selectedPackProgram);
+            Map<String, ShaderRenderGraphExecutor.PassHandler> handlers = Map.of(
+                    "capture", pass -> {
+                        capturedScene[0] = GlRenderTargetManager.acquire(
+                                "world-scene-capture", vanillaScene.width, vanillaScene.height);
+                        capturedScene[0].copySceneFrom(vanillaScene);
+                        sceneCaptured[0] = true;
+                    },
+                    "composite", pass -> {
+                        float[] projection = new float[16];
+                        event.getProjectionMatrix().get(projection);
+                        float[] inverseProjection = Matrix4Inverse.invert(projection);
+                        compositePass.render(capturedScene[0], vanillaScene, warmth, fogStrength,
+                                inverseProjection, selectedPackProgram);
+                    });
+
+            ShaderRenderGraphExecutor.ExecutionResult execution =
+                    ShaderRenderGraphExecutor.execute(WORLD_GRAPH, handlers);
+            if (!execution.success()) {
+                String reason = execution.diagnostics().isEmpty()
+                        ? "render graph execution failed" : String.join("; ", execution.diagnostics());
+                throw new IllegalStateException(reason);
+            }
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
@@ -61,9 +85,9 @@ public final class ShaderWorldPassPrototype {
             String message = failure.getMessage();
             String diagnostic = message == null || message.isBlank()
                     ? failure.getClass().getSimpleName() : message;
-            if (sceneCaptured && capturedScene != null) {
+            if (sceneCaptured[0] && capturedScene[0] != null) {
                 try {
-                    capturedScene.copySceneTo(vanillaScene);
+                    capturedScene[0].copySceneTo(vanillaScene);
                     diagnostic += " (original scene restored)";
                 } catch (RuntimeException restoreFailure) {
                     String restoreMessage = restoreFailure.getMessage();
@@ -99,13 +123,21 @@ public final class ShaderWorldPassPrototype {
         selectedPackProgram = null;
         if ("OFF".equalsIgnoreCase(selected)) return;
 
-        ShaderPackRuntime.Result result = ShaderPackRuntime.compileSelectedFullscreenProgram();
-        if (result.compiled()) {
-            selectedPackProgram = result.program();
-            lastFailure = "";
-        } else {
-            lastFailure = "Shader pack '" + selected + "' is not usable by the fullscreen world pass: "
-                    + String.join("; ", result.diagnostics());
+        try {
+            ShaderPackRuntime.Result result = ShaderPackRuntime.compileSelectedFullscreenProgram();
+            if (result.compiled()) {
+                selectedPackProgram = result.program();
+                lastFailure = "";
+            } else {
+                lastFailure = "Shader pack '" + selected
+                        + "' is not usable by the fullscreen world pass: "
+                        + String.join("; ", result.diagnostics());
+            }
+        } catch (RuntimeException failure) {
+            String message = failure.getMessage();
+            lastFailure = "Shader pack '" + selected + "' could not be prepared: "
+                    + (message == null || message.isBlank()
+                    ? failure.getClass().getSimpleName() : message);
         }
     }
 
