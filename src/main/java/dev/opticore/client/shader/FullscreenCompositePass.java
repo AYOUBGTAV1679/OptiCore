@@ -100,7 +100,10 @@ public final class FullscreenCompositePass implements AutoCloseable {
             if (!Float.isFinite(value)) throw new IllegalArgumentException("Inverse projection matrix must be finite");
         }
 
-        if (packProgram == null) ensureInitialized();
+        // The VAO is required even for a pack program: core-profile contexts
+        // reject glDrawArrays with VAO 0, although this pass uses gl_VertexID only.
+        // Keep the built-in program initialized as the guaranteed fallback too.
+        ensureInitialized();
         GlShaderProgram activeProgram = packProgram == null ? program : packProgram;
         int activeSceneColorLocation = packProgram == null ? sceneColorLocation
                 : GL20.glGetUniformLocation(activeProgram.id(), "uSceneColor");
