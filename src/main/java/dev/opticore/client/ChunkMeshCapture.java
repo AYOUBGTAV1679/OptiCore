@@ -69,7 +69,11 @@ public final class ChunkMeshCapture {
             int chunkZ,
             int sectionY,
             Map<RenderType, BufferBuilder.RenderedBuffer> layers) {
-        if (level == null || !level.isClientSide() || layers == null) return;
+        // Copying vanilla's transient CPU buffers is diagnostic work, not a
+        // production optimization. Keep it completely off unless diagnostics
+        // are explicitly enabled by the user.
+        if (!OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()
+                || level == null || !level.isClientSide() || layers == null) return;
 
         long compileBytes = 0L;
         for (BufferBuilder.RenderedBuffer rendered : layers.values()) {
