@@ -109,9 +109,10 @@ public class OptiCoreSettingsScreen extends Screen {
             button.setMessage(fogEndText());
         }).bounds(right, rowY(top, 7), COLUMN_WIDTH, ROW_HEIGHT).build());
 
+
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.color.open"), button ->
                 minecraft.setScreen(new OptiCoreColorSettingsScreen(this)))
-                .bounds(left, rowY(top, 8), COLUMN_WIDTH, ROW_HEIGHT).build());
+                .bounds(center - 150, height - 56, 300, 20).build());
 
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
                 .bounds(center - 60, height - 28, 120, 20).build());
@@ -192,7 +193,7 @@ public class OptiCoreSettingsScreen extends Screen {
                 right + COLUMN_WIDTH / 2, 42, 0xA9D8FF);
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(font, Component.translatable("screen.opticore.zoom_hint"),
-                center, height - 46, 0xAAAAAA);
+                center, height - 70, 0xAAAAAA);
     }
 
     @Override
