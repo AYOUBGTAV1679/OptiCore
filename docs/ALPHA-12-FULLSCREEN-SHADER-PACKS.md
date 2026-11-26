@@ -35,7 +35,7 @@ The world path runs at Forge's `AFTER_LEVEL` stage only when `experimentalWorldP
 - `capture`: reads the vanilla scene and writes isolated scene-color and scene-depth resources.
 - `composite`: reads those captured resources and writes the composite output to the vanilla target.
 
-The graph executor validates the graph and resolves all handlers before executing. If capture or composite fails after capture, OptiCore attempts to restore the original captured scene to the vanilla target. The world pass remains opt-in and the vanilla path remains the default.
+The graph executor validates the graph and resolves all handlers before executing. If capture or composite fails after capture, OptiCore attempts to restore the original captured scene to the vanilla target. The world pass remains opt-in through the **Experimental World Pass** toggle in OptiCore settings, and the vanilla path remains the default.
 
 If the selected pack has no program satisfying this contract, OptiCore records a diagnostic and uses its built-in fullscreen composite rather than passing an arbitrary pack shader into the renderer.
 
