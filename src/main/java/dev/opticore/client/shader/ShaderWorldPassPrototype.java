@@ -45,14 +45,15 @@ public final class ShaderWorldPassPrototype {
 
         float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
-        // A neutral pass would only copy the full-resolution scene and issue a
-        // fullscreen draw. Skip it entirely to avoid needless GPU bandwidth.
-        if (fogStrength == 0.0f && warmth == 0.0f) {
-            lastFailure = "";
+        refreshSelectedPackProgram();
+
+        // Skip the built-in neutral composite to avoid a full-resolution copy,
+        // but never suppress a selected pack program: it may implement effects
+        // that do not use OptiCore's built-in warmth/fog controls.
+        if (fogStrength == 0.0f && warmth == 0.0f && selectedPackProgram == null) {
+            lastFailure = packDiagnostic;
             return;
         }
-
-        refreshSelectedPackProgram();
         RenderTarget vanillaScene = minecraft.getMainRenderTarget();
         GlRenderTarget[] capturedScene = new GlRenderTarget[1];
         boolean[] sceneCaptured = {false};
