@@ -45,5 +45,10 @@
   "screen.opticore.world_fog_strength": "قوة ضباب العالم: %s",
   "screen.opticore.world_color_warmth": "دفء ألوان العالم: %s",
   "screen.opticore.world_fog_start": "بداية الضباب: %s",
-  "screen.opticore.world_fog_end": "نهاية الضباب: %s"
+  "screen.opticore.world_fog_end": "نهاية الضباب: %s",
+  "screen.opticore.color.open": "تدرّج ألوان العالم",
+  "screen.opticore.color.title": "تدرّج ألوان العالم",
+  "screen.opticore.color.exposure": "التعريض: %s",
+  "screen.opticore.color.contrast": "التباين: %s",
+  "screen.opticore.color.saturation": "التشبّع: %s"
 }
