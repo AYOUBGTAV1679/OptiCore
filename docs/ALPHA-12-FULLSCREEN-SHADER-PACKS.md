@@ -25,7 +25,7 @@ The accepted interface is intentionally exact:
   - `float uWarmth`
   - `float uFogStrength`
   - `vec3 uFogColor` (live biome sky color blended with rain/thunder strength)
-  - `float uFogStart` and `float uFogEnd` (configured view-space distances)
+  - `float uFogStart` and `float uFogEnd` (configured view-space distances, moved closer as rain/thunder increase)
   - `mat4 uInverseProjection`
 
 The linked GL program must keep all eight uniforms active with the expected types. A source-level declaration by itself is not sufficient.
