@@ -41,7 +41,19 @@ public final class ShaderProgramCacheKeySelfTest {
         check(!first.equals(ShaderProgramCacheKey.create(path, "gbuffers_terrain", options,
                 "void main(){ gl_Position = vec4(1.0); }", "void main(){ }\\n")),
                 "source whitespace changes invalidate the exact-source identity");
-        System.out.println("ShaderProgramCacheKeySelfTest: 8 checks passed");
+        String defaultSource = "#define QUALITY 1\\nvoid main() { }";
+        String overriddenSource = "#define QUALITY 2\\nvoid main() { }";
+        String defaultVariant = ShaderProgramCacheKey.create(path, "gbuffers_terrain",
+                Map.of(), "void main(){ gl_Position = vec4(1.0); }", defaultSource);
+        String overriddenVariant = ShaderProgramCacheKey.create(path, "gbuffers_terrain",
+                Map.of("QUALITY", "2"), "void main(){ gl_Position = vec4(1.0); }", overriddenSource);
+        check(!defaultVariant.equals(overriddenVariant),
+                "processed option source and override value produce a distinct variant identity");
+        String sameProcessedVariant = ShaderProgramCacheKey.create(path, "gbuffers_terrain",
+                Map.of("QUALITY", "2"), "void main(){ gl_Position = vec4(1.0); }", overriddenSource);
+        check(overriddenVariant.equals(sameProcessedVariant),
+                "same processed option variant reuses a deterministic identity");
+        System.out.println("ShaderProgramCacheKeySelfTest: 10 checks passed");
     }
 
     private static void check(boolean condition, String label) {
