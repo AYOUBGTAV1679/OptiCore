@@ -37,6 +37,15 @@ public final class FullscreenShaderContractSelfTest {
     public static void main(String[] args) throws Exception {
         check(FullscreenShaderContract.validate(VERTEX, FRAGMENT).supported(),
                 "known fullscreen contract accepted");
+        AtmosphericFogRange defaultFog = AtmosphericFogRange.fromConfig(Double.NaN, Double.NaN);
+        check(defaultFog.start() == 48.0f && defaultFog.end() == 192.0f,
+                "invalid fog settings fall back to safe defaults");
+        AtmosphericFogRange invertedFog = AtmosphericFogRange.fromConfig(256.0, 96.0);
+        check(invertedFog.start() == 256.0f && invertedFog.end() > invertedFog.start(),
+                "inverted fog distances are corrected");
+        AtmosphericFogRange boundedFog = AtmosphericFogRange.fromConfig(9000.0, 9000.0);
+        check(boundedFog.start() == 2048.0f && boundedFog.end() == 4096.0f,
+                "fog distances are clamped to supported bounds");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
                 "uniform sampler2D uSceneColor;", "uniform samplerCube uSceneColor;")).supported(),
                 "wrong sampler type rejected");
@@ -120,7 +129,7 @@ public final class FullscreenShaderContractSelfTest {
         } finally {
             Files.deleteIfExists(demoZip);
         }
-        System.out.println("FullscreenShaderContractSelfTest: 22 checks passed");
+        System.out.println("FullscreenShaderContractSelfTest: 25 checks passed");
     }
 
     private static void check(boolean condition, String label) {
