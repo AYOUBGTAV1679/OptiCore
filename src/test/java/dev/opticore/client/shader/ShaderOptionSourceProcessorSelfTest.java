@@ -37,8 +37,8 @@ public final class ShaderOptionSourceProcessorSelfTest {
         check(result.source().contains("#define SHADOWS"), "commented boolean enable");
         check(result.source().contains("// #define BLOOM"), "active boolean disable");
         check(result.applied().size() == 3, "all valid overrides reported");
-        String inlineDeclarations = "#define SIMPLE_TOGGLE // [true false] Simple toggle\\n"
-                + "#define FILTER_MODE // [nearest linear cubic] Filter mode\\n";
+        String inlineDeclarations = "#define SIMPLE_TOGGLE // [true false] Simple toggle\n"
+                + "#define FILTER_MODE // [nearest linear cubic] Filter mode\n";
         ShaderOptionSourceProcessor.Result inlineApplied = ShaderOptionSourceProcessor.apply(
                 inlineDeclarations, declarations,
                 Map.of("SIMPLE_TOGGLE", "false", "FILTER_MODE", "cubic"));
