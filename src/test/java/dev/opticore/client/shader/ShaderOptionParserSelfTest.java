@@ -25,6 +25,10 @@ public final class ShaderOptionParserSelfTest {
                 List.of(new ShaderOptionParser.Source("composite.fsh", source)),
                 Set.of("QUALITY", "BLOOM"));
         check(parsed.scannedFiles() == 1, "one shader source scanned");
+        check(List.copyOf(parsed.options().keySet()).equals(List.of(
+                "BLOOM", "OLD_LIGHT", "QUALITY", "shadowDistance",
+                "SIMPLE_TOGGLE", "SIMPLE_TOGGLE_OFF", "FILTER_MODE")),
+                "option iteration preserves first declaration order");
         check(parsed.options().get("BLOOM").type() == ShaderOptionParser.Type.BOOLEAN,
                 "ifdef-backed boolean detected");
         check(parsed.options().get("BLOOM").defaultValue().equals("true"),
@@ -63,7 +67,7 @@ public final class ShaderOptionParserSelfTest {
                 new ShaderOptionParser.Source("large.fsh", "x".repeat(ShaderOptionParser.MAX_FILE_CHARS + 1))),
                 Set.of());
         check(overflow.truncated(), "oversized shader source rejected");
-        System.out.println("ShaderOptionParserSelfTest: 18 checks passed");
+        System.out.println("ShaderOptionParserSelfTest: 19 checks passed");
     }
 
     private static void check(boolean condition, String label) {
