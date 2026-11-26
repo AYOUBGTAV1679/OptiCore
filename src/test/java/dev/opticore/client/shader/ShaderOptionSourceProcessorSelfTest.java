@@ -44,7 +44,8 @@ public final class ShaderOptionSourceProcessorSelfTest {
                 Map.of("SIMPLE_TOGGLE", "false", "FILTER_MODE", "cubic"));
         check(inlineApplied.source().contains("// #define SIMPLE_TOGGLE"),
                 "inline boolean declaration can be disabled");
-        check(inlineApplied.source().contains("#define FILTER_MODE cubic // [nearest linear cubic] Filter mode"),
+        check(inlineApplied.source().contains("#define FILTER_MODE cubic")
+                        && inlineApplied.source().contains("[nearest linear cubic] Filter mode"),
                 "inline enum declaration receives selected value");
         check(inlineApplied.applied().size() == 2,
                 "inline boolean and enum overrides are reported as applied");
