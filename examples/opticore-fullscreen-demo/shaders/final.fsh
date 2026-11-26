@@ -21,6 +21,7 @@ void main() {
     vec4 scene = texture(uSceneColor, vUv);
     float warmth = uWarmth * WARMTH_SCALE;
     vec3 warmed = scene.rgb * vec3(1.0 + warmth, 1.0, 1.0 - warmth);
+    vec3 exposed = warmed * EXPOSURE_SCALE;
 
     float depth = texture(uSceneDepth, vUv).r;
     vec4 clipPosition = vec4(vUv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
