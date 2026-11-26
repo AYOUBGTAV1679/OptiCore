@@ -45,8 +45,10 @@ public final class ShaderWorldPassPrototype {
 
         float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
-        float fogStart = OptiCoreConfig.WORLD_FOG_START.get().floatValue();
-        float fogEnd = Math.max(fogStart + 0.01f, OptiCoreConfig.WORLD_FOG_END.get().floatValue());
+        AtmosphericFogRange fogRange = AtmosphericFogRange.fromConfig(
+                OptiCoreConfig.WORLD_FOG_START.get(), OptiCoreConfig.WORLD_FOG_END.get());
+        float fogStart = fogRange.start();
+        float fogEnd = fogRange.end();
         net.minecraft.world.phys.Vec3 skyColor = minecraft.level.getSkyColor(
                 event.getCamera().getPosition(), event.getPartialTick());
         float rain = minecraft.level.getRainLevel(event.getPartialTick());
