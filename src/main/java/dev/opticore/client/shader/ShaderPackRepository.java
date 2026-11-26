@@ -66,7 +66,9 @@ public final class ShaderPackRepository {
         if (!"OFF".equals(name) && discover().stream().noneMatch(pack -> pack.name().equals(name))) {
             return false;
         }
-        return ShaderPackSelectionStore.save(CONFIG_FILE, name);
+        boolean saved = ShaderPackSelectionStore.save(CONFIG_FILE, name);
+        if (saved) ShaderWorldPassPrototype.invalidateShaderPackProgram();
+        return saved;
     }
 
     /** Returns the saved, per-pack option overrides consumed by ShaderPackRuntime before compilation. */
