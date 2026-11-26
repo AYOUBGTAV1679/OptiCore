@@ -19,6 +19,7 @@ An experimental, independent performance-modification project for Minecraft Java
 - Render-thread GLSL compile/link diagnostics with a bounded shader-program cache.
 - Experimental depth-based atmospheric fog with configurable distance controls, live biome sky tint, and stronger/closer haze during rain and thunderstorms.
 - An opt-in fullscreen world composite that captures vanilla scene color/depth, executes through the validated render graph, and can run a selected shader-pack program only when it matches OptiCore's strict fullscreen interface contract.
+- The included fullscreen demo pack exposes per-pack warmth, exposure, contrast, saturation, and fog-distance controls through the shader-options screen; these are demonstrated options, not global lighting controls.
 
 ## Installation
 
