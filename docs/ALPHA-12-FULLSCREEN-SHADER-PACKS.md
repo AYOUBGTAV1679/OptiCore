@@ -50,7 +50,7 @@ This is not general OptiFine shader-pack support. It does not yet implement:
 - complete OptiFine uniform, texture, lightmap, and material compatibility;
 - arbitrary shader-pack vertex layouts or additional uniforms.
 
-Many existing packs will therefore be rejected by this narrow fullscreen contract. The source preflight count shown in the pack screen is not a compatibility percentage.
+Many existing packs will therefore be rejected by this narrow fullscreen contract. The source preflight count shown in the pack screen is not a compatibility percentage. A minimal test pack is included in `examples/opticore-fullscreen-demo`; its README explains how to install it into the instance's `shaderpacks` directory.
 
 ## Validation
 
