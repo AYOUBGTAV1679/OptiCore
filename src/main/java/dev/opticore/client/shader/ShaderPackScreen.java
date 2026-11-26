@@ -92,7 +92,11 @@ public final class ShaderPackScreen extends Screen {
 
         int actionY = height - 29;
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.shaders.refresh"),
-                button -> { page = 0; refreshPacks(); })
+                button -> {
+                    ShaderWorldPassPrototype.invalidateShaderPackProgram();
+                    page = 0;
+                    refreshPacks();
+                })
                 .bounds(center - 150, actionY, 70, 20).build());
         Button optionsButton = Button.builder(Component.translatable("screen.opticore.shaders.options"),
                 button -> minecraft.setScreen(new ShaderPackOptionsScreen(this, selected, selectedMetadata, selectedOptions)))
