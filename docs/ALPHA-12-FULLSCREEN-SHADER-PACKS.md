@@ -27,7 +27,7 @@ The accepted interface is intentionally exact:
   - `vec3 uFogColor` (live Minecraft sky color)
   - `mat4 uInverseProjection`
 
-The linked GL program must keep all five uniforms active with the expected types. A source-level declaration by itself is not sufficient.
+The linked GL program must keep all six uniforms active with the expected types. A source-level declaration by itself is not sufficient.
 
 ## Render graph and failure behavior
 
