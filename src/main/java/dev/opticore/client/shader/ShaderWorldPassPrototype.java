@@ -27,6 +27,7 @@ public final class ShaderWorldPassPrototype {
     private static long successfulCaptures;
     private static int lastSuccessfulRenderTick = -1;
     private static String lastFailure = "";
+    private static String packDiagnostic = "";
     private static FullscreenCompositePass compositePass = new FullscreenCompositePass();
     private static String loadedPackName;
     private static GlShaderProgram selectedPackProgram;
@@ -80,7 +81,7 @@ public final class ShaderWorldPassPrototype {
             }
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
-            lastFailure = "";
+            lastFailure = packDiagnostic;
         } catch (RuntimeException failure) {
             String message = failure.getMessage();
             String diagnostic = message == null || message.isBlank()
@@ -121,21 +122,24 @@ public final class ShaderWorldPassPrototype {
         if (selected.equals(loadedPackName)) return;
         loadedPackName = selected;
         selectedPackProgram = null;
-        if ("OFF".equalsIgnoreCase(selected)) return;
+        if ("OFF".equalsIgnoreCase(selected)) {
+            packDiagnostic = "";
+            return;
+        }
 
         try {
             ShaderPackRuntime.Result result = ShaderPackRuntime.compileSelectedFullscreenProgram();
             if (result.compiled()) {
                 selectedPackProgram = result.program();
-                lastFailure = "";
+                packDiagnostic = "";
             } else {
-                lastFailure = "Shader pack '" + selected
+                packDiagnostic = "Shader pack '" + selected
                         + "' is not usable by the fullscreen world pass: "
                         + String.join("; ", result.diagnostics());
             }
         } catch (RuntimeException failure) {
             String message = failure.getMessage();
-            lastFailure = "Shader pack '" + selected + "' could not be prepared: "
+            packDiagnostic = "Shader pack '" + selected + "' could not be prepared: "
                     + (message == null || message.isBlank()
                     ? failure.getClass().getSimpleName() : message);
         }
