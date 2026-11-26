@@ -70,7 +70,7 @@ public final class ShaderWorldPassPrototype {
                         event.getProjectionMatrix().get(projection);
                         float[] inverseProjection = Matrix4Inverse.invert(projection);
                         compositePass.render(capturedScene[0], vanillaScene, warmth, fogStrength,
-                                inverseProjection, selectedPackProgram);
+                                fogColor, inverseProjection, selectedPackProgram);
                     });
 
             ShaderRenderGraphExecutor.ExecutionResult execution =
