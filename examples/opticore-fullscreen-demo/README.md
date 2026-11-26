@@ -9,7 +9,8 @@ This is a minimal shader pack for testing OptiCore's current **fullscreen compos
 3. Copy the `opticore-fullscreen-demo` folder into `shaderpacks`.
 4. Launch Minecraft 1.20.1 with OptiCore.
 5. Open **O → Shaders**, select **opticore-fullscreen-demo**, and confirm that the screen reports a fullscreen world-pass program as ready.
-6. In OptiCore settings, enable **Experimental World Pass**.
+6. Open **Options** on the shader pack to change the warmth scale and fog distances.
+7. In OptiCore settings, enable **Experimental World Pass**.
 
 The pass remains opt-in. Disable it if your graphics driver or rendering setup shows artifacts.
 
@@ -23,4 +24,6 @@ The demo uses `gl_VertexID` to generate a fullscreen triangle and declares exact
 - `uWarmth` and `uFogStrength` float controls
 - `uInverseProjection` mat4 for depth reconstruction
 
-OptiCore compiles and links the selected program on the render thread and verifies the linked uniform types before using it. The demo does not test terrain/entity shading, shadows, reflections, or multi-pass OptiFine compatibility.
+OptiCore compiles and links the selected program on the render thread and verifies the linked uniform types before using it. The demo also exposes three editable GLSL options: `WARMTH_SCALE`, `FOG_NEAR`, and `FOG_FAR`. Their persisted values are substituted into shader source before compile/link.
+
+The demo does not test terrain/entity shading, shadows, reflections, or multi-pass OptiFine compatibility.
