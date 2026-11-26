@@ -24,6 +24,8 @@ public final class FullscreenShaderContractSelfTest {
             uniform float uWarmth;
             uniform float uFogStrength;
             uniform vec3 uFogColor;
+            uniform float uFogStart;
+            uniform float uFogEnd;
             uniform mat4 uInverseProjection;
             in vec2 vUv;
             out vec4 fragColor;
@@ -44,6 +46,12 @@ public final class FullscreenShaderContractSelfTest {
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
                 "uniform vec3 uFogColor;", "uniform vec4 uFogColor;")).supported(),
                 "wrong fog-color uniform type rejected");
+        check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
+                "uniform float uFogStart;", "")).supported(),
+                "missing fog start uniform rejected");
+        check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
+                "uniform float uFogEnd;", "uniform vec2 uFogEnd;")).supported(),
+                "wrong fog end uniform type rejected");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
                 "uniform mat4 uInverseProjection;",
                 "uniform mat4 uInverseProjection;\nuniform float uTime;")).supported(),
@@ -112,7 +120,7 @@ public final class FullscreenShaderContractSelfTest {
         } finally {
             Files.deleteIfExists(demoZip);
         }
-        System.out.println("FullscreenShaderContractSelfTest: 20 checks passed");
+        System.out.println("FullscreenShaderContractSelfTest: 22 checks passed");
     }
 
     private static void check(boolean condition, String label) {
