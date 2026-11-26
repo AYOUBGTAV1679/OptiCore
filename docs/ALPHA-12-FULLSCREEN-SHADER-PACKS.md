@@ -24,7 +24,7 @@ The accepted interface is intentionally exact:
   - `sampler2D uSceneDepth`
   - `float uWarmth`
   - `float uFogStrength`
-  - `vec3 uFogColor` (live Minecraft sky color)
+  - `vec3 uFogColor` (live biome sky color blended with rain/thunder strength)
   - `mat4 uInverseProjection`
 
 The linked GL program must keep all six uniforms active with the expected types. A source-level declaration by itself is not sufficient.
