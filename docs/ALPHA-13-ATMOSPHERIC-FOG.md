@@ -12,7 +12,7 @@ The opt-in fullscreen world composite now uses a validated, configurable depth-f
 - Increasing rain/thunder also strengthens the haze and moves its distance interval closer to the camera.
 - Invalid or inverted persisted fog ranges are clamped to a safe interval before uniforms are uploaded.
 
-The selected fullscreen shader-pack contract now requires active, correctly typed uniforms for scene color/depth, warmth, fog strength/color/start/end, and inverse projection. The included demo pack uses the same interface and keeps its editable fog sliders effective alongside OptiCore's runtime fog settings.
+The selected fullscreen shader-pack contract requires active, correctly typed uniforms for scene color/depth, warmth, fog strength/color/start/end, exposure, contrast, saturation, and inverse projection. The included demo pack uses the same interface and keeps its editable fog sliders effective alongside OptiCore's runtime fog settings.
 
 ## Settings
 
