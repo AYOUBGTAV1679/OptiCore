@@ -144,25 +144,40 @@ public final class ShaderPackScreen extends Screen {
                 // to validate that one program on the render thread.
                 ShaderPackCompatibilityReport.Summary compatibility =
                         ShaderPackRuntime.inspectPackCompatibility(pack);
-                ShaderPackCompatibilityReport.Program candidate = compatibility.programs().stream()
+                List<ShaderPackCompatibilityReport.Program> candidates = compatibility.programs().stream()
                         .filter(ShaderPackCompatibilityReport.Program::readyForCompiler)
-                        .findFirst().orElse(null);
+                        .toList();
                 String summary = "Compatibility: " + compatibility.readyPrograms() + "/"
                         + compatibility.pairedPrograms() + " pairs preflight-ready";
                 if (compatibility.truncated()) summary += " (inspection limited)";
-                if (candidate == null) {
+                if (candidates.isEmpty()) {
                     String reason = compatibility.programs().stream()
                             .filter(program -> !program.diagnostics().isEmpty())
                             .flatMap(program -> program.diagnostics().stream())
                             .findFirst().orElse("No paired .vsh/.fsh program passed preflight");
                     statusDetail = summary + " | blocked: " + reason;
                 } else {
-                    ShaderPackRuntime.Result result =
-                            ShaderPackRuntime.compileProgram(pack, candidate.id());
-                    statusDetail = summary + " | "
-                            + (result.compiled() ? "GLSL compile/link OK: " : "GLSL compile failed: ")
-                            + candidate.id() + (result.diagnostics().isEmpty() ? ""
-                            : " | " + String.join(" | ", result.diagnostics()));
+                    List<String> compileFailures = new java.util.ArrayList<>();
+                    String compiledProgram = null;
+                    for (ShaderPackCompatibilityReport.Program candidate : candidates) {
+                        ShaderPackRuntime.Result result =
+                                ShaderPackRuntime.compileProgram(pack, candidate.id());
+                        if (result.compiled()) {
+                            compiledProgram = candidate.id();
+                            break;
+                        }
+                        String reason = result.diagnostics().isEmpty()
+                                ? "GLSL compile/link failed" : String.join("; ", result.diagnostics());
+                        compileFailures.add(candidate.id() + ": " + reason);
+                    }
+                    if (compiledProgram != null) {
+                        statusDetail = summary + " | GLSL compile/link OK: " + compiledProgram
+                                + (compileFailures.isEmpty() ? "" : " | skipped " + compileFailures.size()
+                                + " earlier candidate(s)");
+                    } else {
+                        statusDetail = summary + " | all " + candidates.size()
+                                + " preflight-ready program(s) failed GL compile/link";
+                    }
                 }
             }
         }
