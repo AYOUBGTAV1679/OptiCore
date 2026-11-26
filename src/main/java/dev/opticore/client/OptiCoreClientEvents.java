@@ -175,6 +175,13 @@ public final class OptiCoreClientEvents {
                             + " buffers / " + (snapshot.copiedMeshBytes / 1024L)
                             + " KiB copied | skipped " + snapshot.skippedMeshBuffers),
                     6, y + 36, 0xB8E6FF, true);
+            String passDiagnostic = ShaderWorldPassPrototype.lastFailure();
+            if (passDiagnostic.length() > 110) passDiagnostic = passDiagnostic.substring(0, 107) + "...";
+            String passStatus = "World composite: " + ShaderWorldPassPrototype.successfulCaptures()
+                    + " successful frames";
+            if (!passDiagnostic.isBlank()) passStatus += " | " + passDiagnostic;
+            event.getGuiGraphics().drawString(mc.font, Component.literal(passStatus),
+                    6, y + 48, passDiagnostic.isBlank() ? 0xA6D8A8 : 0xFFB080, true);
         }
     }
 }
