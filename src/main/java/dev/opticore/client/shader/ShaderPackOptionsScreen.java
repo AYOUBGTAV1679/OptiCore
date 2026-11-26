@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.LinkedHashMap;
@@ -50,9 +49,11 @@ public final class ShaderPackOptionsScreen extends Screen {
         this.screenDefinition = metadata.screenDefinition();
         this.nestedScreens = metadata.nestedScreens();
         this.screenNames = nestedScreens.keySet().stream().sorted().toList();
+        // ShaderOptionParser.Summary preserves declaration order with a LinkedHashMap.
+        // Keep that order in the interactive controls instead of alphabetically sorting it.
         this.editableOptions = discoveredOptions.options().values().stream()
                 .filter(ShaderOptionParser.Option::editable)
-                .sorted(Comparator.comparing(ShaderOptionParser.Option::id)).toList();
+                .toList();
         this.rows = buildRows(metadata);
         this.storePath = net.minecraft.client.Minecraft.getInstance().gameDirectory.toPath()
                 .resolve("config").resolve("opticore").resolve("shader-pack-options.properties");
@@ -61,8 +62,8 @@ public final class ShaderPackOptionsScreen extends Screen {
 
     private List<DisplayRow> buildRows(ShaderPackMetadata.Summary metadata) {
         List<DisplayRow> display = new ArrayList<>();
-        for (ShaderOptionParser.Option option : discoveredOptions.options().values().stream()
-                .sorted(Comparator.comparing(ShaderOptionParser.Option::id)).toList()) {
+        // Match the pack's declaration order in the read-only inventory as well.
+        for (ShaderOptionParser.Option option : discoveredOptions.options().values()) {
             String valuesText = option.values().isEmpty() ? "" : " values=" + String.join("/", option.values());
             String state = option.ambiguous() ? " [ambiguous]"
                     : option.editable() ? " [editable]" : " [read-only]";
