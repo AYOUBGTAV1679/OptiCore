@@ -35,8 +35,9 @@ public final class FullscreenShaderContractSelfTest {
                 "uniform float uFogStrength;", "")).supported(),
                 "missing required uniform rejected");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
-                "uniform mat4 uInverseProjection;", "uniform mat4 uInverseProjection;\\nuniform float uTime;"))
-                .supported(), "unsupported extra uniform rejected");
+                "uniform mat4 uInverseProjection;",
+                "uniform mat4 uInverseProjection;\\nuniform float uTime;")).supported(),
+                "unsupported extra uniform rejected");
         check(!FullscreenShaderContract.validate(VERTEX.replace("gl_VertexID", "gl_VertexIndex"),
                 FRAGMENT).supported(), "non-contract vertex generation rejected");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
