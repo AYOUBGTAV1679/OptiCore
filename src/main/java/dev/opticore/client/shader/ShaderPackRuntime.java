@@ -105,6 +105,63 @@ public final class ShaderPackRuntime {
         }
     }
 
+    /**
+     * Compiles the first selected-pack program that satisfies OptiCore's narrow
+     * fullscreen world-composite contract. This is intentionally not a general
+     * OptiFine shader-pack compatibility claim.
+     */
+    public static Result compileSelectedFullscreenProgram() {
+        RenderSystem.assertOnRenderThread();
+        String selected = ShaderPackRepository.activePack();
+        if ("OFF".equalsIgnoreCase(selected)) {
+            return failure("OFF", "", "No shader pack is selected");
+        }
+        ShaderPackRepository.Pack pack = ShaderPackRepository.discover().stream()
+                .filter(candidate -> candidate.name().equals(selected))
+                .findFirst().orElse(null);
+        if (pack == null) {
+            return failure(selected, "", "Selected shader pack was not found");
+        }
+
+        ShaderPackCompatibilityReport.Summary report = inspectPackCompatibility(pack);
+        List<String> rejected = new ArrayList<>();
+        for (ShaderPackCompatibilityReport.Program candidate : report.programs()) {
+            if (!candidate.readyForCompiler()) continue;
+            ShaderProgramDescriptor.Descriptor descriptor =
+                    ShaderProgramDescriptor.inspect(pack.path(), pack.archive(), candidate.id());
+            ShaderOptionParser.Summary options =
+                    ShaderOptionDiscovery.inspect(pack.path(), pack.archive());
+            java.util.Map<String, String> overrides = ShaderPackRepository.optionOverrides(pack.name());
+            ShaderOptionSourceProcessor.Result vertex = ShaderOptionSourceProcessor.apply(
+                    descriptor.vertex().expandedSource(), options, overrides);
+            ShaderOptionSourceProcessor.Result fragment = ShaderOptionSourceProcessor.apply(
+                    descriptor.fragment().expandedSource(), options, overrides);
+            FullscreenShaderContract.Result contract = FullscreenShaderContract.validate(
+                    vertex.source(), fragment.source());
+            if (!contract.supported()) {
+                rejected.add(candidate.id() + ": " + String.join("; ", contract.diagnostics()));
+                continue;
+            }
+
+            Result compiled = compileProgram(pack, candidate.id());
+            if (compiled.compiled()) {
+                List<String> diagnostics = new ArrayList<>(compiled.diagnostics());
+                diagnostics.add("Fullscreen world-pass contract accepted");
+                if (!rejected.isEmpty()) {
+                    diagnostics.add("Earlier candidates rejected: " + rejected.size());
+                }
+                return new Result(true, compiled.packName(), compiled.programId(),
+                        compiled.program(), diagnostics);
+            }
+            rejected.add(candidate.id() + ": " + String.join("; ", compiled.diagnostics()));
+        }
+        if (rejected.isEmpty()) {
+            rejected.add("No paired program passed the bounded source preflight");
+        }
+        if (report.truncated()) rejected.add("Pack inspection was truncated at the safety limit");
+        return failure(pack.name(), "", "No usable fullscreen program: " + String.join(" | ", rejected));
+    }
+
     private static Result failure(String packName, String programId, String diagnostic) {
         return new Result(false, packName, programId, null, List.of(diagnostic));
     }
