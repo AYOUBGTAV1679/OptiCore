@@ -40,12 +40,19 @@ public final class FullscreenCompositePass implements AutoCloseable {
             uniform vec3 uFogColor;
             uniform float uFogStart;
             uniform float uFogEnd;
+            uniform float uExposure;
+            uniform float uContrast;
+            uniform float uSaturation;
             uniform mat4 uInverseProjection;
             in vec2 vUv;
             out vec4 fragColor;
             void main() {
                 vec4 scene = texture(uSceneColor, vUv);
-                vec3 warmed = scene.rgb * vec3(1.0 + uWarmth, 1.0, 1.0 - uWarmth);
+                vec3 exposed = scene.rgb * uExposure;
+                vec3 contrasted = (exposed - vec3(0.5)) * uContrast + vec3(0.5);
+                float luminance = dot(contrasted, vec3(0.2126, 0.7152, 0.0722));
+                vec3 saturated = mix(vec3(luminance), contrasted, uSaturation);
+                vec3 warmed = saturated * vec3(1.0 + uWarmth, 1.0, 1.0 - uWarmth);
                 float depth = texture(uSceneDepth, vUv).r;
                 // Reconstruct view-space position so fog distance is linear.
                 vec4 clipPosition = vec4(vUv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
@@ -68,12 +75,15 @@ public final class FullscreenCompositePass implements AutoCloseable {
     private int fogColorLocation = -1;
     private int fogStartLocation = -1;
     private int fogEndLocation = -1;
+    private int exposureLocation = -1;
+    private int contrastLocation = -1;
+    private int saturationLocation = -1;
     private int inverseProjectionLocation = -1;
     private boolean closed;
 
     public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
             float fogStrength, float[] inverseProjectionMatrix) {
-        render(scene, destination, warmth, fogStrength,
+        render(scene, destination, warmth, 1.0f, 1.0f, 1.0f, fogStrength,
                 new float[]{0.62f, 0.70f, 0.78f}, 48.0f, 192.0f, inverseProjectionMatrix, null);
     }
 
@@ -83,7 +93,8 @@ public final class FullscreenCompositePass implements AutoCloseable {
      * Program ownership remains with ShaderPackRuntime's bounded GL cache.
      */
     public void render(GlRenderTarget scene, RenderTarget destination, float warmth,
-            float fogStrength, float[] fogColor, float fogStart, float fogEnd,
+            float exposure, float contrast, float saturation, float fogStrength,
+            float[] fogColor, float fogStart, float fogEnd,
             float[] inverseProjectionMatrix, GlShaderProgram packProgram) {
         RenderSystem.assertOnRenderThread();
         if (closed) throw new IllegalStateException("Composite pass is closed");
@@ -96,6 +107,15 @@ public final class FullscreenCompositePass implements AutoCloseable {
         }
         if (!Float.isFinite(warmth) || warmth < 0.0f || warmth > 0.25f) {
             throw new IllegalArgumentException("Warmth must be between 0 and 0.25");
+        }
+        if (!Float.isFinite(exposure) || exposure < 0.5f || exposure > 1.5f) {
+            throw new IllegalArgumentException("Exposure must be between 0.5 and 1.5");
+        }
+        if (!Float.isFinite(contrast) || contrast < 0.5f || contrast > 1.5f) {
+            throw new IllegalArgumentException("Contrast must be between 0.5 and 1.5");
+        }
+        if (!Float.isFinite(saturation) || saturation < 0.0f || saturation > 2.0f) {
+            throw new IllegalArgumentException("Saturation must be between 0 and 2");
         }
         if (!Float.isFinite(fogStrength) || fogStrength < 0.0f || fogStrength > 1.0f) {
             throw new IllegalArgumentException("Fog strength must be between 0 and 1");
@@ -138,12 +158,20 @@ public final class FullscreenCompositePass implements AutoCloseable {
                 : GL20.glGetUniformLocation(activeProgram.id(), "uFogStart");
         int activeFogEndLocation = packProgram == null ? fogEndLocation
                 : GL20.glGetUniformLocation(activeProgram.id(), "uFogEnd");
+        int activeExposureLocation = packProgram == null ? exposureLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uExposure");
+        int activeContrastLocation = packProgram == null ? contrastLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uContrast");
+        int activeSaturationLocation = packProgram == null ? saturationLocation
+                : GL20.glGetUniformLocation(activeProgram.id(), "uSaturation");
         int activeInverseProjectionLocation = packProgram == null ? inverseProjectionLocation
                 : GL20.glGetUniformLocation(activeProgram.id(), "uInverseProjection");
         if (activeSceneColorLocation < 0 || activeSceneDepthLocation < 0
                 || activeWarmthLocation < 0 || activeFogStrengthLocation < 0
                 || activeFogColorLocation < 0 || activeFogStartLocation < 0
-                || activeFogEndLocation < 0 || activeInverseProjectionLocation < 0) {
+                || activeFogEndLocation < 0 || activeExposureLocation < 0
+                || activeContrastLocation < 0 || activeSaturationLocation < 0
+                || activeInverseProjectionLocation < 0) {
             throw new IllegalStateException("Fullscreen shader program lost a required uniform");
         }
 
@@ -189,6 +217,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
             GL20.glUniform3f(activeFogColorLocation, fogColor[0], fogColor[1], fogColor[2]);
             GL20.glUniform1f(activeFogStartLocation, fogStart);
             GL20.glUniform1f(activeFogEndLocation, fogEnd);
+            GL20.glUniform1f(activeExposureLocation, exposure);
+            GL20.glUniform1f(activeContrastLocation, contrast);
+            GL20.glUniform1f(activeSaturationLocation, saturation);
             FloatBuffer inverseProjection = BufferUtils.createFloatBuffer(16);
             inverseProjection.put(inverseProjectionMatrix).flip();
             GL20.glUniformMatrix4fv(activeInverseProjectionLocation, false, inverseProjection);
@@ -239,9 +270,13 @@ public final class FullscreenCompositePass implements AutoCloseable {
             int fogColor = GL20.glGetUniformLocation(compiled.id(), "uFogColor");
             int fogStart = GL20.glGetUniformLocation(compiled.id(), "uFogStart");
             int fogEnd = GL20.glGetUniformLocation(compiled.id(), "uFogEnd");
+            int exposure = GL20.glGetUniformLocation(compiled.id(), "uExposure");
+            int contrast = GL20.glGetUniformLocation(compiled.id(), "uContrast");
+            int saturation = GL20.glGetUniformLocation(compiled.id(), "uSaturation");
             int inverseProjection = GL20.glGetUniformLocation(compiled.id(), "uInverseProjection");
             if (color < 0 || depth < 0 || warmth < 0 || fog < 0
-                    || fogColor < 0 || fogStart < 0 || fogEnd < 0 || inverseProjection < 0) {
+                    || fogColor < 0 || fogStart < 0 || fogEnd < 0
+                    || exposure < 0 || contrast < 0 || saturation < 0 || inverseProjection < 0) {
                 throw new IllegalStateException("Fullscreen composite shader is missing a required uniform");
             }
 
@@ -261,6 +296,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
             fogColorLocation = fogColor;
             fogStartLocation = fogStart;
             fogEndLocation = fogEnd;
+            exposureLocation = exposure;
+            contrastLocation = contrast;
+            saturationLocation = saturation;
             inverseProjectionLocation = inverseProjection;
         } catch (RuntimeException | Error failure) {
             if (createdVao != 0) GL30.glDeleteVertexArrays(createdVao);
@@ -289,6 +327,9 @@ public final class FullscreenCompositePass implements AutoCloseable {
         fogColorLocation = -1;
         fogStartLocation = -1;
         fogEndLocation = -1;
+        exposureLocation = -1;
+        contrastLocation = -1;
+        saturationLocation = -1;
         inverseProjectionLocation = -1;
         closed = true;
     }
