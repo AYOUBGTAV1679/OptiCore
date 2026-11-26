@@ -21,6 +21,9 @@ public final class FullscreenShaderContract {
             "uFogColor", "vec3",
             "uFogStart", "float",
             "uFogEnd", "float",
+            "uExposure", "float",
+            "uContrast", "float",
+            "uSaturation", "float",
             "uInverseProjection", "mat4");
 
     private FullscreenShaderContract() {}
