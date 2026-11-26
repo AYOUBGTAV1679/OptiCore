@@ -15,7 +15,9 @@ An experimental, independent performance-modification project for Minecraft Java
 - Configurable bounded cache budget (8–512 MiB; default 32 MiB).
 - Client lifecycle invalidation for chunk unloads, block edits, chunk-border neighbors, dimension unloads, and resource reloads.
 - English and Arabic interface translations.
-- Experimental shader-pack catalog: detects ZIP and folder packs, stores the selected pack, validates ZIP entry paths with a 20,000-entry cap, and lexically reads bounded `shaders/shaders.properties` screen/slider declarations. These are discovery and inspection tools only.
+- Shader-pack catalog for ZIP and folder packs, bounded archive validation, metadata and option discovery, and per-pack option persistence.
+- Render-thread GLSL compile/link diagnostics with a bounded shader-program cache.
+- An opt-in fullscreen world composite that captures vanilla scene color/depth, executes through the validated render graph, and can run a selected shader-pack program only when it matches OptiCore's strict fullscreen interface contract.
 
 ## Installation
 
@@ -36,9 +38,13 @@ Smooth zoom transitions are enabled by default and can be switched off in settin
 
 ## Unified shader direction
 
-OptiCore is planned to use **one integrated shader engine**, following the OptiFine-style shader-pack workflow. Shadows, water, reflections, entity/terrain shading, and post-processing will run through the same program compiler, render-pass graph, and GPU resource manager—not separate shader systems. The compatibility target is the OptiFine shader-pack format for Minecraft 1.20.1, implemented incrementally with a vanilla fallback and low-memory safeguards.
+OptiCore is being developed around one shader compiler, one validated render-pass graph, and one GPU resource manager.
 
-**Shader packs are not loadable in the current alpha.** The catalog, bounded ZIP validation, and read-only metadata preview are implemented. A bounded per-pack option-override storage API and standalone regression tests for storage, archive validation, and property tokenization are present as groundwork, but the options screen is still read-only and does not yet edit or apply those values. No shader compiler, render-pass pipeline, or OptiFine pack rendering compatibility has been implemented or runtime-tested yet. See [Unified Shader Engine Architecture](docs/UNIFIED-SHADER-ENGINE.md) for the staged implementation and validation requirements.
+The current alpha includes a limited, opt-in fullscreen world-composite path. It captures the completed vanilla scene's color and depth, runs a graph-scheduled composite pass, and restores the original scene if the pass fails. A selected shader pack can supply the composite program only when a paired vertex/fragment program meets OptiCore's narrow fullscreen contract, compiles and links on the current OpenGL driver, and exposes the required uniforms with the expected linked GL types. Recognized per-pack option overrides are applied before compilation.
+
+This is **not general OptiFine shader-pack compatibility**. Most existing packs use terrain/entity programs, multiple render targets, extra uniforms, shadow passes, or other interfaces that this fullscreen path does not implement. The pack catalog and preflight report describe source readiness; only the specific fullscreen path is eligible for execution. The world pass is disabled by default and must be enabled explicitly through the client configuration. See [the fullscreen shader-pack integration notes](docs/ALPHA-12-FULLSCREEN-SHADER-PACKS.md) and [Unified Shader Engine Architecture](docs/UNIFIED-SHADER-ENGINE.md).
+
+Dynamic terrain/entity shadows, shadow filtering, water reflections, full material/lightmap handling, complete OptiFine uniform parity, and general multi-pass pack execution remain unfinished. The generic chunk cache also remains storage/lifecycle infrastructure rather than a working compiled-mesh reuse optimization. No FPS improvement or broad shader compatibility is claimed.
 
 ## Engineering status
 
