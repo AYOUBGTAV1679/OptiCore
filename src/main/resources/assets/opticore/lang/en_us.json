@@ -43,5 +43,7 @@
   "screen.opticore.shaders.page": "Page %s / %s",
   "screen.opticore.experimental_world_pass": "Experimental World Pass: %s",
   "screen.opticore.world_fog_strength": "World Fog Strength: %s",
-  "screen.opticore.world_color_warmth": "World Color Warmth: %s"
+  "screen.opticore.world_color_warmth": "World Color Warmth: %s",
+  "screen.opticore.world_fog_start": "Fog Start Distance: %s",
+  "screen.opticore.world_fog_end": "Fog End Distance: %s"
 }
