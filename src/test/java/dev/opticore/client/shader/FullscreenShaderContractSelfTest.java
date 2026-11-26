@@ -54,7 +54,14 @@ public final class FullscreenShaderContractSelfTest {
         String demoFragment = Files.readString(demo.resolve("final.fsh"));
         check(FullscreenShaderContract.validate(demoVertex, demoFragment).supported(),
                 "checked-in demo pack satisfies the fullscreen contract");
-        System.out.println("FullscreenShaderContractSelfTest: 9 checks passed");
+        ShaderProgramIndex.Summary demoIndex = ShaderProgramIndex.inspect(demo.getParent(), false);
+        check(demoIndex.pairedPrograms() == 1 && demoIndex.paired().contains("final"),
+                "checked-in demo pack is discovered as one paired program");
+        ShaderPackCompatibilityReport.Summary demoReport =
+                ShaderPackCompatibilityReport.inspect(demo.getParent(), false);
+        check(demoReport.readyPrograms() == 1 && demoReport.allInspectedProgramsReady(),
+                "checked-in demo pack passes bounded source preflight");
+        System.out.println("FullscreenShaderContractSelfTest: 11 checks passed");
     }
 
     private static void check(boolean condition, String label) {
