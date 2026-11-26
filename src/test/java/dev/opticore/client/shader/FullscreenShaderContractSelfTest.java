@@ -2,9 +2,7 @@ package dev.opticore.client.shader;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public final class FullscreenShaderContractSelfTest {
     private static final String VERTEX = """
@@ -64,8 +62,8 @@ public final class FullscreenShaderContractSelfTest {
                 ShaderPackCompatibilityReport.inspect(demo.getParent(), false);
         check(demoReport.readyPrograms() == 1 && demoReport.allInspectedProgramsReady(),
                 "checked-in demo pack passes bounded source preflight");
-        ShaderOptionParser.Summary demoOptions = ShaderOptionParser.parse(
-                List.of(new ShaderOptionParser.Source("final.fsh", demoFragment)), Set.of());
+        ShaderOptionParser.Summary demoOptions =
+                ShaderOptionDiscovery.inspect(demo.getParent(), false);
         check(demoOptions.options().size() == 3
                         && demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::editable),
                 "demo pack exposes three safe editable options");
