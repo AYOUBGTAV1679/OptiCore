@@ -28,14 +28,15 @@ public final class ShaderPackRepository {
             Files.createDirectories(directory);
             List<Pack> packs = new ArrayList<>();
             try (var entries = Files.list(directory)) {
-                entries.filter(Files::isDirectory).forEach(path -> {
-                    if (Files.isDirectory(path.resolve("shaders"))) {
+                entries.filter(path -> Files.isDirectory(path, java.nio.file.LinkOption.NOFOLLOW_LINKS))
+                        .forEach(path -> {
+                    if (Files.isDirectory(path.resolve("shaders"), java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
                         packs.add(new Pack(path.getFileName().toString(), path, false));
                     }
                 });
             }
             try (var entries = Files.list(directory)) {
-                entries.filter(Files::isRegularFile)
+                entries.filter(path -> Files.isRegularFile(path, java.nio.file.LinkOption.NOFOLLOW_LINKS))
                         .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".zip"))
                         .forEach(path -> {
                             if (containsShaderDirectory(path)) {
