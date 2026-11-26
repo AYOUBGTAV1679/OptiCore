@@ -1,5 +1,6 @@
 package dev.opticore.client;
 
+import dev.opticore.OptiCoreConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 
@@ -12,6 +13,11 @@ public final class ChunkDiagnostics {
     private ChunkDiagnostics() {}
 
     public static void tick(Minecraft minecraft) {
+        if (!OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()) {
+            latest = Snapshot.EMPTY;
+            ticksUntilSample = 0;
+            return;
+        }
         if (ticksUntilSample-- > 0) return;
         ticksUntilSample = SAMPLE_INTERVAL_TICKS;
         if (minecraft.level == null || minecraft.levelRenderer == null) {
