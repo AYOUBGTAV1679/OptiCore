@@ -11,7 +11,7 @@ This is **not** a replacement for the complete Minecraft shader pipeline. In par
 - General OptiFine shader-pack compatibility is not implemented.
 - Oculus shader-pack compatibility is not implemented; Oculus is intentionally not a dependency.
 - Embeddium is intentionally not a dependency.
-- Shader packs that require deferred rendering, multiple world render passes, shadow-map generation, entity/block-entity passes, custom material buffers, or other unsupported OptiFine/Oculus interfaces are not supported by this experimental path.
+- Shader packs that require deferred rendering, multiple world render passes, shadow-map generation, entity/block-entity passes, custom material buffers, or other unsupported OptiFine/Oculus interfaces are not supported by this experimental path. If a selected pack compiles but fails during its draw, OptiCore retries that frame with its built-in composite; if that also fails, the original captured scene is restored where possible.
 - The experimental world pass is disabled by default and must be explicitly enabled in the client configuration.
 
 The included fullscreen demo pack documents the supported contract. A successful preflight or shader compile only confirms that the pack satisfies the limited interface; it does not establish compatibility with arbitrary shader packs or prove correct in-game visual output.
@@ -23,7 +23,7 @@ The included fullscreen demo pack documents the supported contract. A successful
 | Fullscreen scene composite | Opt-in capture/composite pass with built-in fallback and limited pack contract | Experimental |
 | World color grading | Exposure, contrast, and saturation controls applied by fullscreen composite | Implemented in experimental pass |
 | Atmospheric fog | Configurable range/strength and weather-aware sky-derived color | Implemented in experimental pass |
-| Shader-pack options | Limited property discovery, parsing, storage, and supported uniform overrides | Partial; contract-dependent |
+| Shader-pack options | Bounded discovery of boolean, enum, and numeric declarations; per-pack persistence; validated GLSL macro/constant overrides before compile | Partial; contract-dependent |
 | Render graph | Validated pass/resource model and executor used by the experimental fullscreen path | Foundation |
 | Mesh cache | Bounded generic CPU-artifact cache and lifecycle invalidation; no live mesh cache read/write path | Foundation only |
 | Dynamic shadows | Camera/depth-target primitives; no verified terrain/entity caster rendering or shadow sampling | Not implemented |
