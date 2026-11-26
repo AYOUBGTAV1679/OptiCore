@@ -210,9 +210,8 @@ public final class ShaderPackScreen extends Screen {
                             + " | preflight ready: " + selectedCompatibility.readyPrograms()
                             + "/" + selectedCompatibility.pairedPrograms()
                             + (selectedCompatibility.truncated() ? " (limited)" : "")),
-                    width / 2, height - 96, selectedCompatibility.blockedPrograms() == 0
-                            && selectedCompatibility.vertexOnlyPrograms() == 0
-                            && selectedCompatibility.fragmentOnlyPrograms() == 0 ? 0xA6D8A8 : 0xFFCC66);
+                    width / 2, height - 96,
+                    selectedCompatibility.allInspectedProgramsReady() ? 0xA6D8A8 : 0xFFCC66);
         }
         if (selectedMetadata.hasProperties()) {
             graphics.drawCenteredString(font,
