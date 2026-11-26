@@ -8,6 +8,7 @@ uniform sampler2D uSceneColor;
 uniform sampler2D uSceneDepth;
 uniform float uWarmth;
 uniform float uFogStrength;
+uniform vec3 uFogColor;
 uniform mat4 uInverseProjection;
 
 in vec2 vUv;
@@ -24,6 +25,5 @@ void main() {
     float viewDistance = abs(viewPosition.z / max(abs(viewPosition.w), 1.0e-6));
     float haze = smoothstep(FOG_NEAR, FOG_FAR, viewDistance) * uFogStrength;
 
-    vec3 fogColor = vec3(0.62, 0.70, 0.78);
-    fragColor = vec4(mix(warmed, fogColor, haze), scene.a);
+    fragColor = vec4(mix(warmed, uFogColor, haze), scene.a);
 }
