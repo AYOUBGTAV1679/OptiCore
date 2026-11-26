@@ -56,7 +56,7 @@ Many existing packs will therefore be rejected by this narrow fullscreen contrac
 
 The standalone shader-contract checks and all three configured Forge 1.20.1 CI build variants must pass. CI success proves compilation and the included automated checks only; it does not prove the pass works on every GPU or in a live Minecraft session.
 
-Before enabling this option in a normal play instance, test on a disposable world and record the GPU/driver, graphics mode, pack name/version, and log output. Test world entry/exit, window resize, resource reload, pack switch, option edits, and a forced shader compile failure. Fabulous graphics mode requires separate validation.
+Before enabling this option in a normal play instance, test on a disposable world and record the GPU/driver, graphics mode, pack name/version, and log output. Test world entry/exit, window resize, resource reload, pack switch, option edits, and a forced shader compile failure. Fabulous graphics mode requires separate validation. Enable **Chunk Diagnostics** to display the successful world-composite frame count and the latest runtime/pack diagnostic on the HUD.
 
 ## Current boundary
 
