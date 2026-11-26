@@ -102,6 +102,7 @@ public final class OptiCoreClientEvents {
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
+        ChunkMeshCapture.setObservationEnabled(OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get());
         if (mc.player == null || mc.level == null) return;
         ChunkRenderCache.applyConfiguredBudget();
         ChunkDiagnostics.tick(mc);
