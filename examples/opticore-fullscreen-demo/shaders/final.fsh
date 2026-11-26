@@ -31,5 +31,5 @@ void main() {
     float fogFar = max(fogNear + 1.0, uFogEnd + FOG_FAR - 192.0);
     float haze = smoothstep(fogNear, fogFar, viewDistance) * uFogStrength;
 
-    fragColor = vec4(mix(warmed, uFogColor, haze), scene.a);
+    fragColor = vec4(mix(exposed, uFogColor, haze), scene.a);
 }
