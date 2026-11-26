@@ -132,6 +132,7 @@ public final class ShaderPackOptionsScreen extends Screen {
     private void resetPackOptions() {
         if (ShaderPackOptionStore.clearPack(storePath, packName)) {
             values.clear();
+            ShaderWorldPassPrototype.invalidateShaderPackProgram();
             saveStatus = "Pack options reset";
         } else {
             saveStatus = "Reset failed";
@@ -162,11 +163,13 @@ public final class ShaderPackOptionsScreen extends Screen {
             // label would show the default while the previous override remains on disk.
             if (ShaderPackOptionStore.save(storePath, packName, option.id(), null)) {
                 values.remove(option.id());
+                ShaderWorldPassPrototype.invalidateShaderPackProgram();
                 saveStatus = "Saved (default)";
                 return true;
             }
         } else if (ShaderPackOptionStore.save(storePath, packName, option.id(), next)) {
             values.put(option.id(), next);
+            ShaderWorldPassPrototype.invalidateShaderPackProgram();
             saveStatus = "Saved";
             return true;
         }
