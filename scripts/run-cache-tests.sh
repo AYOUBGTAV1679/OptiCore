@@ -40,6 +40,7 @@ javac --release 17 -Xlint:all -Werror -d "$OUT" \
   src/test/java/dev/opticore/client/shader/ShaderIncludeResolverSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderGlslInterfaceScanner.java \
   src/test/java/dev/opticore/client/shader/ShaderGlslInterfaceScannerSelfTest.java \
+  src/main/java/dev/opticore/client/shader/AtmosphericFogRange.java \
   src/main/java/dev/opticore/client/shader/FullscreenShaderContract.java \
   src/test/java/dev/opticore/client/shader/FullscreenShaderContractSelfTest.java \
   src/main/java/dev/opticore/client/shader/ShaderStageInterfaceValidator.java \
