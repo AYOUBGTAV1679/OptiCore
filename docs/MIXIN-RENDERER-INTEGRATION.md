@@ -31,7 +31,7 @@ The repository contains shadow-camera matrix helpers, a depth-only framebuffer r
 
 ## Build validation
 
-The branch's GitHub Actions workflow builds the mod and runs the standalone regression suite across the configured Forge 1.20.1 matrix (47.0.0, 47.2.0, and 47.4.29). The latest verified code commit for this instrumentation path is `9d2b8aedb3551f97dc3d622e21f9e584498c0c55`; all three jobs completed successfully, including the packaged Mixin registration checks.
+The branch's GitHub Actions workflow builds the mod and runs the standalone regression suite across the configured Forge 1.20.1 matrix (47.0.0, 47.2.0, and 47.4.29). The latest verified branch commit at the time of this update is `961629bcae682561eaa13af1bad3816921e05d4d`; all three Forge 1.20.1 jobs completed successfully, including the packaged Mixin registration checks.
 
 This proves source compilation and the automated checks only. A live Minecraft client launch is still required to prove that each Mixin applies on the actual runtime mappings and that observed counts match expected behavior. No runtime performance gain, cache reuse, or functional shadow rendering is claimed.
 
