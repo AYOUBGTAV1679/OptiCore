@@ -1,6 +1,10 @@
 package dev.opticore.client.shader;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL20;
+
+import java.nio.IntBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,6 +149,12 @@ public final class ShaderPackRuntime {
 
             Result compiled = compileProgram(pack, candidate.id());
             if (compiled.compiled()) {
+                List<String> reflectionErrors = validateLinkedFullscreenUniforms(compiled.program());
+                if (!reflectionErrors.isEmpty()) {
+                    rejected.add(candidate.id() + ": linked interface mismatch: "
+                            + String.join("; ", reflectionErrors));
+                    continue;
+                }
                 List<String> diagnostics = new ArrayList<>(compiled.diagnostics());
                 diagnostics.add("Fullscreen world-pass contract accepted");
                 if (!rejected.isEmpty()) {
@@ -160,6 +170,42 @@ public final class ShaderPackRuntime {
         }
         if (report.truncated()) rejected.add("Pack inspection was truncated at the safety limit");
         return failure(pack.name(), "", "No usable fullscreen program: " + String.join(" | ", rejected));
+    }
+
+    private static List<String> validateLinkedFullscreenUniforms(GlShaderProgram program) {
+        List<String> errors = new ArrayList<>();
+        int[][] required = {
+                {GL20.GL_SAMPLER_2D, GL20.glGetUniformLocation(program.id(), "uSceneColor")},
+                {GL20.GL_SAMPLER_2D, GL20.glGetUniformLocation(program.id(), "uSceneDepth")},
+                {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uWarmth")},
+                {GL20.GL_FLOAT, GL20.glGetUniformLocation(program.id(), "uFogStrength")},
+                {GL20.GL_FLOAT_MAT4, GL20.glGetUniformLocation(program.id(), "uInverseProjection")}
+        };
+        String[] names = {"uSceneColor", "uSceneDepth", "uWarmth", "uFogStrength", "uInverseProjection"};
+        for (int i = 0; i < required.length; i++) {
+            if (required[i][1] < 0) errors.add(names[i] + " is inactive or missing after GL link");
+        }
+        if (!errors.isEmpty()) return errors;
+
+        int activeCount = GL20.glGetProgrami(program.id(), GL20.GL_ACTIVE_UNIFORMS);
+        IntBuffer size = BufferUtils.createIntBuffer(1);
+        IntBuffer type = BufferUtils.createIntBuffer(1);
+        java.util.Map<String, Integer> activeTypes = new java.util.HashMap<>();
+        for (int index = 0; index < activeCount; index++) {
+            size.clear();
+            type.clear();
+            String name = GL20.glGetActiveUniform(program.id(), index, 256, size, type);
+            if (name == null) continue;
+            String normalized = name.endsWith("[0]") ? name.substring(0, name.length() - 3) : name;
+            activeTypes.put(normalized, type.get(0));
+        }
+        for (int i = 0; i < names.length; i++) {
+            Integer actual = activeTypes.get(names[i]);
+            if (actual == null || actual != required[i][0]) {
+                errors.add(names[i] + " has an unexpected linked OpenGL type");
+            }
+        }
+        return errors;
     }
 
     private static Result failure(String packName, String programId, String diagnostic) {
