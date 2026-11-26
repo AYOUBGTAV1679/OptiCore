@@ -1,5 +1,8 @@
 package dev.opticore.client.shader;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public final class FullscreenShaderContractSelfTest {
     private static final String VERTEX = """
             #version 150
@@ -25,7 +28,7 @@ public final class FullscreenShaderContractSelfTest {
 
     private FullscreenShaderContractSelfTest() {}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         check(FullscreenShaderContract.validate(VERTEX, FRAGMENT).supported(),
                 "known fullscreen contract accepted");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
@@ -46,7 +49,12 @@ public final class FullscreenShaderContractSelfTest {
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
                 "in vec2 vUv;", "in vec3 vUv;")).supported(), "varying type mismatch rejected");
         check(!FullscreenShaderContract.validate("", FRAGMENT).supported(), "missing vertex rejected");
-        System.out.println("FullscreenShaderContractSelfTest: 8 checks passed");
+        Path demo = Path.of("examples/opticore-fullscreen-demo/shaders");
+        String demoVertex = Files.readString(demo.resolve("final.vsh"));
+        String demoFragment = Files.readString(demo.resolve("final.fsh"));
+        check(FullscreenShaderContract.validate(demoVertex, demoFragment).supported(),
+                "checked-in demo pack satisfies the fullscreen contract");
+        System.out.println("FullscreenShaderContractSelfTest: 9 checks passed");
     }
 
     private static void check(boolean condition, String label) {
