@@ -139,45 +139,19 @@ public final class ShaderPackScreen extends Screen {
             if (pack == null) {
                 statusDetail = "Selected pack could not be reopened";
             } else {
-                // Run the bounded compatibility inventory first. Prefer a pair that
-                // passed source/interface preflight, then ask the actual GL compiler
-                // to validate that one program on the render thread.
                 ShaderPackCompatibilityReport.Summary compatibility =
                         ShaderPackRuntime.inspectPackCompatibility(pack);
-                List<ShaderPackCompatibilityReport.Program> candidates = compatibility.programs().stream()
-                        .filter(ShaderPackCompatibilityReport.Program::readyForCompiler)
-                        .toList();
-                String summary = "Compatibility: " + compatibility.readyPrograms() + "/"
-                        + compatibility.pairedPrograms() + " pairs preflight-ready";
+                String summary = "Source preflight: " + compatibility.readyPrograms() + "/"
+                        + compatibility.pairedPrograms() + " pairs ready";
                 if (compatibility.truncated()) summary += " (inspection limited)";
-                if (candidates.isEmpty()) {
-                    String reason = compatibility.programs().stream()
-                            .filter(program -> !program.diagnostics().isEmpty())
-                            .flatMap(program -> program.diagnostics().stream())
-                            .findFirst().orElse("No paired .vsh/.fsh program passed preflight");
-                    statusDetail = summary + " | blocked: " + reason;
+
+                ShaderPackRuntime.Result worldPass =
+                        ShaderPackRuntime.compileSelectedFullscreenProgram();
+                if (worldPass.compiled()) {
+                    statusDetail = summary + " | fullscreen world pass ready: " + worldPass.programId();
                 } else {
-                    List<String> compileFailures = new java.util.ArrayList<>();
-                    String compiledProgram = null;
-                    for (ShaderPackCompatibilityReport.Program candidate : candidates) {
-                        ShaderPackRuntime.Result result =
-                                ShaderPackRuntime.compileProgram(pack, candidate.id());
-                        if (result.compiled()) {
-                            compiledProgram = candidate.id();
-                            break;
-                        }
-                        String reason = result.diagnostics().isEmpty()
-                                ? "GLSL compile/link failed" : String.join("; ", result.diagnostics());
-                        compileFailures.add(candidate.id() + ": " + reason);
-                    }
-                    if (compiledProgram != null) {
-                        statusDetail = summary + " | GLSL compile/link OK: " + compiledProgram
-                                + (compileFailures.isEmpty() ? "" : " | skipped " + compileFailures.size()
-                                + " earlier candidate(s)");
-                    } else {
-                        statusDetail = summary + " | all " + candidates.size()
-                                + " preflight-ready program(s) failed GL compile/link";
-                    }
+                    statusDetail = summary + " | no compatible fullscreen program: "
+                            + String.join("; ", worldPass.diagnostics());
                 }
             }
         }
