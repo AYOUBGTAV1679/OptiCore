@@ -49,13 +49,9 @@ public final class ShaderWorldPassPrototype {
                 event.getCamera().getPosition(), event.getPartialTick());
         float rain = minecraft.level.getRainLevel(event.getPartialTick());
         float thunder = minecraft.level.getThunderLevel(event.getPartialTick());
-        float overcast = Math.max(rain, thunder * 0.9f);
         // Blend biome sky color toward a muted overcast tone as weather builds.
-        float[] fogColor = {
-                mix((float) skyColor.x, 0.56f, overcast),
-                mix((float) skyColor.y, 0.59f, overcast),
-                mix((float) skyColor.z, 0.63f, overcast)
-        };
+        float[] fogColor = AtmosphericFogColor.fromSky(
+                (float) skyColor.x, (float) skyColor.y, (float) skyColor.z, rain, thunder);
         refreshSelectedPackProgram();
 
         // Skip the built-in neutral composite to avoid a full-resolution copy,
@@ -160,10 +156,6 @@ public final class ShaderWorldPassPrototype {
                     + (message == null || message.isBlank()
                     ? failure.getClass().getSimpleName() : message);
         }
-    }
-
-    private static float mix(float from, float to, float amount) {
-        return from + (to - from) * Math.max(0.0f, Math.min(1.0f, amount));
     }
 
     public static long successfulCaptures() { return successfulCaptures; }
