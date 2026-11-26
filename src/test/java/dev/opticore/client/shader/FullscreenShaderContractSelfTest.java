@@ -32,7 +32,7 @@ public final class FullscreenShaderContractSelfTest {
                 "uniform sampler2D uSceneColor;", "uniform samplerCube uSceneColor;")).supported(),
                 "wrong sampler type rejected");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
-                "uniform float uFogStrength;\\n", "")).supported(),
+                "uniform float uFogStrength;", "")).supported(),
                 "missing required uniform rejected");
         check(!FullscreenShaderContract.validate(VERTEX, FRAGMENT.replace(
                 "uniform mat4 uInverseProjection;", "uniform mat4 uInverseProjection;\\nuniform float uTime;"))
