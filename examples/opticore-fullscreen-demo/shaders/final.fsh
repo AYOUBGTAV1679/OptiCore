@@ -1,6 +1,7 @@
 #version 150
 
 #define WARMTH_SCALE 1.0 // [0.5 1.0 1.5 2.0] Controls the strength of OptiCore warmth.
+#define EXPOSURE_SCALE 1.0 // [0.5 0.75 1.0 1.25 1.5] Adjusts scene exposure before atmospheric fog.
 #define FOG_NEAR 48.0 // [24.0 48.0 72.0 96.0] Distance where atmospheric haze begins.
 #define FOG_FAR 192.0 // [96.0 144.0 192.0 256.0] Distance where atmospheric haze reaches full strength.
 
