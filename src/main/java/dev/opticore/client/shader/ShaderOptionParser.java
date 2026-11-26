@@ -1,6 +1,7 @@
 package dev.opticore.client.shader;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,7 +41,8 @@ public final class ShaderOptionParser {
     }
     public record Summary(Map<String, Option> options, boolean truncated, int scannedFiles) {
         public Summary {
-            options = Map.copyOf(options);
+            // Preserve shader-pack declaration order for stable option screens.
+            options = Collections.unmodifiableMap(new LinkedHashMap<>(options));
         }
         public static Summary empty() { return new Summary(Map.of(), false, 0); }
     }
