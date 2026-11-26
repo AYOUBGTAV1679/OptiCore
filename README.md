@@ -10,7 +10,7 @@ An experimental, independent performance-modification project for Minecraft Java
 - Press **O** to open OptiCore settings.
 - Hold **C** to zoom (configurable zoom factor).
 - Optional FPS counter.
-- Optional read-only chunk renderer queue diagnostics.
+- Optional read-only chunk renderer queue diagnostics and bounded CPU mesh-buffer observation (the buffer-copy work is disabled unless diagnostics are enabled).
 - Optional rolling frame-time monitor (current frame time and estimated 1% low FPS).
 - Configurable bounded cache budget (8–512 MiB; default 32 MiB).
 - Client lifecycle invalidation for chunk unloads, block edits, chunk-border neighbors, dimension unloads, and resource reloads.
@@ -48,7 +48,7 @@ Dynamic terrain/entity shadows, shadow filtering, water reflections, full materi
 
 ## Engineering status
 
-The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation. It does not yet connect to the vanilla chunk mesh compilation boundary, so it does not currently reduce chunk rebuild work. MixinGradle is configured, and a client-only diagnostic Mixin now observes entry into `LevelRenderer.renderChunkLayer(...)` with a bounded log counter. It does not change render state or draw calls. Its target descriptor is checked by a static CI script, and the current branch passes the three configured Forge 1.20.1 CI build variants. Application and observed behavior inside a live client are still pending. It is not a mesh-cache hook or a shadow-rendering implementation. See [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md). See [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md), and [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md).
+The current cache is a bounded, thread-safe LRU storage component with lifecycle invalidation, but it is not connected to mesh reuse and does not currently reduce chunk rebuild work. Client mixins observe vanilla chunk-layer rendering and completed section compilation; when Chunk Diagnostics is enabled, the rebuild observer makes bounded CPU copies for counters and discards them without retaining vanilla buffers. The branch passes the three configured Forge 1.20.1 CI build variants and packaged Mixin checks, but a live client launch is still required to confirm runtime injection. See [Mixin Renderer Integration](docs/MIXIN-RENDERER-INTEGRATION.md), [Renderer Cache Lifecycle](docs/RENDERER-CACHE-LIFECYCLE.md), and [Renderer Integration Research](docs/RENDERER-INTEGRATION-RESEARCH.md).
 
 Performance must be evaluated against a repeatable unmodified-Forge baseline. The project's [performance validation plan](docs/PERFORMANCE-VALIDATION-PLAN.md) defines the required scenes, measurements, and pass/fail rules. No controlled benchmark has been completed yet.
 
