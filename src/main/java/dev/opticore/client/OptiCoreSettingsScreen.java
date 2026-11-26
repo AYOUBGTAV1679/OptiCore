@@ -87,6 +87,28 @@ public class OptiCoreSettingsScreen extends Screen {
             button.setMessage(warmthText());
         }).bounds(left, rowY(top, 6), COLUMN_WIDTH, ROW_HEIGHT).build());
 
+        addRenderableWidget(Button.builder(fogStartText(), button -> {
+            double[] levels = {16D, 24D, 32D, 48D, 64D, 96D, 128D};
+            double current = OptiCoreConfig.WORLD_FOG_START.get();
+            int next = nextLevel(levels, current);
+            double selected = levels[next];
+            OptiCoreConfig.WORLD_FOG_START.set(selected);
+            if (OptiCoreConfig.WORLD_FOG_END.get() <= selected) {
+                OptiCoreConfig.WORLD_FOG_END.set(Math.min(4096D, selected + 64D));
+            }
+            button.setMessage(fogStartText());
+        }).bounds(left, rowY(top, 7), COLUMN_WIDTH, ROW_HEIGHT).build());
+
+        addRenderableWidget(Button.builder(fogEndText(), button -> {
+            double[] levels = {64D, 96D, 128D, 192D, 256D, 384D, 512D, 768D, 1024D};
+            double current = OptiCoreConfig.WORLD_FOG_END.get();
+            int next = nextLevel(levels, current);
+            double selected = levels[next];
+            OptiCoreConfig.WORLD_FOG_END.set(Math.max(
+                    selected, OptiCoreConfig.WORLD_FOG_START.get() + 1D));
+            button.setMessage(fogEndText());
+        }).bounds(right, rowY(top, 7), COLUMN_WIDTH, ROW_HEIGHT).build());
+
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
                 .bounds(center - 60, height - 28, 120, 20).build());
     }
@@ -139,6 +161,16 @@ public class OptiCoreSettingsScreen extends Screen {
     private static Component warmthText() {
         return Component.translatable("screen.opticore.world_color_warmth",
                 String.format(Locale.ROOT, "%.2f", OptiCoreConfig.WORLD_COLOR_WARMTH.get()));
+    }
+
+    private static Component fogStartText() {
+        return Component.translatable("screen.opticore.world_fog_start",
+                String.format(Locale.ROOT, "%.0f", OptiCoreConfig.WORLD_FOG_START.get()));
+    }
+
+    private static Component fogEndText() {
+        return Component.translatable("screen.opticore.world_fog_end",
+                String.format(Locale.ROOT, "%.0f", OptiCoreConfig.WORLD_FOG_END.get()));
     }
 
     @Override
