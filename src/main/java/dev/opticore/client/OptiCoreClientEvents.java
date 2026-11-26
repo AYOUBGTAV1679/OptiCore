@@ -169,6 +169,11 @@ public final class OptiCoreClientEvents {
                             + (snapshot.cacheBytes / 1024L) + " / "
                             + (snapshot.cacheBudgetBytes / 1024L) + " KiB"),
                     6, y + 24, 0xB8E6FF, true);
+            event.getGuiGraphics().drawString(mc.font,
+                    Component.literal("Mesh observation: " + snapshot.observedMeshBuffers
+                            + " buffers / " + (snapshot.copiedMeshBytes / 1024L)
+                            + " KiB copied | skipped " + snapshot.skippedMeshBuffers),
+                    6, y + 36, 0xB8E6FF, true);
         }
     }
 }
