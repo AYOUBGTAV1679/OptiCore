@@ -87,16 +87,17 @@ public final class FullscreenShaderContractSelfTest {
                 "checked-in demo pack passes bounded source preflight");
         ShaderOptionParser.Summary demoOptions =
                 ShaderOptionDiscovery.inspect(demo.getParent(), false);
-        check(demoOptions.options().size() == 3
+        check(demoOptions.options().size() == 4
                         && demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::editable),
-                "demo pack exposes three safe editable options");
+                "demo pack exposes four safe editable options");
         check(demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::slider),
-                "demo pack slider metadata marks all three options as sliders");
+                "demo pack slider metadata marks all four options as sliders");
         ShaderOptionSourceProcessor.Result overridden = ShaderOptionSourceProcessor.apply(
-                demoFragment, demoOptions, Map.of("WARMTH_SCALE", "2.0", "FOG_NEAR", "72.0"));
+                demoFragment, demoOptions, Map.of("WARMTH_SCALE", "2.0", "EXPOSURE_SCALE", "1.5", "FOG_NEAR", "72.0"));
         check(overridden.source().contains("#define WARMTH_SCALE 2.0")
-                        && overridden.source().contains("#define FOG_NEAR 72.0"),
-                "demo option overrides are applied to GLSL source");
+                        && overridden.source().contains("#define FOG_NEAR 72.0")
+                        && overridden.source().contains("#define EXPOSURE_SCALE 1.5"),
+                "demo warmth, exposure, and fog overrides are applied to GLSL source");
         check(FullscreenShaderContract.validate(demoVertex, overridden.source()).supported(),
                 "option-adjusted demo source still satisfies fullscreen contract");
 
@@ -110,7 +111,7 @@ public final class FullscreenShaderContractSelfTest {
                 output.write(demoFragment.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 output.closeEntry();
                 output.putNextEntry(new ZipEntry("shaders/shaders.properties"));
-                output.write("sliders=WARMTH_SCALE FOG_NEAR FOG_FAR\\nscreen=WARMTH_SCALE FOG_NEAR FOG_FAR\\n"
+                output.write("sliders=WARMTH_SCALE EXPOSURE_SCALE FOG_NEAR FOG_FAR\\nscreen=WARMTH_SCALE EXPOSURE_SCALE FOG_NEAR FOG_FAR\\n"
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 output.closeEntry();
             }
@@ -122,10 +123,10 @@ public final class FullscreenShaderContractSelfTest {
             check(zipReport.readyPrograms() == 1 && zipReport.allInspectedProgramsReady(),
                     "ZIP demo pack passes bounded source preflight");
             ShaderOptionParser.Summary zipOptions = ShaderOptionDiscovery.inspect(demoZip, true);
-            check(zipOptions.options().size() == 3,
-                    "ZIP demo pack exposes all three editable options");
+            check(zipOptions.options().size() == 4,
+                    "ZIP demo pack exposes all four editable options");
             check(zipOptions.options().values().stream().allMatch(ShaderOptionParser.Option::slider),
-                    "ZIP slider metadata marks all three options as sliders");
+                    "ZIP slider metadata marks all four options as sliders");
         } finally {
             Files.deleteIfExists(demoZip);
         }
