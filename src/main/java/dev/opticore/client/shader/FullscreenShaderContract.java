@@ -13,18 +13,18 @@ import java.util.regex.Pattern;
  */
 public final class FullscreenShaderContract {
     private static final Pattern VERTEX_ID = Pattern.compile("\\bgl_VertexID\\b");
-    private static final Map<String, String> REQUIRED_FRAGMENT_UNIFORMS = Map.of(
-            "uSceneColor", "sampler2D",
-            "uSceneDepth", "sampler2D",
-            "uWarmth", "float",
-            "uFogStrength", "float",
-            "uFogColor", "vec3",
-            "uFogStart", "float",
-            "uFogEnd", "float",
-            "uExposure", "float",
-            "uContrast", "float",
-            "uSaturation", "float",
-            "uInverseProjection", "mat4");
+    private static final Map<String, String> REQUIRED_FRAGMENT_UNIFORMS = Map.ofEntries(
+            Map.entry("uSceneColor", "sampler2D"),
+            Map.entry("uSceneDepth", "sampler2D"),
+            Map.entry("uWarmth", "float"),
+            Map.entry("uFogStrength", "float"),
+            Map.entry("uFogColor", "vec3"),
+            Map.entry("uFogStart", "float"),
+            Map.entry("uFogEnd", "float"),
+            Map.entry("uExposure", "float"),
+            Map.entry("uContrast", "float"),
+            Map.entry("uSaturation", "float"),
+            Map.entry("uInverseProjection", "mat4"))
 
     private FullscreenShaderContract() {}
 
