@@ -109,6 +109,10 @@ public class OptiCoreSettingsScreen extends Screen {
             button.setMessage(fogEndText());
         }).bounds(right, rowY(top, 7), COLUMN_WIDTH, ROW_HEIGHT).build());
 
+        addRenderableWidget(Button.builder(Component.translatable("screen.opticore.color.open"), button ->
+                minecraft.setScreen(new OptiCoreColorSettingsScreen(this)))
+                .bounds(left, rowY(top, 8), COLUMN_WIDTH, ROW_HEIGHT).build());
+
         addRenderableWidget(Button.builder(Component.translatable("screen.opticore.done"), button -> onClose())
                 .bounds(center - 60, height - 28, 120, 20).build());
     }
