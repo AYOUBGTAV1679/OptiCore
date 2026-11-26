@@ -22,7 +22,7 @@ The demo uses `gl_VertexID` to generate a fullscreen triangle and declares exact
 - `fragColor` fragment output
 - `uSceneColor` and `uSceneDepth` sampler2D inputs
 - `uWarmth` and `uFogStrength` float controls
-- `uFogColor` vec3 supplied from Minecraft's live sky color
+- `uFogColor` vec3 supplied from live biome sky color blended with rain/thunder
 - `uInverseProjection` mat4 for depth reconstruction
 
 OptiCore compiles and links the selected program on the render thread and verifies the linked uniform types before using it. The demo also exposes three editable numeric sliders: `WARMTH_SCALE`, `FOG_NEAR`, and `FOG_FAR`. Their persisted values are substituted into shader source before compile/link.
