@@ -194,6 +194,39 @@ public final class GlRenderTarget implements AutoCloseable {
         }
     }
 
+    /**
+     * Restores this captured scene into a vanilla render target. Intended as a
+     * failure fallback after a composite pass has partially modified its destination.
+     */
+    public void copySceneTo(com.mojang.blaze3d.pipeline.RenderTarget destination) {
+        RenderSystem.assertOnRenderThread();
+        ensureOpen();
+        if (destination == null) throw new IllegalArgumentException("Destination render target is required");
+        if (!destination.useDepth) throw new IllegalArgumentException("Destination render target has no depth attachment");
+        if (destination.width != width || destination.height != height) {
+            throw new IllegalArgumentException("Source and destination dimensions must match");
+        }
+        if (destination.frameBufferId == framebuffer) {
+            throw new IllegalArgumentException("Cannot copy a render target into itself");
+        }
+
+        int previousRead = GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        int previousDraw = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        boolean scissorEnabled = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+        try {
+            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, framebuffer);
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, destination.frameBufferId);
+            GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height,
+                    GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, GL11.GL_NEAREST);
+        } finally {
+            GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousDraw);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousRead);
+            if (scissorEnabled) GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            else GL11.glDisable(GL11.GL_SCISSOR_TEST);
+        }
+    }
+
     public int colorTextureId() {
         RenderSystem.assertOnRenderThread();
         ensureOpen();
