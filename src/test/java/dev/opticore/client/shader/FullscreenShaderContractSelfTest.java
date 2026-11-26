@@ -26,6 +26,9 @@ public final class FullscreenShaderContractSelfTest {
             uniform vec3 uFogColor;
             uniform float uFogStart;
             uniform float uFogEnd;
+            uniform float uExposure;
+            uniform float uContrast;
+            uniform float uSaturation;
             uniform mat4 uInverseProjection;
             in vec2 vUv;
             out vec4 fragColor;
