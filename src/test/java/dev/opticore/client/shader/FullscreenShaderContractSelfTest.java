@@ -69,6 +69,8 @@ public final class FullscreenShaderContractSelfTest {
         check(demoOptions.options().size() == 3
                         && demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::editable),
                 "demo pack exposes three safe editable options");
+        check(demoOptions.options().values().stream().allMatch(ShaderOptionParser.Option::slider),
+                "demo pack slider metadata marks all three options as sliders");
         ShaderOptionSourceProcessor.Result overridden = ShaderOptionSourceProcessor.apply(
                 demoFragment, demoOptions, Map.of("WARMTH_SCALE", "2.0", "FOG_NEAR", "72.0"));
         check(overridden.source().contains("#define WARMTH_SCALE 2.0")
@@ -86,6 +88,10 @@ public final class FullscreenShaderContractSelfTest {
                 output.putNextEntry(new ZipEntry("shaders/final.fsh"));
                 output.write(demoFragment.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 output.closeEntry();
+                output.putNextEntry(new ZipEntry("shaders/shaders.properties"));
+                output.write("sliders=WARMTH_SCALE FOG_NEAR FOG_FAR\\nscreen=WARMTH_SCALE FOG_NEAR FOG_FAR\\n"
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                output.closeEntry();
             }
             ShaderProgramIndex.Summary zipIndex = ShaderProgramIndex.inspect(demoZip, true);
             check(zipIndex.pairedPrograms() == 1 && zipIndex.paired().contains("final"),
@@ -97,10 +103,12 @@ public final class FullscreenShaderContractSelfTest {
             ShaderOptionParser.Summary zipOptions = ShaderOptionDiscovery.inspect(demoZip, true);
             check(zipOptions.options().size() == 3,
                     "ZIP demo pack exposes all three editable options");
+            check(zipOptions.options().values().stream().allMatch(ShaderOptionParser.Option::slider),
+                    "ZIP slider metadata marks all three options as sliders");
         } finally {
             Files.deleteIfExists(demoZip);
         }
-        System.out.println("FullscreenShaderContractSelfTest: 17 checks passed");
+        System.out.println("FullscreenShaderContractSelfTest: 19 checks passed");
     }
 
     private static void check(boolean condition, String label) {
