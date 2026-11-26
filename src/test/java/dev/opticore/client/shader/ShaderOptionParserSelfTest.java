@@ -17,6 +17,9 @@ public final class ShaderOptionParserSelfTest {
                 #define QUALITY 2 // [0 1 2 3] Quality level
                 const float shadowDistance = 64.0; // [32.0 64.0 128.0]
                 #define IGNORED 1
+                #define SIMPLE_TOGGLE // [true false] Simple toggle
+                //#define SIMPLE_TOGGLE_OFF // [true false] Commented toggle
+                #define FILTER_MODE // [nearest linear cubic] Filter mode
                 """;
         ShaderOptionParser.Summary parsed = ShaderOptionParser.parse(
                 List.of(new ShaderOptionParser.Source("composite.fsh", source)),
@@ -40,6 +43,16 @@ public final class ShaderOptionParserSelfTest {
         check(parsed.options().get("shadowDistance").defaultValue().equals("64.0"),
                 "const option parsed");
         check(!parsed.options().containsKey("IGNORED"), "unreferenced boolean-like macro ignored");
+        check(parsed.options().get("SIMPLE_TOGGLE").editable(),
+                "boolean option with inline value list is editable without ifdef");
+        check(parsed.options().get("SIMPLE_TOGGLE").defaultValue().equals("true"),
+                "active inline boolean defaults on");
+        check(parsed.options().get("SIMPLE_TOGGLE_OFF").defaultValue().equals("false"),
+                "commented inline boolean defaults off");
+        check(parsed.options().get("FILTER_MODE").type() == ShaderOptionParser.Type.ENUM,
+                "inline string value list is classified as enum");
+        check(parsed.options().get("FILTER_MODE").values().equals(List.of("nearest", "linear", "cubic")),
+                "inline enum values are preserved");
 
         var conflict = ShaderOptionParser.parse(List.of(
                 new ShaderOptionParser.Source("a.fsh", "#define MODE 1 // [1 2]"),
@@ -50,7 +63,7 @@ public final class ShaderOptionParserSelfTest {
                 new ShaderOptionParser.Source("large.fsh", "x".repeat(ShaderOptionParser.MAX_FILE_CHARS + 1))),
                 Set.of());
         check(overflow.truncated(), "oversized shader source rejected");
-        System.out.println("ShaderOptionParserSelfTest: 13 checks passed");
+        System.out.println("ShaderOptionParserSelfTest: 18 checks passed");
     }
 
     private static void check(boolean condition, String label) {
