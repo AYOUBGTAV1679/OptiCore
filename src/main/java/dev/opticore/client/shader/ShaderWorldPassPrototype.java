@@ -43,17 +43,19 @@ public final class ShaderWorldPassPrototype {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) return;
 
-        float fogStrength = OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue();
         float warmth = OptiCoreConfig.WORLD_COLOR_WARMTH.get().floatValue();
-        AtmosphericFogRange fogRange = AtmosphericFogRange.fromConfig(
+        AtmosphericFogRange configuredRange = AtmosphericFogRange.fromConfig(
                 OptiCoreConfig.WORLD_FOG_START.get(), OptiCoreConfig.WORLD_FOG_END.get());
-        float fogStart = fogRange.start();
-        float fogEnd = fogRange.end();
         net.minecraft.world.phys.Vec3 skyColor = minecraft.level.getSkyColor(
                 event.getCamera().getPosition(), event.getPartialTick());
         float rain = minecraft.level.getRainLevel(event.getPartialTick());
         float thunder = minecraft.level.getThunderLevel(event.getPartialTick());
-        // Blend biome sky color toward a muted overcast tone as weather builds.
+        AtmosphericFogProfile fog = AtmosphericFogProfile.forWeather(
+                OptiCoreConfig.WORLD_FOG_STRENGTH.get().floatValue(),
+                configuredRange, rain, thunder);
+        float fogStrength = fog.strength();
+        float fogStart = fog.start();
+        float fogEnd = fog.end();
         float[] fogColor = AtmosphericFogColor.fromSky(
                 (float) skyColor.x, (float) skyColor.y, (float) skyColor.z, rain, thunder);
         refreshSelectedPackProgram();
