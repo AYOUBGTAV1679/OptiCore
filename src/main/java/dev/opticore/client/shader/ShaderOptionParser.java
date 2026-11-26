@@ -96,7 +96,21 @@ public final class ShaderOptionParser {
                 String value = define.group(3);
                 String comment = define.group(4) == null ? "" : define.group(4).trim();
                 if (value == null) {
-                    if (conditional.contains(id)) {
+                    List<String> declaredValues = parseValues(comment);
+                    if (declaredValues.size() >= 2) {
+                        boolean booleanValues = declaredValues.contains("true")
+                                && declaredValues.contains("false")
+                                && declaredValues.size() == 2;
+                        Type type = booleanValues ? Type.BOOLEAN
+                                : isNumericValues(declaredValues) ? Type.NUMBER : Type.ENUM;
+                        String defaultValue = booleanValues
+                                ? (commented ? "false" : "true") : declaredValues.get(0);
+                        if (declaredValues.contains(defaultValue)) {
+                            add(found, new Option(id, type, defaultValue, declaredValues,
+                                    description(comment), false,
+                                    sliders != null && sliders.contains(id)));
+                        }
+                    } else if (conditional.contains(id)) {
                         add(found, new Option(id, Type.BOOLEAN,
                                 commented ? "false" : "true", List.of("false", "true"),
                                 comment, false, sliders != null && sliders.contains(id)));
