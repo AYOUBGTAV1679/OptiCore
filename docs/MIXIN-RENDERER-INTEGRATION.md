@@ -1,43 +1,39 @@
 # Mixin Renderer Integration — Foundation and Safety Notes
 
-## What changed
+## Active client mixins
 
-The Gradle build now configures SpongePowered MixinGradle with the Mixin 0.8.5 annotation processor, a generated reference map named `opticore.refmap.json`, and the `opticore.mixins.json` configuration. The configuration registers a client-only diagnostic Mixin, `LevelRendererDiagnosticsMixin`. It observes entry into `LevelRenderer.renderChunkLayer(...)` and periodically logs a bounded call count. It does not alter matrices, buffers, shaders, or draw calls.
+The client mixin configuration registers these renderer-related components:
 
-Forge already ships the Mixin runtime. OptiCore does not shade or bundle a second Mixin runtime into its mod JAR.
+- `LevelRendererDiagnosticsMixin`: observes `LevelRenderer.renderChunkLayer(...)` and maintains a bounded atomic call counter. It does not alter matrices, buffers, shaders, or draw calls.
+- `ChunkRebuildCaptureMixin`: observes the return from the vanilla chunk-section compile method while its `RenderedBuffer` layer payloads are still available. It resolves the region's center chunk through accessors, checks that the center RenderChunk origin agrees with the region coordinates, and skips uncertain layouts.
+- `ChunkCompileResultsAccessor`, `RebuildTaskRegionAccessor`, and `RenderChunkRegionAccessor`: expose only the fields needed by that observer.
 
-## Verified Forge 47.2.0 target surface
+The rebuild observer does not retain vanilla `RenderedBuffer`, `BufferBuilder`, or GPU `VertexBuffer` objects. When the user enables **Chunk Diagnostics**, it makes bounded defensive CPU copies for observation counters and discards those snapshots. The observation path is disabled when diagnostics are off. The HUD reports observed buffer count, copied bytes, and skipped buffers.
 
-For Minecraft 1.20.1 / Forge 47.2.0, the documented rebuild path includes:
+## Why the mesh cache is not connected yet
 
-- `ChunkRenderDispatcher.RenderChunk.RebuildTask.doTask(ChunkBufferBuilderPack)`, which returns a `CompletableFuture<ChunkTaskResult>`.
-- A private `RebuildTask.compile(float, float, float, ChunkBufferBuilderPack)` method returning the nested `CompileResults`.
-- `CompileResults.renderedLayers`, a map of render layers to `BufferBuilder.RenderedBuffer`.
-- `CompileResults.visibilitySet`, `transparencyState`, `blockEntities`, and `globalBlockEntities`.
+The current cache is a bounded, thread-safe LRU store for immutable CPU artifacts. The project has a defensive `ImmutableMeshSnapshot` format and a copier for vanilla rendered buffers, but the active rebuild observer does not insert snapshots into the cache and the renderer does not read cached snapshots back.
 
-The public dispatcher also exposes queue/upload counters, but those counters are diagnostics, not a mesh-cache integration point.
+A real mesh-reuse implementation must first define and test:
 
-## Why the cache hook is not enabled yet
-
-A `RenderedBuffer` is a builder-owned upload payload. Retaining it after the vanilla upload/cleanup lifecycle risks reusing released or pooled memory. It is also not a durable immutable mesh representation that can safely be replayed into a later upload.
-
-A real cache implementation must first define and test:
-1. An immutable CPU-side representation for each render layer.
+1. Complete cache identity for block states, model data, neighbor geometry, lighting, resource generation, render settings, and render-layer behavior.
 2. A safe copy/serialization boundary before vanilla releases builder-owned data.
-3. Correct reconstruction into a fresh upload payload, without retaining live `BufferBuilder` or GPU `VertexBuffer` objects.
-4. Complete cache identity for block states, model data, neighbor geometry, lighting, resource generation, render settings, and relevant Forge render-layer behavior.
-5. Cancellation, stale-task, chunk unload, dimension unload, and resource-reload behavior.
-6. A benchmark proving that copying and reconstructing meshes costs less than recompiling them on target hardware.
+3. Correct reconstruction into a fresh upload payload, without retaining live builder or GPU objects.
+4. A cache-read path that can safely replace or bypass vanilla compilation without breaking cancellation, task completion, upload scheduling, or render-thread ownership.
+5. Correct invalidation for block edits, neighboring chunk borders, chunk unloads, dimension unloads, resource reloads, and stale asynchronous tasks.
+6. A benchmark proving that copying, hashing, storing, and reconstructing meshes costs less than compiling them on target hardware.
 
-Until these conditions are met, injecting a cache read/write into `compile` or `doTask` would risk stale geometry, use-after-release bugs, worker-thread races, or regressions for third-party renderers.
+The current observer is instrumentation only. It is not a mesh-cache hit path and does not reduce chunk rebuild work. Connecting cache reads/writes before the full dependency and lifecycle contract is proven could cause stale geometry, worker-thread races, use-after-release bugs, or third-party renderer regressions.
 
-## Next implementation step
+## Shadow-rendering boundary
 
-Use a minimal client-only instrumentation mixin around the rebuild future to measure compilation completion and cancellation behavior first. Do not retain `RenderedBuffer` instances. After runtime verification on Forge 47.2.0, prototype an owned CPU-side mesh snapshot and test round-trip reconstruction before connecting it to SmartChunkCache.
+The repository contains shadow-camera matrix helpers, a depth-only framebuffer resource, and a guarded depth-pass executor. These are reusable foundations only. There is no verified caster enumeration for Minecraft terrain, entities, or block entities; no light-space world redraw; and no shadow-map sampling in the active fullscreen pass. The diagnostic `renderChunkLayer` Mixin must not be repurposed to replay arbitrary vanilla layers into a shadow target without a tested caster-layer policy and complete GL-state handling.
 
-## Validation status
+## Build validation
 
-The earlier successful workflow run `45406256000` validated the pre-instrumentation build only; it does **not** validate the active diagnostic Mixin added later. The current branch registers `LevelRendererDiagnosticsMixin` under the client-only `client` list, and the static CI check verifies the JSON registration, expected method descriptor, injection point, `require = 1`, and diagnostic counter. GitHub Actions runs for the current head `3bcd700ffb623556a502f7702176494ae32ce0c6` were queued at the last check; a successful Forge build for that exact head has not yet been confirmed. A real Forge client launch and in-game verification are still pending. No renderer behavior, shadow rendering, or FPS improvement is claimed.
+The branch's GitHub Actions workflow builds the mod and runs the standalone regression suite across the configured Forge 1.20.1 matrix (47.0.0, 47.2.0, and 47.4.29). The latest verified code commit for this instrumentation path is `9d2b8aedb3551f97dc3d622e21f9e584498c0c55`; all three jobs completed successfully, including the packaged Mixin registration checks.
+
+This proves source compilation and the automated checks only. A live Minecraft client launch is still required to prove that each Mixin applies on the actual runtime mappings and that observed counts match expected behavior. No runtime performance gain, cache reuse, or functional shadow rendering is claimed.
 
 ## References
 
@@ -45,25 +41,3 @@ The earlier successful workflow run `45406256000` validated the pre-instrumentat
 - Forge 47.2.0 `RenderChunk`: https://mcstreetguy.github.io/ForgeJavaDocs/1.20.1-47.2.0/net/minecraft/client/renderer/chunk/ChunkRenderDispatcher.RenderChunk.html
 - Forge 47.2.0 `RebuildTask`: https://lexxie.dev/forge/1.20.1/net/minecraft/client/renderer/chunk/ChunkRenderDispatcher.RenderChunk.RebuildTask.html
 - SpongePowered Mixin on Forge: https://github.com/SpongePowered/Mixin/wiki/Mixins-on-Minecraft-Forge
-
-
-## Shadow-render hook checkpoint — Forge 47.2.0
-
-The Forge 47.2.0 LevelRenderer API documentation confirms this private method signature:
-
-`renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)`
-
-It is invoked as part of the normal world-layer drawing path, but its private visibility prevents a direct call from OptiCore. A client Mixin could observe the method boundary. The source now declares the mapped JVM descriptor and a diagnostic injection at method HEAD. Static checks validate the source/configuration text, but only the Forge build and a live client launch can confirm that Mixin resolves and applies the target on each supported Forge version.
-
-### Instrumentation acceptance criteria
-
-A first shadow-path experiment must be diagnostic-only and disabled by default:
-
-- Count entry/exit per RenderType on the render thread; do not change matrices, shaders, framebuffer, or draw calls.
-- Avoid logging every frame; expose bounded counters or periodic summaries.
-- Confirm each expected opaque/cutout layer is observed once in a normal frame and check behavior when the world is paused, unloaded, or resized.
-- Confirm the mixin applies on all supported Forge CI versions before considering a shadow draw.
-
-A later depth-only pass must not blindly replay translucent layers as opaque casters. It will need a separate caster-layer policy, light-space matrices, depth state, and complete GL-state restoration. Entity and block-entity casters remain separate work.
-
-**Status (2026-11-25):** A diagnostic-only client Mixin is now registered and targets the documented `renderChunkLayer(RenderType, PoseStack, double, double, double, Matrix4f)` descriptor with `require = 1`. It increments an atomic counter and logs the first observation, then every 1000 calls. This is source-level implementation only: CI runs for commit `525a7d65ecac256b8508439ef41ed370f5a406fe` have been queued, but no successful result for that commit has been confirmed yet. The client has not been launched, so injection application and observed layer frequency remain unverified. No terrain depth pass, entity caster path, shadow map geometry, or functional shadows are implemented. Do not proceed to duplicate/replay the layer draw until the diagnostic injection is proven in a live client.
