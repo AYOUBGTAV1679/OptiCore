@@ -21,6 +21,12 @@ public final class ChunkMeshCapture {
     private static final LongAdder OBSERVED_BUFFERS = new LongAdder();
     private static final LongAdder COPIED_BYTES = new LongAdder();
     private static final long MAX_OBSERVATION_BYTES_PER_COMPILE = 4L * 1024L * 1024L;
+    private static volatile boolean observationEnabled;
+
+    /** Updated on the client thread; chunk compiler workers read the volatile snapshot. */
+    public static void setObservationEnabled(boolean enabled) {
+        observationEnabled = enabled;
+    }
 
     private ChunkMeshCapture() {}
 
@@ -72,8 +78,7 @@ public final class ChunkMeshCapture {
         // Copying vanilla's transient CPU buffers is diagnostic work, not a
         // production optimization. Keep it completely off unless diagnostics
         // are explicitly enabled by the user.
-        if (!OptiCoreConfig.SHOW_CHUNK_DIAGNOSTICS.get()
-                || level == null || !level.isClientSide() || layers == null) return;
+        if (!observationEnabled || level == null || !level.isClientSide() || layers == null) return;
 
         long compileBytes = 0L;
         for (BufferBuilder.RenderedBuffer rendered : layers.values()) {
