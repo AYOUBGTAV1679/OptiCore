@@ -3,6 +3,8 @@ package dev.opticore.client.shader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public final class FullscreenShaderContractSelfTest {
     private static final String VERTEX = """
@@ -74,7 +76,31 @@ public final class FullscreenShaderContractSelfTest {
                 "demo option overrides are applied to GLSL source");
         check(FullscreenShaderContract.validate(demoVertex, overridden.source()).supported(),
                 "option-adjusted demo source still satisfies fullscreen contract");
-        System.out.println("FullscreenShaderContractSelfTest: 14 checks passed");
+
+        Path demoZip = Files.createTempFile("opticore-fullscreen-demo", ".zip");
+        try {
+            try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(demoZip))) {
+                output.putNextEntry(new ZipEntry("shaders/final.vsh"));
+                output.write(demoVertex.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                output.closeEntry();
+                output.putNextEntry(new ZipEntry("shaders/final.fsh"));
+                output.write(demoFragment.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                output.closeEntry();
+            }
+            ShaderProgramIndex.Summary zipIndex = ShaderProgramIndex.inspect(demoZip, true);
+            check(zipIndex.pairedPrograms() == 1 && zipIndex.paired().contains("final"),
+                    "ZIP demo pack is discovered as one paired program");
+            ShaderPackCompatibilityReport.Summary zipReport =
+                    ShaderPackCompatibilityReport.inspect(demoZip, true);
+            check(zipReport.readyPrograms() == 1 && zipReport.allInspectedProgramsReady(),
+                    "ZIP demo pack passes bounded source preflight");
+            ShaderOptionParser.Summary zipOptions = ShaderOptionDiscovery.inspect(demoZip, true);
+            check(zipOptions.options().size() == 3,
+                    "ZIP demo pack exposes all three editable options");
+        } finally {
+            Files.deleteIfExists(demoZip);
+        }
+        System.out.println("FullscreenShaderContractSelfTest: 17 checks passed");
     }
 
     private static void check(boolean condition, String label) {
