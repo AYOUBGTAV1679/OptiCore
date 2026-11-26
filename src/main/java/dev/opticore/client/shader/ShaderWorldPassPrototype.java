@@ -119,7 +119,12 @@ public final class ShaderWorldPassPrototype {
 
     private static void refreshSelectedPackProgram() {
         String selected = ShaderPackRepository.activePack();
-        if (selected.equals(loadedPackName)) return;
+        if (selected.equals(loadedPackName)) {
+            if (selectedPackProgram == null || !selectedPackProgram.isClosed()) return;
+            // The bounded program cache may evict this entry after other explicit
+            // compile requests. Re-resolve it rather than failing every world frame.
+            loadedPackName = null;
+        }
         loadedPackName = selected;
         selectedPackProgram = null;
         if ("OFF".equalsIgnoreCase(selected)) {
