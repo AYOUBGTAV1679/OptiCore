@@ -38,21 +38,36 @@ public final class ShaderWorldPassPrototype {
         }
 
         RenderTarget vanillaScene = minecraft.getMainRenderTarget();
+        GlRenderTarget capturedScene = null;
+        boolean sceneCaptured = false;
         try {
-            GlRenderTarget target = GlRenderTargetManager.acquire(
+            capturedScene = GlRenderTargetManager.acquire(
                     "world-scene-capture", vanillaScene.width, vanillaScene.height);
-            target.copySceneFrom(vanillaScene);
+            capturedScene.copySceneFrom(vanillaScene);
+            sceneCaptured = true;
             float[] projection = new float[16];
             event.getProjectionMatrix().get(projection);
             float[] inverseProjection = Matrix4Inverse.invert(projection);
-            compositePass.render(target, vanillaScene, warmth, fogStrength, inverseProjection);
+            compositePass.render(capturedScene, vanillaScene, warmth, fogStrength, inverseProjection);
             successfulCaptures++;
             lastSuccessfulRenderTick = event.getRenderTick();
             lastFailure = "";
         } catch (RuntimeException failure) {
             String message = failure.getMessage();
-            lastFailure = message == null || message.isBlank()
+            String diagnostic = message == null || message.isBlank()
                     ? failure.getClass().getSimpleName() : message;
+            if (sceneCaptured && capturedScene != null) {
+                try {
+                    capturedScene.copySceneTo(vanillaScene);
+                    diagnostic += " (original scene restored)";
+                } catch (RuntimeException restoreFailure) {
+                    String restoreMessage = restoreFailure.getMessage();
+                    diagnostic += " (scene restore also failed: "
+                            + (restoreMessage == null || restoreMessage.isBlank()
+                            ? restoreFailure.getClass().getSimpleName() : restoreMessage) + ")";
+                }
+            }
+            lastFailure = diagnostic;
         }
     }
 
