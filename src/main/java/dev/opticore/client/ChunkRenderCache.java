@@ -73,8 +73,8 @@ public final class ChunkRenderCache {
     }
 
     public static void onRenderSettingsChanged() {
+        // SmartChunkCache advances the generation and eagerly releases stale entries.
         CACHE.onRenderSettingsChanged();
-        CACHE.purgeStale();
     }
 
     public static SmartChunkCache<CacheEntry> cache() {
@@ -135,8 +135,8 @@ public final class ChunkRenderCache {
     }
 
     public static void onResourcesReloaded() {
+        // SmartChunkCache advances the generation and eagerly releases stale entries.
         CACHE.onResourcesReloaded();
-        CACHE.purgeStale();
     }
 
     public static void invalidateAll() {
