@@ -117,7 +117,7 @@ public final class ChunkRenderCache {
 
     public static void invalidateChunk(Level level, int chunkX, int chunkZ) {
         if (level == null || !level.isClientSide()) return;
-        CACHE.invalidateChunk(dimensionId(level.dimension()), chunkX, chunkZ);
+        CACHE.invalidateChunk(dimensionId(level.dimension()), worldSession(level), chunkX, chunkZ);
     }
 
     /**
@@ -131,7 +131,7 @@ public final class ChunkRenderCache {
         String dimension = dimensionId(level.dimension());
         for (ChunkBoundaryInvalidation.ChunkCoordinate coordinate
                 : ChunkBoundaryInvalidation.affectedByBlockEdit(pos.getX(), pos.getZ())) {
-            CACHE.invalidateChunk(dimension, coordinate.x(), coordinate.z());
+            CACHE.invalidateChunk(dimension, worldSession(level), coordinate.x(), coordinate.z());
         }
     }
 
