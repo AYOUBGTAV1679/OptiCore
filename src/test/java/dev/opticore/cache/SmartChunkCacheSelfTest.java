@@ -136,14 +136,19 @@ public final class SmartChunkCacheSelfTest {
     }
     static void resourceReload() {
         var c=new SmartChunkCache<E>(1000); E a=new E(5); c.put(k(0,0,0),a); c.onResourcesReloaded();
-        check("resource reload makes old entry stale", c.get(k(0,0,0))==null && a.released.get()==1 && c.currentBytes()==0);
+        check("resource reload eagerly releases old entries", a.released.get()==1
+                && c.currentBytes()==0 && c.size()==0 && c.stats().invalidations()==1);
+        check("lookup after resource reload remains a miss", c.get(k(0,0,0))==null);
         E b=new E(5); c.put(k(0,0,0),b);
         check("new entry valid after resource reload", c.get(k(0,0,0))==b);
     }
     static void settingsChange() {
         var c=new SmartChunkCache<E>(1000); E a=new E(5),b=new E(5);
         c.put(k(0,0,0),a); c.put(k(1,0,0),b); c.onRenderSettingsChanged();
-        check("purge frees entries stale after settings change", c.purgeStale()==2 && a.released.get()==1 && b.released.get()==1 && c.size()==0);
+        check("settings change eagerly releases stale entries",
+                a.released.get()==1 && b.released.get()==1 && c.size()==0
+                        && c.currentBytes()==0 && c.stats().invalidations()==2);
+        check("explicit purge after settings change is idempotent", c.purgeStale()==0);
     }
     static void replaceAccounting() {
         var c=new SmartChunkCache<E>(100); E a=new E(40),b=new E(10);
