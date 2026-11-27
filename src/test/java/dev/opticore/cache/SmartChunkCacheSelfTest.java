@@ -24,7 +24,7 @@ public final class SmartChunkCacheSelfTest {
     }
     public static void main(String[] args) throws Exception {
         hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); negativeSizeRejected(); largeBudgetAdditionDoesNotOverflow(); shrinkEvicts();
-        invalidateChunk(); resourceReload(); settingsChange(); replaceAccounting();
+        invalidateChunk(); invalidateWorldSession(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
         if (failed != 0) throw new AssertionError("Cache tests failed");
@@ -133,6 +133,20 @@ public final class SmartChunkCacheSelfTest {
         check("chunk invalidation removes its sections", removed==2 && c.get(k(5,5,0))==null && c.get(k(5,5,1))==null);
         check("neighbour and other dimension retained", c.get(k(5,6,0))==o && c.get(new RenderCacheKey("nether",5,5,0))==n);
         check("invalidated bytes and release accounting", a.released.get()==1 && b.released.get()==1 && c.currentBytes()==2);
+    }
+    static void invalidateWorldSession() {
+        var c = new SmartChunkCache<E>(100);
+        E worldA = new E(7), worldB = new E(9), legacy = new E(3);
+        c.put(new RenderCacheKey("overworld", 41L, 2, 3, 0, 1L, 2L, 3L), worldA);
+        c.put(new RenderCacheKey("overworld", 42L, 2, 3, 0, 1L, 2L, 3L), worldB);
+        c.put(k(8, 8, 0), legacy);
+        int removed = c.invalidateWorldSession(41L);
+        check("world unload removes only its own session entries",
+                removed == 1 && worldA.released.get() == 1 && worldB.released.get() == 0
+                        && legacy.released.get() == 0 && c.currentBytes() == 12 && c.size() == 2);
+        check("other world and legacy entries remain readable",
+                c.get(new RenderCacheKey("overworld", 42L, 2, 3, 0, 1L, 2L, 3L)) == worldB
+                        && c.get(k(8, 8, 0)) == legacy);
     }
     static void resourceReload() {
         var c=new SmartChunkCache<E>(1000); E a=new E(5); c.put(k(0,0,0),a); c.onResourcesReloaded();
