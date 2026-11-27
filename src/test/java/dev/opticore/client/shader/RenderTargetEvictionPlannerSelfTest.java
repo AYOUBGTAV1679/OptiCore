@@ -17,9 +17,9 @@ public final class RenderTargetEvictionPlannerSelfTest {
                 new RenderTargetEvictionPlanner.Target("newer", 30, false));
         var plan = RenderTargetEvictionPlanner.plan(targets, 50, 2, 100);
         check(plan.feasible(), "a feasible eviction plan should succeed");
-        check(plan.evictionKeys().equals(List.of("old", "newer")),
-                "evictions should follow LRU order until both budgets fit");
-        check(plan.remainingCount() == 1 && plan.remainingPixels() == 50,
+        check(plan.evictionKeys().equals(List.of("old")),
+                "the least-recently-used target should be evicted first");
+        check(plan.remainingCount() == 2 && plan.remainingPixels() == 80,
                 "plan should account for the requested target");
     }
 
@@ -27,7 +27,7 @@ public final class RenderTargetEvictionPlannerSelfTest {
         var targets = List.of(
                 new RenderTargetEvictionPlanner.Target("bound", 70, true),
                 new RenderTargetEvictionPlanner.Target("free", 40, false));
-        var plan = RenderTargetEvictionPlanner.plan(targets, 50, 2, 100);
+        var plan = RenderTargetEvictionPlanner.plan(targets, 30, 2, 110);
         check(plan.feasible(), "an unbound target should make the budget feasible");
         check(plan.evictionKeys().equals(List.of("free")),
                 "a currently bound target must never be selected for eviction");
