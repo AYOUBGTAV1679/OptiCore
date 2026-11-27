@@ -33,6 +33,11 @@ public final class RenderTargetEvictionPlanner {
         if (requestedPixels < 1 || maxTargets < 1 || maxPixels < 1) {
             throw new IllegalArgumentException("Budgets and requested pixels must be positive");
         }
+        // No eviction of existing entries can make an individually oversized
+        // request fit, so reject it before constructing a partial plan.
+        if (requestedPixels > maxPixels) {
+            return new Plan(false, List.of(), targets.size() + 1, requestedPixels);
+        }
         int count = targets.size() + 1;
         long pixels = requestedPixels;
         for (Target target : targets) {
