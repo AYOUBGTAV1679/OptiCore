@@ -44,7 +44,7 @@ public final class ChunkRenderCacheEvents {
     @SubscribeEvent
     public static void onLevelUnload(LevelEvent.Unload event) {
         if (event.getLevel() instanceof Level level && level.isClientSide()) {
-            ChunkRenderCache.invalidateDimension(level.dimension());
+            // Session-scoped cleanup preserves other live Level instances in the same dimension.
             ChunkRenderCache.forgetWorldSession(level);
         }
     }
