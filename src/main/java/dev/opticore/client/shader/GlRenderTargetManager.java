@@ -44,21 +44,33 @@ public final class GlRenderTargetManager {
 
         // Allocate before evicting so an allocation failure does not destroy useful cached targets.
         GlRenderTarget created = GlRenderTarget.create(width, height);
-        TARGETS.put(key, created);
-        trimToBudget();
-        return created;
-    }
+        long projectedPixels = totalPixels() + requestedPixels;
+        int projectedCount = TARGETS.size() + 1;
+        java.util.List<String> evictionKeys = new java.util.ArrayList<>();
 
-    private static void trimToBudget() {
-        while (TARGETS.size() > MAX_TARGETS || totalPixels() > MAX_TOTAL_PIXELS) {
-            Iterator<Map.Entry<String, GlRenderTarget>> iterator = TARGETS.entrySet().iterator();
-            if (!iterator.hasNext()) return;
-            Map.Entry<String, GlRenderTarget> eldest = iterator.next();
-            // Close before removing: if the target is still bound, close()
-            // rejects the operation and the manager must retain ownership.
-            eldest.getValue().close();
-            iterator.remove();
+        // Plan all evictions first. Never partially evict the cache and then
+        // discover that every remaining target is currently bound.
+        for (Map.Entry<String, GlRenderTarget> entry : TARGETS.entrySet()) {
+            if (projectedCount <= MAX_TARGETS && projectedPixels <= MAX_TOTAL_PIXELS) break;
+            if (entry.getValue().isBound()) continue;
+            evictionKeys.add(entry.getKey());
+            projectedCount--;
+            projectedPixels -= (long) entry.getValue().width() * entry.getValue().height();
         }
+        if (projectedCount > MAX_TARGETS || projectedPixels > MAX_TOTAL_PIXELS) {
+            created.close();
+            throw new IllegalStateException("Render-target budget cannot be met without evicting a bound target");
+        }
+
+        for (String evictionKey : evictionKeys) {
+            GlRenderTarget evicted = TARGETS.get(evictionKey);
+            if (evicted != null) {
+                evicted.close();
+                TARGETS.remove(evictionKey);
+            }
+        }
+        TARGETS.put(key, created);
+        return created;
     }
 
     private static long totalPixels() {
