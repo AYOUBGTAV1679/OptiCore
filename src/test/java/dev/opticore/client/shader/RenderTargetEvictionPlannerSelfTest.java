@@ -7,6 +7,7 @@ public final class RenderTargetEvictionPlannerSelfTest {
         evictsLeastRecentlyUsedUnboundTargets();
         skipsBoundTargets();
         rejectsImpossiblePlanWithoutEvictions();
+        rejectsOversizedRequestWithoutEvictions();
         rejectsInvalidBudgets();
         System.out.println("RenderTargetEvictionPlannerSelfTest: OK");
     }
@@ -41,6 +42,17 @@ public final class RenderTargetEvictionPlannerSelfTest {
         check(!plan.feasible(), "all-bound cache should reject an impossible request");
         check(plan.evictionKeys().isEmpty(),
                 "an infeasible plan must not request partial evictions");
+    }
+
+    private static void rejectsOversizedRequestWithoutEvictions() {
+        var targets = List.of(
+                new RenderTargetEvictionPlanner.Target("old", 20, false));
+        var plan = RenderTargetEvictionPlanner.plan(targets, 120, 2, 100);
+        check(!plan.feasible(), "a request larger than the entire pixel budget must fail");
+        check(plan.evictionKeys().isEmpty(),
+                "an oversized request must not schedule pointless evictions");
+        check(plan.remainingCount() == 2 && plan.remainingPixels() == 120,
+                "an oversized request should report its unchanged requested allocation");
     }
 
     private static void rejectsInvalidBudgets() {
