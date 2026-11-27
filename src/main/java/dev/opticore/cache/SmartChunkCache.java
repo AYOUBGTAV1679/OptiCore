@@ -96,6 +96,11 @@ public final class SmartChunkCache<V extends CacheEntry> {
     public int invalidateChunk(String dimension, int chunkX, int chunkZ) {
         return removeIf(k -> k.inChunk(dimension, chunkX, chunkZ));
     }
+    /** Remove one chunk's entries from one exact client-world session. */
+    public int invalidateChunk(String dimension, long worldSession, int chunkX, int chunkZ) {
+        return removeIf(k -> k.worldSession() == worldSession
+                && k.inChunk(dimension, chunkX, chunkZ));
+    }
     public int invalidateDimension(String dimension) {
         return removeIf(k -> k.dimension().equals(dimension));
     }
