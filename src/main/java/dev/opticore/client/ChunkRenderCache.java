@@ -57,12 +57,17 @@ public final class ChunkRenderCache {
                 lightFingerprint, renderSettingsFingerprint);
     }
 
-    /** Drop the identity token after this exact client Level has been unloaded. */
+    /**
+     * Drop the identity token and release cached meshes when this exact client
+     * Level unloads. Other worlds sharing the same dimension remain untouched.
+     */
     public static void forgetWorldSession(Level level) {
         if (level == null) return;
+        Long session;
         synchronized (WORLD_SESSIONS) {
-            WORLD_SESSIONS.remove(level);
+            session = WORLD_SESSIONS.remove(level);
         }
+        if (session != null) CACHE.invalidateWorldSession(session);
     }
 
     private static long worldSession(Level level) {
