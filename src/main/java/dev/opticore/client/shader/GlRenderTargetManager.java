@@ -2,7 +2,6 @@ package dev.opticore.client.shader;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
