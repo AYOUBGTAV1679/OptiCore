@@ -24,7 +24,7 @@ public final class SmartChunkCacheSelfTest {
     }
     public static void main(String[] args) throws Exception {
         hitMiss(); keyDependencyIdentity(); boundaryInvalidationTargets(); lruOrder(); getRefreshesRecency(); oversizeRejected(); negativeSizeRejected(); largeBudgetAdditionDoesNotOverflow(); shrinkEvicts();
-        invalidateChunk(); invalidateWorldSession(); resourceReload(); settingsChange(); replaceAccounting();
+        invalidateChunk(); invalidateChunkSession(); invalidateWorldSession(); resourceReload(); settingsChange(); replaceAccounting();
         releaseThrows(); nullArgumentsRejected(); clearReleasesAll(); concurrency();
         System.out.println("\n" + passed + " passed, " + failed + " failed");
         if (failed != 0) throw new AssertionError("Cache tests failed");
@@ -133,6 +133,21 @@ public final class SmartChunkCacheSelfTest {
         check("chunk invalidation removes its sections", removed==2 && c.get(k(5,5,0))==null && c.get(k(5,5,1))==null);
         check("neighbour and other dimension retained", c.get(k(5,6,0))==o && c.get(new RenderCacheKey("nether",5,5,0))==n);
         check("invalidated bytes and release accounting", a.released.get()==1 && b.released.get()==1 && c.currentBytes()==2);
+    }
+    static void invalidateChunkSession() {
+        var c = new SmartChunkCache<E>(100);
+        E worldA = new E(4), worldB = new E(5), legacy = new E(6);
+        c.put(new RenderCacheKey("overworld", 41L, 5, 6, 0, 1L, 2L, 3L), worldA);
+        c.put(new RenderCacheKey("overworld", 42L, 5, 6, 0, 1L, 2L, 3L), worldB);
+        c.put(new RenderCacheKey("overworld", 0L, 5, 6, 0, 1L, 2L, 3L), legacy);
+        int removed = c.invalidateChunk("overworld", 41L, 5, 6);
+        check("chunk unload invalidates only the matching world session",
+                removed == 1 && worldA.released.get() == 1
+                        && worldB.released.get() == 0 && legacy.released.get() == 0);
+        check("same chunk in other sessions remains cached",
+                c.get(new RenderCacheKey("overworld", 42L, 5, 6, 0, 1L, 2L, 3L)) == worldB
+                        && c.get(new RenderCacheKey("overworld", 0L, 5, 6, 0, 1L, 2L, 3L)) == legacy
+                        && c.currentBytes() == 11);
     }
     static void invalidateWorldSession() {
         var c = new SmartChunkCache<E>(100);
