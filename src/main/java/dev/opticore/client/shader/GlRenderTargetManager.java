@@ -43,28 +43,35 @@ public final class GlRenderTargetManager {
 
         // Allocate before evicting so an allocation failure does not destroy useful cached targets.
         GlRenderTarget created = GlRenderTarget.create(width, height);
-        java.util.List<RenderTargetEvictionPlanner.Target> currentTargets = new java.util.ArrayList<>();
-        for (Map.Entry<String, GlRenderTarget> entry : TARGETS.entrySet()) {
-            GlRenderTarget target = entry.getValue();
-            currentTargets.add(new RenderTargetEvictionPlanner.Target(entry.getKey(),
-                    (long) target.width() * target.height(), target.isBound()));
-        }
-        RenderTargetEvictionPlanner.Plan plan = RenderTargetEvictionPlanner.plan(
-                currentTargets, requestedPixels, MAX_TARGETS, MAX_TOTAL_PIXELS);
-        if (!plan.feasible()) {
-            created.close();
-            throw new IllegalStateException("Render-target budget cannot be met without evicting a bound target");
-        }
-
-        for (String evictionKey : plan.evictionKeys()) {
-            GlRenderTarget evicted = TARGETS.get(evictionKey);
-            if (evicted != null) {
-                evicted.close();
-                TARGETS.remove(evictionKey);
+        boolean ownershipTransferred = false;
+        try {
+            java.util.List<RenderTargetEvictionPlanner.Target> currentTargets = new java.util.ArrayList<>();
+            for (Map.Entry<String, GlRenderTarget> entry : TARGETS.entrySet()) {
+                GlRenderTarget target = entry.getValue();
+                currentTargets.add(new RenderTargetEvictionPlanner.Target(entry.getKey(),
+                        (long) target.width() * target.height(), target.isBound()));
             }
+            RenderTargetEvictionPlanner.Plan plan = RenderTargetEvictionPlanner.plan(
+                    currentTargets, requestedPixels, MAX_TARGETS, MAX_TOTAL_PIXELS);
+            if (!plan.feasible()) {
+                throw new IllegalStateException(
+                        "Render-target budget cannot be met without evicting a bound target");
+            }
+
+            for (String evictionKey : plan.evictionKeys()) {
+                GlRenderTarget evicted = TARGETS.get(evictionKey);
+                if (evicted != null) {
+                    evicted.close();
+                    TARGETS.remove(evictionKey);
+                }
+            }
+            TARGETS.put(key, created);
+            ownershipTransferred = true;
+            return created;
+        } finally {
+            // Also release the newly allocated GL object if planning or eviction fails.
+            if (!ownershipTransferred) created.close();
         }
-        TARGETS.put(key, created);
-        return created;
     }
 
     private static long totalPixels() {
