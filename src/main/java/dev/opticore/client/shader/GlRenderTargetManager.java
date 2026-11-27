@@ -54,8 +54,10 @@ public final class GlRenderTargetManager {
             Iterator<Map.Entry<String, GlRenderTarget>> iterator = TARGETS.entrySet().iterator();
             if (!iterator.hasNext()) return;
             Map.Entry<String, GlRenderTarget> eldest = iterator.next();
-            iterator.remove();
+            // Close before removing: if the target is still bound, close()
+            // rejects the operation and the manager must retain ownership.
             eldest.getValue().close();
+            iterator.remove();
         }
     }
 
@@ -69,13 +71,24 @@ public final class GlRenderTargetManager {
 
     public static void release(String key) {
         RenderSystem.assertOnRenderThread();
-        GlRenderTarget target = TARGETS.remove(key);
-        if (target != null) target.close();
+        GlRenderTarget target = TARGETS.get(key);
+        if (target != null) {
+            // Do not orphan a still-bound GL object by removing it first.
+            target.close();
+            TARGETS.remove(key);
+        }
     }
 
     /** Releases all targets, for resource reload or client shutdown. */
     public static void clear() {
         RenderSystem.assertOnRenderThread();
+        // Preflight all targets so a bound target cannot leave a partially
+        // cleared manager with closed entries still registered.
+        for (GlRenderTarget target : TARGETS.values()) {
+            if (target.isBound()) {
+                throw new IllegalStateException("Cannot clear render targets while one is bound");
+            }
+        }
         for (GlRenderTarget target : TARGETS.values()) target.close();
         TARGETS.clear();
     }
