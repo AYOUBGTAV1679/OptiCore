@@ -99,6 +99,10 @@ public final class SmartChunkCache<V extends CacheEntry> {
     public int invalidateDimension(String dimension) {
         return removeIf(k -> k.dimension().equals(dimension));
     }
+    /** Remove all entries owned by one exact client-world session. */
+    public int invalidateWorldSession(long worldSession) {
+        return removeIf(k -> k.worldSession() == worldSession);
+    }
     public void onResourcesReloaded() {
         lock.lock();
         try { resourceGen++; }
