@@ -43,25 +43,20 @@ public final class GlRenderTargetManager {
 
         // Allocate before evicting so an allocation failure does not destroy useful cached targets.
         GlRenderTarget created = GlRenderTarget.create(width, height);
-        long projectedPixels = totalPixels() + requestedPixels;
-        int projectedCount = TARGETS.size() + 1;
-        java.util.List<String> evictionKeys = new java.util.ArrayList<>();
-
-        // Plan all evictions first. Never partially evict the cache and then
-        // discover that every remaining target is currently bound.
+        java.util.List<RenderTargetEvictionPlanner.Target> currentTargets = new java.util.ArrayList<>();
         for (Map.Entry<String, GlRenderTarget> entry : TARGETS.entrySet()) {
-            if (projectedCount <= MAX_TARGETS && projectedPixels <= MAX_TOTAL_PIXELS) break;
-            if (entry.getValue().isBound()) continue;
-            evictionKeys.add(entry.getKey());
-            projectedCount--;
-            projectedPixels -= (long) entry.getValue().width() * entry.getValue().height();
+            GlRenderTarget target = entry.getValue();
+            currentTargets.add(new RenderTargetEvictionPlanner.Target(entry.getKey(),
+                    (long) target.width() * target.height(), target.isBound()));
         }
-        if (projectedCount > MAX_TARGETS || projectedPixels > MAX_TOTAL_PIXELS) {
+        RenderTargetEvictionPlanner.Plan plan = RenderTargetEvictionPlanner.plan(
+                currentTargets, requestedPixels, MAX_TARGETS, MAX_TOTAL_PIXELS);
+        if (!plan.feasible()) {
             created.close();
             throw new IllegalStateException("Render-target budget cannot be met without evicting a bound target");
         }
 
-        for (String evictionKey : evictionKeys) {
+        for (String evictionKey : plan.evictionKeys()) {
             GlRenderTarget evicted = TARGETS.get(evictionKey);
             if (evicted != null) {
                 evicted.close();
