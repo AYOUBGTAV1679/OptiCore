@@ -262,6 +262,14 @@ public final class GlRenderTarget implements AutoCloseable {
         if (closed) throw new IllegalStateException("Render target is closed");
     }
 
+    /** Returns whether this target is currently bound for reading or drawing. */
+    public boolean isBound() {
+        RenderSystem.assertOnRenderThread();
+        ensureOpen();
+        return GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING) == framebuffer
+                || GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING) == framebuffer;
+    }
+
     /** Prevent deletion/replacement from invalidating an active scoped framebuffer binding. */
     private void ensureNotBound() {
         int draw = GL11.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
