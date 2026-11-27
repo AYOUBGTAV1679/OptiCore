@@ -100,10 +100,20 @@ public final class SmartChunkCache<V extends CacheEntry> {
         return removeIf(k -> k.dimension().equals(dimension));
     }
     public void onResourcesReloaded() {
-        lock.lock(); try { resourceGen++; } finally { lock.unlock(); }
+        lock.lock();
+        try { resourceGen++; }
+        finally { lock.unlock(); }
+        // Resource-backed mesh data is no longer reusable. Release it now
+        // instead of retaining stale entries until a later lookup or purge.
+        purgeStale();
     }
     public void onRenderSettingsChanged() {
-        lock.lock(); try { settingsGen++; } finally { lock.unlock(); }
+        lock.lock();
+        try { settingsGen++; }
+        finally { lock.unlock(); }
+        // A settings generation invalidates every existing key. Eagerly free
+        // the memory so repeated settings changes cannot retain dead snapshots.
+        purgeStale();
     }
 
     public int purgeStale() {
