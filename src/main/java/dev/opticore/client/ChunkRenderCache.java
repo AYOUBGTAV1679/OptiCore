@@ -137,7 +137,9 @@ public final class ChunkRenderCache {
 
     public static void invalidateChunk(Level level, int chunkX, int chunkZ) {
         if (level == null || !level.isClientSide()) return;
-        CACHE.invalidateChunk(dimensionId(level.dimension()), worldSession(level), chunkX, chunkZ);
+        long session = worldSession(level);
+        if (session < 0L) return;
+        CACHE.invalidateChunk(dimensionId(level.dimension()), session, chunkX, chunkZ);
     }
 
     /**
@@ -148,10 +150,12 @@ public final class ChunkRenderCache {
             net.minecraft.core.BlockPos pos) {
         if (level == null || pos == null || !level.isClientSide()) return;
 
+        long session = worldSession(level);
+        if (session < 0L) return;
         String dimension = dimensionId(level.dimension());
         for (ChunkBoundaryInvalidation.ChunkCoordinate coordinate
                 : ChunkBoundaryInvalidation.affectedByBlockEdit(pos.getX(), pos.getZ())) {
-            CACHE.invalidateChunk(dimension, worldSession(level), coordinate.x(), coordinate.z());
+            CACHE.invalidateChunk(dimension, session, coordinate.x(), coordinate.z());
         }
     }
 
