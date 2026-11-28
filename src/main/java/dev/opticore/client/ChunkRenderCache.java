@@ -24,7 +24,16 @@ public final class ChunkRenderCache {
     private static final long MIB = 1024L * 1024L;
     private static final SmartChunkCache<CacheEntry> CACHE =
             new SmartChunkCache<>(32L * MIB);
-    private static final Map<Level, Long> WORLD_SESSIONS = new WeakHashMap<>();
+    private static final class WorldSession {
+        final long id;
+        boolean closed;
+
+        WorldSession(long id) {
+            this.id = id;
+        }
+    }
+
+    private static final Map<Level, WorldSession> WORLD_SESSIONS = new WeakHashMap<>();
     private static final AtomicLong NEXT_WORLD_SESSION = new AtomicLong(1L);
 
     private ChunkRenderCache() {}
@@ -38,7 +47,9 @@ public final class ChunkRenderCache {
 
     public static RenderCacheKey key(Level level, int chunkX, int chunkZ, int sectionY) {
         if (level == null || !level.isClientSide()) return null;
-        return new RenderCacheKey(dimensionId(level.dimension()), worldSession(level),
+        long session = worldSession(level);
+        if (session < 0L) return null;
+        return new RenderCacheKey(dimensionId(level.dimension()), session,
                 chunkX, chunkZ, sectionY, 0L, 0L, 0L);
     }
 
@@ -52,7 +63,9 @@ public final class ChunkRenderCache {
             long neighborStateFingerprint, long lightFingerprint,
             long renderSettingsFingerprint) {
         if (level == null || !level.isClientSide()) return null;
-        return new RenderCacheKey(dimensionId(level.dimension()), worldSession(level),
+        long session = worldSession(level);
+        if (session < 0L) return null;
+        return new RenderCacheKey(dimensionId(level.dimension()), session,
                 chunkX, chunkZ, sectionY, neighborStateFingerprint,
                 lightFingerprint, renderSettingsFingerprint);
     }
@@ -63,17 +76,24 @@ public final class ChunkRenderCache {
      */
     public static void forgetWorldSession(Level level) {
         if (level == null) return;
-        Long session;
+        long session = -1L;
         synchronized (WORLD_SESSIONS) {
-            session = WORLD_SESSIONS.remove(level);
+            WorldSession state = WORLD_SESSIONS.get(level);
+            if (state != null && !state.closed) {
+                state.closed = true;
+                session = state.id;
+            }
         }
-        if (session != null) CACHE.invalidateWorldSession(session);
+        if (session >= 0L) CACHE.invalidateWorldSession(session);
     }
 
     private static long worldSession(Level level) {
         synchronized (WORLD_SESSIONS) {
-            return WORLD_SESSIONS.computeIfAbsent(level,
-                    ignored -> NEXT_WORLD_SESSION.getAndIncrement());
+            WorldSession state = WORLD_SESSIONS.computeIfAbsent(level,
+                    ignored -> new WorldSession(NEXT_WORLD_SESSION.getAndIncrement()));
+            // A compiler task may finish after unload. Never create a fresh
+            // cache identity for a Level that has already been closed.
+            return state.closed ? -1L : state.id;
         }
     }
 
